@@ -1,0 +1,120 @@
+import * as ex from "excalibur";
+import { Character } from "../character/character";
+import type { AppearanceOptions } from "../character/types";
+import { SCALE } from "../config";
+import { Player } from "../player/player";
+
+export class Enemy extends Character {
+  private detectionRange: number = 200 * SCALE;
+  private attackRange: number = 40 * SCALE;
+  private pursuitSpeed: number = 0.8;
+  private patrolDistance: number = 100 * SCALE;
+  private patrolStartX: number;
+  private aiState: "idle" | "patrol" | "chase" | "attack" | "retreat" = "idle";
+  private player?: Player;
+  private attackCooldown: number = 0;
+  private attackCooldownTime: number = 1.5;
+
+  constructor(
+    name: string,
+    pos: ex.Vector,
+    appearanceOptions: AppearanceOptions,
+    facingRight: boolean
+  ) {
+    super("enemy", pos, appearanceOptions, facingRight);
+    this.patrolStartX = pos.x;
+  }
+
+  protected getAttackTargets(): string[] {
+    return ["player"];
+  }
+
+  onPreUpdate(engine: ex.Engine, deltaSeconds: number) {
+    if (!this.player) {
+      this.player = engine.currentScene.actors.find((a) => a instanceof Player);
+    }
+
+    if (this.player && this.currentState !== "dead") {
+      this.updateAI(engine, deltaSeconds);
+    }
+  }
+
+  private updateAI(engine: ex.Engine, deltaSeconds: number) {
+    if (
+      !this.player ||
+      this.currentState === "attacking" ||
+      this.currentState === "hurt"
+    ) {
+      return;
+    }
+
+    if (this.attackCooldown > 0) {
+      this.attackCooldown -= deltaSeconds;
+    }
+
+    const distanceToPlayer = this.pos.distance(this.player.pos);
+
+    if (distanceToPlayer <= this.attackRange && this.attackCooldown <= 0) {
+      this.aiState = "attack";
+    } else if (distanceToPlayer <= this.detectionRange) {
+      this.aiState = "chase";
+    } else {
+      this.aiState = "patrol";
+    }
+
+    switch (this.aiState) {
+      case "patrol":
+        this.patrol();
+        break;
+      case "chase":
+        this.chasePlayer();
+        break;
+      case "attack":
+        this.attackPlayer();
+        break;
+    }
+  }
+
+  private patrol() {
+    const distanceFromStart = Math.abs(this.pos.x - this.patrolStartX);
+
+    if (distanceFromStart >= this.patrolDistance) {
+      this.facingRight = !this.facingRight;
+    }
+
+    const patrolSpeed = this.moveSpeed * 0.5;
+    this.vel.x = this.facingRight ? patrolSpeed : -patrolSpeed;
+
+    if (Math.abs(this.vel.x) > 0.1) {
+      this.currentState = "walking";
+    } else {
+      this.currentState = "idle";
+    }
+  }
+
+  private chasePlayer() {
+    if (!this.player) return;
+
+    const direction = this.player.pos.x > this.pos.x ? 1 : -1;
+    this.vel.x = direction * this.moveSpeed * this.pursuitSpeed;
+    this.currentState = "running";
+  }
+
+  private attackPlayer() {
+    if (
+      !this.player ||
+      this.currentState === "dead" ||
+      this.player?.currentState === "dead"
+    )
+      return;
+
+    this.vel.x = 0;
+
+    if (this.energy >= this.attackEnergyCost) {
+      this.attack();
+      this.attackCooldown = this.attackCooldownTime;
+    } else {
+      this.currentState = "idle";
+    }
+  }
+}
