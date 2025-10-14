@@ -1,5 +1,5 @@
 import * as ex from "excalibur";
-import { Resources, WeaponResources } from "./actors/resources";
+import { Resources, WeaponResources } from "./resources";
 import { Player } from "./actors/player/player";
 import { HUD } from "./hud/hud";
 import { scenes } from "./scenes/scenes";

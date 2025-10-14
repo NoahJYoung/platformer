@@ -45,7 +45,7 @@ export class TimeCycle {
     this.overlay.anchor = vec(0.5, 0.5);
 
     this.timeOfDay = 7;
-    this.cycleSpeed = 0.02;
+    this.cycleSpeed = 0.04;
 
     this.season = "spring";
     this.dayInSeason = 1;

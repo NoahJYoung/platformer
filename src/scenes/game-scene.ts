@@ -5,8 +5,13 @@ import type { AppearanceOptions } from "../actors/character/types";
 import type { SceneConfig } from "./types";
 import { CollisionGroups } from "../actors/config";
 import { Enemy } from "../actors/enemy/enemy";
-import { BackgroundResources, WeaponResources } from "../actors/resources";
 import type { EnemyConfig } from "../actors/enemy/types";
+import { GroundTileManager } from "./ground-tile-manager";
+import {
+  WeaponResources,
+  BackgroundResources,
+  FloorResources,
+} from "../resources";
 
 export class GameMapScene extends ex.Scene {
   public name: string = "unknown";
@@ -14,6 +19,7 @@ export class GameMapScene extends ex.Scene {
   protected player: Player | null = null;
   protected levelWidth: number;
   protected levelHeight: number;
+  private groundTileManager = new GroundTileManager(FloorResources.floor1);
 
   constructor(config: SceneConfig) {
     super();
@@ -24,6 +30,9 @@ export class GameMapScene extends ex.Scene {
 
   onInitialize(engine: GameEngine): void {
     this.player = engine.player;
+    this.groundTileManager.setTheme("normal", 0, 0, 1, 2);
+    this.groundTileManager.setTheme("fall", 6, 0, 1, 2);
+    this.groundTileManager.setTheme("winter", 12, 0, 1, 2);
 
     if (!this.player) {
       console.error("No player found!");
@@ -188,11 +197,11 @@ export class GameMapScene extends ex.Scene {
     const backgrounds = BackgroundResources[theme];
 
     const layers = [
-      { resource: backgrounds.layer5, speed: 0.000024 },
-      { resource: backgrounds.layer4, speed: 0.00024 },
-      { resource: backgrounds.layer3, speed: 0.0024 },
-      { resource: backgrounds.layer2, speed: 0.024 },
-      { resource: backgrounds.layer1, speed: 0.24 },
+      { resource: backgrounds.layer5, speed: -0.6 },
+      { resource: backgrounds.layer4, speed: -0.5 },
+      { resource: backgrounds.layer3, speed: -0.4 },
+      { resource: backgrounds.layer2, speed: -0.3 },
+      { resource: backgrounds.layer1, speed: -0.2 },
     ];
 
     const bgWidth = 1024;
@@ -264,10 +273,42 @@ export class GameMapScene extends ex.Scene {
       pos: ex.vec(x, y),
       width: width,
       height: height,
-      color: ex.Color.fromHex("#654321"),
       collisionType: ex.CollisionType.Fixed,
       collisionGroup: CollisionGroups.Environment,
     });
+
+    if (this.groundTileManager && this.engine) {
+      const engine = this.engine as GameEngine;
+      const season = engine.timeCycle.getCurrentSeason();
+      const theme =
+        season === "winter" ? "winter" : season === "fall" ? "fall" : "normal";
+
+      const platformCanvas = this.groundTileManager.createGroundCanvasElement(
+        width,
+        height,
+        theme
+      );
+
+      const canvasGraphic = new ex.Canvas({
+        width: width,
+        height: height,
+        draw: (ctx) => {
+          ctx.drawImage(platformCanvas, 0, 0);
+        },
+      });
+
+      platform.graphics.use(canvasGraphic);
+    } else {
+      // Fallback to colored platform
+      platform.graphics.use(
+        new ex.Rectangle({
+          width: width,
+          height: height,
+          color: ex.Color.fromHex("#654321"),
+        })
+      );
+    }
+
     this.add(platform);
   }
 
@@ -281,25 +322,49 @@ export class GameMapScene extends ex.Scene {
       );
     });
   }
-
   getGroundFromSeason(engine: GameEngine): ex.Actor {
-    const season = engine.timeCycle.getCurrentSeason();
-    const color =
-      season === "winter"
-        ? ex.Color.LightGray
-        : season === "fall"
-        ? ex.Color.Orange
-        : ex.Color.fromHex("#90EE90");
+    if (!this.groundTileManager) {
+      return new ex.Actor({
+        name: "ground",
+        pos: ex.vec(this.levelWidth / 2, this.levelHeight - 10),
+        width: this.levelWidth,
+        height: 20,
+        color: ex.Color.Green,
+        collisionType: ex.CollisionType.Fixed,
+        collisionGroup: CollisionGroups.Environment,
+      });
+    }
 
-    return new ex.Actor({
+    const season = engine.timeCycle.getCurrentSeason();
+    const theme =
+      season === "winter" ? "winter" : season === "fall" ? "fall" : "normal";
+
+    const ground = new ex.Actor({
       name: "ground",
       pos: ex.vec(this.levelWidth / 2, this.levelHeight - 10),
       width: this.levelWidth,
       height: 20,
-      color: color,
       collisionType: ex.CollisionType.Fixed,
       collisionGroup: CollisionGroups.Environment,
     });
+
+    const groundCanvas = this.groundTileManager.createGroundCanvasElement(
+      this.levelWidth,
+      20,
+      theme
+    );
+
+    const canvasGraphic = new ex.Canvas({
+      width: this.levelWidth,
+      height: 20,
+      draw: (ctx) => {
+        ctx.drawImage(groundCanvas, 0, 0);
+      },
+    });
+
+    ground.graphics.use(canvasGraphic);
+
+    return ground;
   }
 
   protected createLevel(engine: GameEngine): void {

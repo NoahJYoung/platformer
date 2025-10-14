@@ -9,7 +9,6 @@ export class HUD extends ex.ScreenElement {
   private readonly barSpacing = 16;
   private readonly borderRadius = 6;
 
-  // Temperature thermometer dimensions
   private readonly thermometerWidth = 100;
   private readonly thermometerHeight = 8;
 
@@ -63,7 +62,7 @@ export class HUD extends ex.ScreenElement {
       font: new ex.Font({
         family: "Arial",
         size: 12,
-        color: ex.Color.fromHex("#530303ff"), // Dark red
+        color: ex.Color.fromHex("#530303ff"),
       }),
     });
 
@@ -72,7 +71,7 @@ export class HUD extends ex.ScreenElement {
       font: new ex.Font({
         family: "Arial",
         size: 12,
-        color: ex.Color.fromHex("#775604ff"), // Dark yellow/gold
+        color: ex.Color.fromHex("#775604ff"),
       }),
     });
 
@@ -81,7 +80,7 @@ export class HUD extends ex.ScreenElement {
       font: new ex.Font({
         family: "Arial",
         size: 12,
-        color: ex.Color.fromHex("#a5a5f5ff"), // Dark blue
+        color: ex.Color.fromHex("#a5a5f5ff"),
       }),
     });
 
@@ -90,7 +89,7 @@ export class HUD extends ex.ScreenElement {
       font: new ex.Font({
         family: "Arial",
         size: 10,
-        color: ex.Color.White,
+        color: ex.Color.Black,
       }),
     });
 
@@ -127,7 +126,7 @@ export class HUD extends ex.ScreenElement {
         {
           graphic: this.temperatureText,
           offset: ex.vec(
-            5,
+            this.thermometerWidth + 5,
             this.barSpacing * 3 + this.thermometerHeight / 2 - 4
           ),
         },

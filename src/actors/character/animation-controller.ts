@@ -1,5 +1,5 @@
 import * as ex from "excalibur";
-import { PlayerResources } from "../resources";
+import { PlayerResources } from "../../resources";
 import {
   SCALE,
   STANDARD_SPRITE_WIDTH,

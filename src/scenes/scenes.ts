@@ -23,12 +23,12 @@ export const scenes: SceneConfig[] = [
       },
     ],
     platforms: [
-      { x: 400, y: 600, width: 200, height: 20 },
-      { x: 700, y: 500, width: 180, height: 20 },
-      { x: 1000, y: 550, width: 150, height: 20 },
-      { x: 1300, y: 450, width: 200, height: 20 },
+      { x: 400, y: 750, width: 160, height: 64 },
+      { x: 700, y: 500, width: 160, height: 20 },
+      { x: 1000, y: 550, width: 160, height: 20 },
+      { x: 1300, y: 450, width: 160, height: 20 },
       { x: 1650, y: 520, width: 160, height: 20 },
-      { x: 2000, y: 600, width: 220, height: 20 },
+      { x: 2000, y: 600, width: 160, height: 20 },
     ],
     enemies: [
       {
