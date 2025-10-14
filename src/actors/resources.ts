@@ -65,7 +65,47 @@ export const WeaponResources = {
   },
 } as const;
 
+export const BackgroundResources = {
+  fall: {
+    layer1: new ex.ImageSource("/assets/backgrounds/fall/layer1.png"),
+    layer2: new ex.ImageSource("/assets/backgrounds/fall/layer2.png"),
+    layer3: new ex.ImageSource("/assets/backgrounds/fall/layer3.png"),
+    layer4: new ex.ImageSource("/assets/backgrounds/fall/layer4.png"),
+    layer5: new ex.ImageSource("/assets/backgrounds/fall/layer5.png"),
+  },
+  winter: {
+    layer1: new ex.ImageSource("/assets/backgrounds/winter/layer1.png"),
+    layer2: new ex.ImageSource("/assets/backgrounds/winter/layer2.png"),
+    layer3: new ex.ImageSource("/assets/backgrounds/winter/layer3.png"),
+    layer4: new ex.ImageSource("/assets/backgrounds/winter/layer4.png"),
+    layer5: new ex.ImageSource("/assets/backgrounds/winter/layer5.png"),
+  },
+  normal: {
+    layer1: new ex.ImageSource("/assets/backgrounds/normal/layer1.png"),
+    layer2: new ex.ImageSource("/assets/backgrounds/normal/layer2.png"),
+    layer3: new ex.ImageSource("/assets/backgrounds/normal/layer3.png"),
+    layer4: new ex.ImageSource("/assets/backgrounds/normal/layer4.png"),
+    layer5: new ex.ImageSource("/assets/backgrounds/normal/layer5.png"),
+  },
+};
+
 export const Resources = [
+  // Background
+  BackgroundResources.fall.layer1,
+  BackgroundResources.fall.layer2,
+  BackgroundResources.fall.layer3,
+  BackgroundResources.fall.layer4,
+  BackgroundResources.fall.layer5,
+  BackgroundResources.winter.layer1,
+  BackgroundResources.winter.layer2,
+  BackgroundResources.winter.layer3,
+  BackgroundResources.winter.layer4,
+  BackgroundResources.winter.layer5,
+  BackgroundResources.normal.layer1,
+  BackgroundResources.normal.layer2,
+  BackgroundResources.normal.layer3,
+  BackgroundResources.normal.layer4,
+  BackgroundResources.normal.layer5,
   // Skin
   // Male
   PlayerResources.male.skin.skin_1,

@@ -1,28 +1,29 @@
 import * as ex from "excalibur";
 import { Character } from "../character/character";
-import type { AppearanceOptions } from "../character/types";
 import { SCALE } from "../config";
 import { Player } from "../player/player";
+import type { EnemyConfig } from "./types";
 
 export class Enemy extends Character {
-  private detectionRange: number = 200 * SCALE;
-  private attackRange: number = 40 * SCALE;
-  private pursuitSpeed: number = 0.8;
+  private detectionRange: number = 300 * SCALE;
+  private attackRange: number = 30 * SCALE;
+  private pursuitSpeed: number = 1;
   private patrolDistance: number = 100 * SCALE;
   private patrolStartX: number;
   private aiState: "idle" | "patrol" | "chase" | "attack" | "retreat" = "idle";
   private player?: Player;
   private attackCooldown: number = 0;
   private attackCooldownTime: number = 1.5;
+  private wasHit: boolean = false;
+  private consecutiveHits: number = 0;
 
-  constructor(
-    name: string,
-    pos: ex.Vector,
-    appearanceOptions: AppearanceOptions,
-    facingRight: boolean
-  ) {
+  constructor(config: EnemyConfig) {
+    const { name, pos, appearanceOptions, facingRight } = config;
+
     super("enemy", pos, appearanceOptions, facingRight);
     this.patrolStartX = pos.x;
+
+    this.name = name.startsWith("enemy") ? name : `enemy-${name}`;
   }
 
   protected getAttackTargets(): string[] {
@@ -43,7 +44,8 @@ export class Enemy extends Character {
     if (
       !this.player ||
       this.currentState === "attacking" ||
-      this.currentState === "hurt"
+      this.currentState === "hurt" ||
+      this.currentState === "dodging"
     ) {
       return;
     }
@@ -100,13 +102,40 @@ export class Enemy extends Character {
     this.currentState = "running";
   }
 
+  public takeDamage(amount: number): void {
+    super.takeDamage(amount);
+
+    this.wasHit = true;
+    this.consecutiveHits++;
+  }
+
+  public dodge(direction: "left" | "right") {
+    super.dodge(direction);
+    this.consecutiveHits = 0;
+    this.wasHit = false;
+  }
+
   private attackPlayer() {
     if (
       !this.player ||
       this.currentState === "dead" ||
-      this.player?.currentState === "dead"
+      this.player?.currentState === "dead" ||
+      this.currentState === "dodging"
     )
       return;
+
+    const shouldDodge = this.calculateDodgeChance(this.wasHit);
+
+    if (!shouldDodge) {
+      this.wasHit = false;
+    }
+
+    if (shouldDodge) {
+      const direction = this.player.pos.x <= this.pos.x ? "left" : "right";
+      this.dodge(direction);
+      // this.attackCooldown = this.attackCooldownTime; // Set cooldown after dodging too!
+      return;
+    }
 
     this.vel.x = 0;
 
@@ -116,5 +145,26 @@ export class Enemy extends Character {
     } else {
       this.currentState = "idle";
     }
+  }
+
+  private calculateDodgeChance(wasHit: boolean = false): boolean {
+    if (this.energy < 16) {
+      return false;
+    }
+    let dodgeChance = 0.2;
+    const random = Math.random();
+
+    if (wasHit) {
+      dodgeChance = Math.min(0.8, 0.2 + this.consecutiveHits * 0.2);
+    }
+
+    console.log({
+      hits: this.consecutiveHits,
+      dodgeChance,
+      random,
+      shouldDodge: random < dodgeChance,
+    });
+
+    return random < dodgeChance;
   }
 }

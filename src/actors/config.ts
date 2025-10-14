@@ -1,6 +1,7 @@
 import * as ex from "excalibur";
 
-export const SCALE = 1.5;
+export const SCALE = 1.4;
+export const SPRITE_BUFFER = 4;
 export const SPRITE_HEIGHT = 64;
 export const SPRITE_WIDTH = 24;
 
@@ -13,4 +14,6 @@ export const CollisionGroups = {
   Player: ex.CollisionGroupManager.create("player"),
   Enemy: ex.CollisionGroupManager.create("enemy"),
   Environment: ex.CollisionGroupManager.create("environment"),
+  Weapon: ex.CollisionGroupManager.create("weapon"),
+  Interactable: ex.CollisionGroupManager.create("interactable"),
 };

@@ -6,13 +6,11 @@ import type { InventoryItem } from "./inventory";
 
 export class CombatSystem {
   private canDealDamage: boolean = false;
-  private isTinted: boolean = false;
   private character: Character;
   private animController: AnimationController;
   private getValidTargets: () => string[];
   private attackEnergyCost: number;
-  private dodgeEnergyCost: number;
-  private damageTintDuration: number;
+
   private onDamageDealtCallback?: (damage: number) => void;
 
   public isInvincible: boolean = false;
@@ -21,14 +19,12 @@ export class CombatSystem {
     character: Character,
     animController: AnimationController,
     getValidTargets: () => string[],
-    attackEnergyCost: number = 8,
-    damageTintDuration: number = 150
+    attackEnergyCost: number = 8
   ) {
     this.character = character;
     this.animController = animController;
     this.getValidTargets = getValidTargets;
     this.attackEnergyCost = attackEnergyCost;
-    this.damageTintDuration = damageTintDuration;
   }
 
   public setOnDamageDealtCallback(callback: (damage: number) => void) {
@@ -36,7 +32,14 @@ export class CombatSystem {
   }
 
   public attack(equippedWeapon: InventoryItem | null, energy: number): number {
-    if (this.animController.currentState === "attacking") return energy;
+    if (
+      this.animController.currentState === "attacking" ||
+      this.animController.currentState === "hurt"
+    )
+      return energy;
+    if (this.animController.attackAnim) {
+      this.animController.attackAnim.reset();
+    }
 
     this.animController.currentState = "attacking";
     this.canDealDamage = false;
@@ -52,6 +55,31 @@ export class CombatSystem {
     return newEnergy;
   }
 
+  public magicAttack(mana: number) {
+    const attackAnim = this.animController.attackAnim;
+    if (!attackAnim) return mana;
+    if (this.animController.attackAnim) {
+      this.animController.attackAnim.reset();
+    }
+
+    this.animController.currentState = "attacking";
+
+    attackAnim.reset();
+    this.character.graphics.use(attackAnim);
+
+    const newMana = Math.max(0, mana - this.attackEnergyCost);
+
+    const duration = attackAnim.frames.length * attackAnim.frameDuration;
+
+    setTimeout(() => {
+      if (this.animController.currentState === "attacking") {
+        this.animController.currentState = "idle";
+      }
+    }, duration);
+
+    return newMana;
+  }
+
   private performWeaponAttack(weapon: InventoryItem) {
     const attackAnim = this.animController.attackAnim;
     if (!attackAnim) return;
@@ -63,6 +91,7 @@ export class CombatSystem {
       width: (weapon.reach || 30) * SCALE,
       height: 20 * SCALE,
       collisionType: ex.CollisionType.Passive,
+      collisionGroup: CollisionGroups.Weapon,
     });
 
     const collisionHandler = (evt: ex.CollisionStartEvent) => {
@@ -155,6 +184,7 @@ export class CombatSystem {
       width: 20 * SCALE,
       height: 20 * SCALE,
       collisionType: ex.CollisionType.Passive,
+      collisionGroup: CollisionGroups.Weapon,
     });
     this.character.addChild(punchHitbox);
 
@@ -203,7 +233,6 @@ export class CombatSystem {
           (target as Character).takeDamage(damage);
           damageDealt = true;
 
-          // PHASE 1: Callback exists but won't be set yet
           if (this.onDamageDealtCallback) {
             this.onDamageDealtCallback(damage);
           }
@@ -238,14 +267,7 @@ export class CombatSystem {
     const newHealth = Math.max(0, currentHealth - amount);
     this.animController.currentState = "hurt";
 
-    this.applyDamageTint();
-
-    const hurtStateDuration = 200;
-
-    const hurtAnim = this.animController.hurtAnim;
-    if (hurtAnim) {
-      this.character.graphics.use(hurtAnim);
-    }
+    const hurtStateDuration = 150;
 
     setTimeout(() => {
       if (newHealth <= 0) {
@@ -258,26 +280,8 @@ export class CombatSystem {
     return newHealth;
   }
 
-  private applyDamageTint() {
-    if (this.isTinted) return;
-
-    this.isTinted = true;
-    this.character.graphics.opacity = 1;
-    const redColor = ex.Color.Red;
-
-    if (this.character.graphics.current) {
-      this.character.graphics.current.tint = redColor;
-    }
-
-    setTimeout(() => {
-      if (this.character.graphics.current) {
-        this.character.graphics.current.tint = ex.Color.White;
-      }
-      this.isTinted = false;
-    }, this.damageTintDuration);
-  }
-
   private onDeath() {
+    this.character.vel.x = 0;
     this.animController.currentState = "dead";
     this.character.body.group = ex.CollisionGroup.collidesWith([
       CollisionGroups.Environment,

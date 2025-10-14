@@ -4,6 +4,7 @@ import { CollisionGroups, SCALE } from "../config";
 import { AnimationController } from "./animation-controller";
 import { CombatSystem } from "./combat-system";
 import { StatsSystem } from "./stats-system";
+import { MagicProjectile } from "./magic-projectile";
 
 export interface CharacterAppearanceOptions {
   sex: "male" | "female";
@@ -12,11 +13,12 @@ export interface CharacterAppearanceOptions {
 }
 
 export abstract class Character extends ex.Actor {
-  // Character properties
   public health: number = 100;
   public maxHealth: number = 100;
   public energy: number = 100;
   public maxEnergy: number = 100;
+  public mana: number = 100;
+  public maxMana: number = 100;
   public moveSpeed: number = 100;
   public jumpSpeed: number = -400;
   public runMultiplier = 1.5;
@@ -24,30 +26,27 @@ export abstract class Character extends ex.Actor {
 
   public inventory: Inventory;
 
-  // Appearance
   public sex: "male" | "female";
   public skinTone: 1 | 2 | 3 | 4 | 5;
   public hairStyle: 1 | 2 | 3 | 4 | 5;
 
-  // Systems
   protected animController: AnimationController;
   protected combatSystem: CombatSystem;
   protected statsSystem: StatsSystem;
 
-  // Energy consumption/recovery rates (now influenced by stats)
   protected runEnergyDrain: number = 4;
   protected jumpEnergyCost: number = 4;
   protected attackEnergyCost: number = 8;
   protected energyRecoveryRate: number = 4;
   protected dodgeEnergyCost: number = 4;
+  protected manaCost: number = 8;
 
-  // Falling damage properties
   protected fallDamageThreshold: number = 600;
   protected fallDamageMultiplier: number = 0.5;
   protected lastYVelocity: number = 0;
 
-  // Abstract method that subclasses must implement
   protected abstract getAttackTargets(): string[];
+  private originalCollisionGroup: ex.CollisionGroup;
 
   constructor(
     name: string,
@@ -66,15 +65,15 @@ export abstract class Character extends ex.Actor {
         name === "player" ? CollisionGroups.Player : CollisionGroups.Enemy,
     });
 
+    this.originalCollisionGroup = this.body.group;
+
     this.sex = appearanceOptions.sex;
     this.skinTone = appearanceOptions.skinTone;
     this.hairStyle = appearanceOptions.hairStyle;
     this.inventory = new Inventory();
 
-    // Initialize stats system first
     this.statsSystem = new StatsSystem();
 
-    // Set initial values based on stats
     this.maxHealth = this.statsSystem.getMaxHealth();
     this.health = this.maxHealth;
     this.maxEnergy = this.statsSystem.getMaxEnergy();
@@ -84,7 +83,6 @@ export abstract class Character extends ex.Actor {
     this.attackEnergyCost = 8;
     this.energyRecoveryRate = this.statsSystem.getEnergyRecoveryRate();
 
-    // Initialize animation controller
     this.animController = new AnimationController(
       this,
       this.sex,
@@ -93,7 +91,6 @@ export abstract class Character extends ex.Actor {
       facingRight
     );
 
-    // Initialize combat system
     this.combatSystem = new CombatSystem(
       this,
       this.animController,
@@ -101,7 +98,6 @@ export abstract class Character extends ex.Actor {
       this.attackEnergyCost
     );
 
-    // Set up callback for tracking damage dealt (strength XP)
     this.combatSystem.setOnDamageDealtCallback((damage) => {
       const leveledUp = this.statsSystem.onDamageDealt(damage);
       if (leveledUp) {
@@ -132,8 +128,6 @@ export abstract class Character extends ex.Actor {
       this.handleCollisionEnd(evt);
     });
   }
-
-  onPreUpdate(engine: ex.Engine, deltaSeconds: number) {}
 
   public equipWeapon(slot: number) {
     const item = this.inventory.getItem(slot);
@@ -179,7 +173,7 @@ export abstract class Character extends ex.Actor {
   protected handleCollisionStart(evt: ex.CollisionStartEvent) {
     const otherActor = evt.other.owner as ex.Actor;
 
-    if (otherActor?.name?.startsWith("platform")) {
+    if (otherActor?.body?.group === CollisionGroups.Environment) {
       if (this.pos.y < otherActor.pos.y) {
         if (this.lastYVelocity > this.fallDamageThreshold) {
           const damage = Math.floor(
@@ -220,7 +214,39 @@ export abstract class Character extends ex.Actor {
     }
   }
 
+  public magicAttack(spellType: "fireball" | "ice" | "lightning") {
+    if (!this.animController.attackAnim) {
+      return;
+    }
+    if (this.mana >= this.manaCost) {
+      this.mana = this.combatSystem.magicAttack(this.mana);
+
+      setTimeout(
+        () => this.createMagicProjectile(spellType),
+        this.animController.attackAnim.frameDuration * 4
+      );
+
+      this.mana -= this.manaCost;
+    }
+  }
+
+  private createMagicProjectile(spellType: string) {
+    const direction = this.facingRight ? 1 : -1;
+    const spawnOffset = 10; // Distance in front of player
+
+    const projectile = new MagicProjectile(
+      ex.vec(this.pos.x + spawnOffset * direction, this.pos.y),
+      direction,
+      spellType
+    );
+
+    this.scene?.add(projectile);
+  }
+
   public dodge(direction: "left" | "right") {
+    if (this.animController.dodgeAnim) {
+      this.animController.dodgeAnim.reset();
+    }
     this.currentState = "dodging";
     this.body.group = ex.CollisionGroup.collidesWith([
       CollisionGroups.Environment,
@@ -234,14 +260,8 @@ export abstract class Character extends ex.Actor {
 
   public endDodge() {
     this.currentState = "idle";
-    if (this.animController.dodgeAnim) {
-      this.animController.dodgeAnim.reset();
-    }
 
-    this.body.group = ex.CollisionGroup.collidesWith([
-      CollisionGroups.Environment,
-      CollisionGroups.Enemy,
-    ]);
+    this.body.group = this.originalCollisionGroup;
   }
 
   public takeDamage(amount: number) {
@@ -264,7 +284,6 @@ export abstract class Character extends ex.Actor {
   protected onVitalityLevelUp() {
     const oldMaxHealth = this.maxHealth;
     this.maxHealth = this.statsSystem.getMaxHealth();
-    // Heal the character by the health increase
     this.health += this.maxHealth - oldMaxHealth;
     console.log(`Max health increased to ${this.maxHealth}`);
   }
@@ -306,5 +325,9 @@ export abstract class Character extends ex.Actor {
 
   protected set facingRight(value: boolean) {
     this.animController.facingRight = value;
+  }
+
+  public get stats() {
+    return this.statsSystem.getStats();
   }
 }

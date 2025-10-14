@@ -8,6 +8,7 @@ import {
   FRAME_SPACING,
   scale,
   SPRITE_WIDTH,
+  SPRITE_BUFFER,
 } from "../config";
 import type { Character } from "./character";
 import type { InventoryItem } from "./inventory";
@@ -39,7 +40,7 @@ export class AnimationController {
   public facingRight: boolean;
 
   private weaponActor?: ex.Actor;
-  private weaponSprites?: Map<string, ex.Animation>;
+  public weaponSprites?: Map<string, ex.Animation>;
   private equippedWeapon: InventoryItem | null = null;
 
   private character: Character;
@@ -76,11 +77,11 @@ export class AnimationController {
           rows: 7,
           columns: frameCount,
           spriteWidth: STANDARD_SPRITE_WIDTH,
-          spriteHeight: SPRITE_HEIGHT,
+          spriteHeight: SPRITE_HEIGHT - SPRITE_BUFFER,
         },
         spacing: {
-          originOffset: { x: LEFT_MARGIN, y: 0 },
-          margin: { x: FRAME_SPACING, y: 0 },
+          originOffset: { x: LEFT_MARGIN, y: SPRITE_BUFFER },
+          margin: { x: FRAME_SPACING, y: SPRITE_BUFFER },
         },
       });
 
@@ -90,11 +91,11 @@ export class AnimationController {
           rows: 7,
           columns: frameCount,
           spriteWidth: STANDARD_SPRITE_WIDTH,
-          spriteHeight: SPRITE_HEIGHT,
+          spriteHeight: SPRITE_HEIGHT - SPRITE_BUFFER,
         },
         spacing: {
-          originOffset: { x: LEFT_MARGIN, y: 0 },
-          margin: { x: FRAME_SPACING, y: 0 },
+          originOffset: { x: LEFT_MARGIN, y: SPRITE_BUFFER },
+          margin: { x: FRAME_SPACING, y: SPRITE_BUFFER },
         },
       });
 
@@ -107,7 +108,7 @@ export class AnimationController {
           hairSprite.scale = scale;
 
           const xOffset = 24 * SCALE;
-          const yOffset = -8 * SCALE;
+          const yOffset = -8 * SCALE + (SPRITE_BUFFER / 2) * SCALE;
           const members: Array<{ graphic: ex.Graphic; offset: ex.Vector }> = [
             { graphic: skinSprite, offset: ex.vec(xOffset, yOffset) },
             { graphic: hairSprite, offset: ex.vec(xOffset, yOffset) },
@@ -131,6 +132,7 @@ export class AnimationController {
     };
 
     this.idleAnim = createLayeredAnimation(0, 5, 100);
+    this.hurtAnim = createLayeredAnimation(3, 1, 150);
     this.walkAnim = createLayeredAnimation(1, 8, 100);
     this.runAnim = createLayeredAnimation(2, 8, 80);
     this.jumpAnim = createLayeredAnimation(3, 4, 100);
@@ -167,7 +169,7 @@ export class AnimationController {
 
     this.character.graphics.flipHorizontal = this.facingRight;
 
-    if (this.currentState === "attacking" || this.currentState === "hurt") {
+    if (this.currentState === "attacking") {
       return;
     }
 
@@ -198,9 +200,19 @@ export class AnimationController {
           this.character.graphics.current !== this.fallAnim
         ) {
           this.character.graphics.use(this.fallAnim);
-          this.character.graphics.opacity = 1;
         }
         break;
+      case "hurt":
+        if (
+          this.hurtAnim &&
+          this.character.graphics.current !== this.hurtAnim
+        ) {
+          this.character.graphics.use(this.hurtAnim);
+          this.hurtAnim.reset();
+          this.hurtAnim.tint = ex.Color.Red;
+        }
+        break;
+
       case "dodging":
         if (
           this.jumpAnim &&
@@ -305,6 +317,7 @@ export class AnimationController {
     this.weaponSprites.set("run", createWeaponAnimation(8, 2, 80));
     this.weaponSprites.set("jump", createWeaponAnimation(4, 3));
     this.weaponSprites.set("fall", createWeaponAnimation(4, 4));
+    this.weaponSprites.set("hurt", createWeaponAnimation(1, 3, 150));
     this.weaponSprites.set("attack", createWeaponAnimation(6, 5));
     this.weaponSprites.set(
       "dead",
@@ -355,6 +368,8 @@ export class AnimationController {
         ? "jump"
         : this.currentState === "falling"
         ? "fall"
+        : this.currentState === "hurt"
+        ? "hurt"
         : this.currentState === "attacking"
         ? "attack"
         : this.currentState === "dead"
