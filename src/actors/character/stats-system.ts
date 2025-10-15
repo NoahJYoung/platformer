@@ -1,17 +1,7 @@
-export interface StatConfig {
-  baseValue: number;
-  currentXP: number;
-  xpToNextLevel: number;
-  growthRate: number;
-}
+import type { StatConfig, Stats } from "./types";
 
 export class StatsSystem {
-  private stats: {
-    vitality: StatConfig;
-    strength: StatConfig;
-    agility: StatConfig;
-    intelligence: StatConfig;
-  };
+  private stats: Stats;
 
   private xpGainRates = {
     damageReceived: 0.5,

@@ -53,9 +53,8 @@ export const Resources = [
 
   // Weapons
   // Male
-  WeaponResources.male.sword_1,
-  WeaponResources.male.axe_1,
+  WeaponResources.male.iron_sword,
 
   // Female
-  WeaponResources.female.sword_1,
+  WeaponResources.female.iron_sword,
 ] as const;

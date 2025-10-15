@@ -1,16 +1,8 @@
-// inventory.ts
-export interface InventoryItem {
-  id: string;
-  name: string;
-  type: "weapon" | "armor" | "consumable";
-  spriteSheet?: ex.ImageSource;
-  damage?: number; // Weapon damage
-  reach?: number; // Weapon hitbox width
-}
+import type { EquipmentItem, InventoryItem } from "./types";
 
 export class Inventory {
   private items: Map<number, InventoryItem | null> = new Map();
-  private maxSlots: number = 10;
+  public maxSlots: number = 20;
 
   constructor() {
     for (let i = 0; i < this.maxSlots; i++) {
@@ -30,7 +22,21 @@ export class Inventory {
     return item;
   }
 
-  getItem(slot: number): InventoryItem | null {
+  removeItemByReference(item: InventoryItem): InventoryItem | null {
+    const itemInInventory = Array.from(this.items.entries()).find(
+      ([slot, inventoryItem]) => inventoryItem?.id === item.id
+    );
+
+    if (itemInInventory) {
+      const [slot, foundItem] = itemInInventory;
+      this.items.set(slot, null);
+      return foundItem;
+    }
+
+    return null;
+  }
+
+  getItem(slot: number): InventoryItem | EquipmentItem | null {
     return this.items.get(slot) || null;
   }
 }

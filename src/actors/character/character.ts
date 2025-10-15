@@ -1,10 +1,12 @@
 import * as ex from "excalibur";
-import { Inventory, type InventoryItem } from "./inventory";
+import { Inventory } from "./inventory";
 import { CollisionGroups, SCALE } from "../config";
 import { AnimationController } from "./animation-controller";
 import { CombatSystem } from "./combat-system";
 import { StatsSystem } from "./stats-system";
 import { MagicProjectile } from "./magic-projectile";
+import type { EquipmentItem, InventoryItem } from "./types";
+import { EquipmentManager } from "./equipment-manager";
 
 export interface CharacterAppearanceOptions {
   sex: "male" | "female";
@@ -25,6 +27,7 @@ export abstract class Character extends ex.Actor {
   public canJump: boolean = false;
 
   public inventory: Inventory;
+  public equipmentManager: EquipmentManager;
 
   public sex: "male" | "female";
   public skinTone: 1 | 2 | 3 | 4 | 5;
@@ -70,7 +73,17 @@ export abstract class Character extends ex.Actor {
     this.sex = appearanceOptions.sex;
     this.skinTone = appearanceOptions.skinTone;
     this.hairStyle = appearanceOptions.hairStyle;
+
+    this.animController = new AnimationController(
+      this,
+      this.sex,
+      this.skinTone,
+      this.hairStyle,
+      facingRight
+    );
+
     this.inventory = new Inventory();
+    this.equipmentManager = new EquipmentManager(this.animController);
 
     this.statsSystem = new StatsSystem();
 
@@ -82,14 +95,6 @@ export abstract class Character extends ex.Actor {
     this.jumpEnergyCost = 4;
     this.attackEnergyCost = 8;
     this.energyRecoveryRate = this.statsSystem.getEnergyRecoveryRate();
-
-    this.animController = new AnimationController(
-      this,
-      this.sex,
-      this.skinTone,
-      this.hairStyle,
-      facingRight
-    );
 
     this.combatSystem = new CombatSystem(
       this,
@@ -129,18 +134,29 @@ export abstract class Character extends ex.Actor {
     });
   }
 
-  public equipWeapon(slot: number) {
-    const item = this.inventory.getItem(slot);
-    if (item && item.type === "weapon") {
-      this.animController.equipWeapon(item);
+  // public equipWeapon(slot: number) {
+  //   const item = this.inventory.getItem(slot);
+  //   if (item && item.type === "weapon") {
+  //     this.animController.equipWeapon(item);
+  //   }
+  // }
+
+  // public unequipWeapon() {
+  //   this.animController.unequipWeapon();
+  // }
+
+  public equipItem(item: EquipmentItem) {
+    const unequippedItem = this.equipmentManager.equip(item);
+    if (unequippedItem) {
+      this.inventory.addItem(0, unequippedItem);
     }
   }
 
-  public unequipWeapon() {
+  public unequipItem() {
     this.animController.unequipWeapon();
   }
 
-  public getEquippedWeapon(): InventoryItem | null {
+  public getEquippedItem(): InventoryItem | null {
     return this.animController.getEquippedWeapon();
   }
 
@@ -200,7 +216,7 @@ export abstract class Character extends ex.Actor {
   }
 
   public attack() {
-    const equippedWeapon = this.animController.getEquippedWeapon();
+    const equippedWeapon = this.equipmentManager.getEquippedWeapon();
     const oldEnergy = this.energy;
 
     this.energy = this.combatSystem.attack(equippedWeapon, this.energy);

@@ -4,8 +4,9 @@ import { Player } from "./actors/player/player";
 import { HUD } from "./hud/hud";
 import { scenes } from "./scenes/scenes";
 import { TimeCycle } from "./environment/time-cycle";
-import type { AppearanceOptions } from "./actors/character/types";
+import type { AppearanceOptions, WeaponItem } from "./actors/character/types";
 import { GameMapScene } from "./scenes/game-scene";
+import { v4 as uuid } from "uuid";
 
 export class GameEngine extends ex.Engine {
   public player!: Player;
@@ -61,13 +62,17 @@ export class GameEngine extends ex.Engine {
   protected setupNewPlayer(): void {
     if (!this.player) return;
 
-    this.player.inventory.addItem(1, {
-      id: "sword_1",
+    const ironSword: WeaponItem = {
+      id: uuid(),
+      iconUrl: "/assets/icons/weapons/iron_sword_icon.png",
       name: "Iron Sword",
       type: "weapon",
-      spriteSheet: WeaponResources.male.sword_1,
+      slot: "weapon",
+      spriteSheet: WeaponResources.male.iron_sword,
       damage: 25,
       reach: 25,
-    });
+    };
+    // this.player.equipItem(ironSword);
+    this.player.inventory.addItem(1, ironSword);
   }
 }

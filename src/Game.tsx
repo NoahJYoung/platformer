@@ -1,9 +1,11 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { GameEngine } from "./game-engine";
+import { CharacterMenu } from "./react-components/character-menu";
 
 export const Game = () => {
   const gameRef = useRef(null);
   const engineRef = useRef<GameEngine | null>(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
     if (engineRef.current) return;
@@ -22,23 +24,47 @@ export const Game = () => {
   }, []);
 
   useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      // Toggle menu with C or I
+      if (e.key === "c" || e.key === "i") {
+        setIsMenuOpen((prev) => !prev);
+      }
+
+      // Close menu with Escape
+      if (e.key === "Escape" && isMenuOpen) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);
+  }, [isMenuOpen]);
+
+  // Pause game when menu is open
+  useEffect(() => {
+    if (engineRef.current) {
+      if (isMenuOpen) {
+        engineRef.current.stop();
+      } else {
+        engineRef.current.start();
+      }
+    }
+  }, [isMenuOpen]);
+
+  useEffect(() => {
     const preventBrowserHotkeys = (e: KeyboardEvent) => {
       if (e.ctrlKey || e.metaKey) {
         if (e.key === "w" || e.key === "t" || e.key === "n" || e.key === "r") {
           e.preventDefault();
         }
       }
-
       if (e.key === "F5") {
         e.preventDefault();
       }
     };
 
     window.addEventListener("keydown", preventBrowserHotkeys);
-
-    return () => {
-      window.removeEventListener("keydown", preventBrowserHotkeys);
-    };
+    return () => window.removeEventListener("keydown", preventBrowserHotkeys);
   }, []);
 
   return (
@@ -50,7 +76,7 @@ export const Game = () => {
         alignItems: "center",
         justifyContent: "center",
         backgroundColor: "#1a1a1a",
-        overflow: "hidden", // Added this
+        overflow: "hidden",
       }}
     >
       <div
@@ -67,6 +93,14 @@ export const Game = () => {
       >
         <canvas id="game-canvas" ref={gameRef} />
       </div>
+
+      {engineRef.current?.player && (
+        <CharacterMenu
+          player={engineRef.current.player}
+          isOpen={isMenuOpen}
+          onClose={() => setIsMenuOpen(false)}
+        />
+      )}
     </div>
   );
 };

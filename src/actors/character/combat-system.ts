@@ -2,7 +2,7 @@ import * as ex from "excalibur";
 import { CollisionGroups, SCALE } from "../config";
 import type { Character } from "./character";
 import type { AnimationController } from "./animation-controller";
-import type { InventoryItem } from "./inventory";
+import type { WeaponItem } from "./types";
 
 export class CombatSystem {
   private canDealDamage: boolean = false;
@@ -31,7 +31,7 @@ export class CombatSystem {
     this.onDamageDealtCallback = callback;
   }
 
-  public attack(equippedWeapon: InventoryItem | null, energy: number): number {
+  public attack(equippedWeapon: WeaponItem | null, energy: number): number {
     if (
       this.animController.currentState === "attacking" ||
       this.animController.currentState === "hurt"
@@ -80,7 +80,7 @@ export class CombatSystem {
     return newMana;
   }
 
-  private performWeaponAttack(weapon: InventoryItem) {
+  private performWeaponAttack(weapon: WeaponItem) {
     const attackAnim = this.animController.attackAnim;
     if (!attackAnim) return;
 

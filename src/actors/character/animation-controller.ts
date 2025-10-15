@@ -11,7 +11,7 @@ import {
   SPRITE_BUFFER,
 } from "../config";
 import type { Character } from "./character";
-import type { InventoryItem } from "./inventory";
+import type { WeaponItem } from "./types";
 
 export type AnimationState =
   | "idle"
@@ -41,7 +41,7 @@ export class AnimationController {
 
   private weaponActor?: ex.Actor;
   public weaponSprites?: Map<string, ex.Animation>;
-  private equippedWeapon: InventoryItem | null = null;
+  private equippedWeapon: WeaponItem | null = null;
 
   private character: Character;
   private sex: "male" | "female";
@@ -262,7 +262,7 @@ export class AnimationController {
   }
 
   // Weapon sprite management
-  public loadWeaponSprites(weapon: InventoryItem) {
+  public loadWeaponSprites(weapon: WeaponItem) {
     if (!weapon.spriteSheet) return;
 
     this.weaponSprites = new Map();
@@ -325,7 +325,7 @@ export class AnimationController {
     );
   }
 
-  public equipWeapon(weapon: InventoryItem) {
+  public equipWeapon(weapon: WeaponItem) {
     if (this.weaponActor) {
       this.character.removeChild(this.weaponActor);
       this.weaponActor.kill();
@@ -352,7 +352,7 @@ export class AnimationController {
     this.weaponSprites = undefined;
   }
 
-  public getEquippedWeapon(): InventoryItem | null {
+  public getEquippedWeapon(): WeaponItem | null {
     return this.equippedWeapon;
   }
 

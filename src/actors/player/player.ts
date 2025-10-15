@@ -1,6 +1,10 @@
 import * as ex from "excalibur";
 import { Character } from "../character/character";
-import type { AppearanceOptions } from "../character/types";
+import type {
+  AppearanceOptions,
+  EquipmentItem,
+  EquipmentSlot,
+} from "../character/types";
 import type { GameEngine } from "../../game-engine";
 
 export class Player extends Character {
@@ -133,9 +137,9 @@ export class Player extends Character {
       this.unequipWeapon();
     }
 
-    if (kb.wasPressed(ex.Keys.Key2)) {
-      this.equipWeapon(1);
-    }
+    // if (kb.wasPressed(ex.Keys.Key2)) {
+    //   this.equipWeapon(1);
+    // }
   }
 
   getTemperature(): number {
@@ -161,6 +165,21 @@ export class Player extends Character {
 
   updateThirst(amount: number) {
     this.thirst = Math.max(0, Math.min(100, this.thirst + amount));
+  }
+
+  public unEquipItem(slot: EquipmentSlot): void {
+    const previousItem = this.equipmentManager.unequip(slot);
+    if (previousItem) {
+      this.inventory.addItem(0, previousItem);
+    }
+  }
+
+  public equipItem(item: EquipmentItem): void {
+    const previousItem = this.equipmentManager.equip(item);
+    this.inventory.removeItemByReference(item);
+    if (previousItem) {
+      this.inventory.addItem(0, previousItem);
+    }
   }
 
   protected updateEnergy(deltaSeconds: number) {

@@ -1,12 +1,15 @@
 import * as ex from "excalibur";
 import { Player } from "../actors/player/player";
 import { GameEngine } from "../game-engine";
-import type { AppearanceOptions } from "../actors/character/types";
+import type { AppearanceOptions, WeaponItem } from "../actors/character/types";
 import type { SceneConfig } from "./types";
 import { CollisionGroups } from "../actors/config";
 import { Enemy } from "../actors/enemy/enemy";
 import type { EnemyConfig } from "../actors/enemy/types";
 import { GroundTileManager } from "./ground-tile-manager";
+
+import { v4 as uuid } from "uuid";
+
 import {
   WeaponResources,
   BackgroundResources,
@@ -151,18 +154,23 @@ export class GameMapScene extends ex.Scene {
 
     const weaponSpriteSheet =
       enemyAppearance.sex === "male"
-        ? WeaponResources.male.sword_1
-        : WeaponResources.female.sword_1;
+        ? WeaponResources.male.iron_sword
+        : WeaponResources.female.iron_sword;
 
-    enemy.inventory.addItem(1, {
-      id: "sword_1",
+    const ironSword: WeaponItem = {
+      id: uuid(),
+      iconUrl: "/assets/icons/weapons/iron_sword_icon.png",
       name: "Enemy Sword",
       type: "weapon",
+      slot: "weapon",
       spriteSheet: weaponSpriteSheet,
       damage: 15,
       reach: 25,
-    });
-    enemy.equipWeapon(1);
+    };
+
+    // enemy.inventory.addItem(1, ironSword);
+    enemy.equipItem(ironSword);
+    // enemy.equipWeapon(1);
   }
 
   protected transitionTo(
