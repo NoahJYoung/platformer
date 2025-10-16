@@ -8,13 +8,44 @@ interface InventoryPanelProps {
   player: Player;
   onInventoryChange: () => void;
   renderItemIcon: (item: InventoryItem) => React.ReactNode;
+  onSelectItem: (item: InventoryItem) => void;
+  selectedItem: InventoryItem | null;
 }
 
 export const InventoryPanel = ({
   player,
   onInventoryChange,
   renderItemIcon,
+  onSelectItem,
+  selectedItem,
 }: InventoryPanelProps) => {
+  const isSelected = (item: InventoryItem | null) =>
+    !!item && selectedItem === item;
+
+  const handleClick = (item: InventoryItem | null, slot: number) => {
+    if (!item) {
+      if (selectedItem) {
+        const oldSlot = player.inventory.getSlotFromItem(selectedItem);
+        if (oldSlot !== -1) {
+          player.inventory.moveItemToSlot(oldSlot, slot);
+          onInventoryChange();
+        } else if (
+          ["armor", "weapon"].includes(selectedItem.type) &&
+          player.equipmentManager
+            .getAllEquipped()
+            .has((selectedItem as EquipmentItem).slot)
+        ) {
+          player.unEquipItem((selectedItem as EquipmentItem).slot);
+          onInventoryChange();
+        }
+      }
+      return;
+    }
+    if (!isSelected(item)) {
+      onSelectItem(item);
+    }
+  };
+
   const handleEquipFromInventory = (slot: number) => {
     const item = player.inventory.getItem(slot);
     if (!item) return;
@@ -27,9 +58,12 @@ export const InventoryPanel = ({
     <div
       style={{
         background: "#1a1a1a",
-        padding: "20px",
+        padding: "12px",
         borderRadius: "6px",
         border: "1px solid #333",
+        width: 220,
+        display: "flex",
+        flexDirection: "column",
       }}
     >
       <h2
@@ -44,25 +78,27 @@ export const InventoryPanel = ({
         Inventory
       </h2>
       <div
+        className="hide-scrollbar"
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(4, 1fr)",
           gap: "8px",
+          maxHeight: "260px",
+          overflow: "auto",
         }}
       >
         {Array.from({ length: player.inventory.maxSlots }).map((_, i) => {
           const item = player.inventory.getItem(i);
           const equipmentItem = item;
           const canEquip = (equipmentItem as EquipmentItem)?.slot;
-          const hasItem = !!item;
 
           return (
             <div
               key={i}
               style={{
                 aspectRatio: "1",
-                background: hasItem ? "#2a4a2a" : "#333",
-                border: `2px solid ${hasItem ? "#4caf50" : "#555"}`,
+                background: isSelected(item) ? "#2a4a2a" : "#333",
+                border: `1px solid ${isSelected(item) ? "#4caf50" : "#555"}`,
                 borderRadius: "4px",
                 display: "flex",
                 flexDirection: "column",
@@ -73,11 +109,11 @@ export const InventoryPanel = ({
                 textAlign: "center",
                 padding: "6px",
                 transition: "all 0.2s",
-                height: "48px",
-                width: "48px",
+                height: "42px",
+                width: "42px",
                 gap: "4px",
               }}
-              onClick={() => {}}
+              onClick={() => handleClick(item, i)}
               onDoubleClick={() => canEquip && handleEquipFromInventory(i)}
               title={
                 item
@@ -85,33 +121,21 @@ export const InventoryPanel = ({
                   : "Empty slot"
               }
               onMouseOver={(e) => {
-                e.currentTarget.style.background = hasItem
+                e.currentTarget.style.background = isSelected(item)
                   ? "#345a34"
                   : "#3a3a3a";
                 e.currentTarget.style.borderColor = "#777";
               }}
               onMouseOut={(e) => {
-                e.currentTarget.style.background = hasItem ? "#2a4a2a" : "#333";
-                e.currentTarget.style.borderColor = hasItem
+                e.currentTarget.style.background = isSelected(item)
+                  ? "#2a4a2a"
+                  : "#333";
+                e.currentTarget.style.borderColor = isSelected(item)
                   ? "#4caf50"
                   : "#555";
               }}
             >
-              {item && (
-                <>
-                  {renderItemIcon(item)}
-                  <span
-                    style={{
-                      wordWrap: "break-word",
-                      fontSize: "9px",
-                      lineHeight: "1.1",
-                      marginTop: "2px",
-                    }}
-                  >
-                    {item.name}
-                  </span>
-                </>
-              )}
+              {item && renderItemIcon(item)}
             </div>
           );
         })}

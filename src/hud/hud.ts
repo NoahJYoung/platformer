@@ -12,10 +12,17 @@ export class HUD extends ex.ScreenElement {
   private readonly thermometerWidth = 100;
   private readonly thermometerHeight = 8;
 
+  private readonly segmentBarWidth = 80;
+  private readonly segmentBarHeight = 6;
+  private readonly segmentCount = 8;
+  private readonly segmentGap = 2;
+
   private healthBarCanvas: ex.Canvas | null = null;
   private energyBarCanvas: ex.Canvas | null = null;
   private manaBarCanvas: ex.Canvas | null = null;
   private temperatureCanvas: ex.Canvas | null = null;
+  private hungerBarCanvas: ex.Canvas | null = null;
+  private thirstBarCanvas: ex.Canvas | null = null;
 
   private healthText: ex.Text | null = null;
   private energyText: ex.Text | null = null;
@@ -55,6 +62,18 @@ export class HUD extends ex.ScreenElement {
       width: this.thermometerWidth + 10,
       height: this.thermometerHeight + 10,
       draw: (ctx) => this.drawTemperature(ctx),
+    });
+
+    this.hungerBarCanvas = new ex.Canvas({
+      width: this.segmentBarWidth + 10,
+      height: this.segmentBarHeight + 10,
+      draw: (ctx) => this.drawHungerBar(ctx),
+    });
+
+    this.thirstBarCanvas = new ex.Canvas({
+      width: this.segmentBarWidth + 10,
+      height: this.segmentBarHeight + 10,
+      draw: (ctx) => this.drawThirstBar(ctx),
     });
 
     this.healthText = new ex.Text({
@@ -129,6 +148,15 @@ export class HUD extends ex.ScreenElement {
             this.thermometerWidth + 5,
             this.barSpacing * 3 + this.thermometerHeight / 2 - 4
           ),
+        },
+        {
+          graphic: this.hungerBarCanvas,
+          offset: ex.vec(0, this.barSpacing * 3 + 14),
+        },
+
+        {
+          graphic: this.thirstBarCanvas,
+          offset: ex.vec(0, this.barSpacing * 3 + 22),
         },
       ],
     });
@@ -253,7 +281,6 @@ export class HUD extends ex.ScreenElement {
     );
     const fillWidth = this.barWidth * percentage;
 
-    // Background
     this.drawRoundedRect(
       ctx,
       0,
@@ -265,7 +292,6 @@ export class HUD extends ex.ScreenElement {
     ctx.fillStyle = "#222";
     ctx.fill();
 
-    // Fill
     if (fillWidth > 0) {
       ctx.save();
       this.drawRoundedRect(
@@ -300,7 +326,6 @@ export class HUD extends ex.ScreenElement {
     );
     const fillWidth = this.barWidth * percentage;
 
-    // Background
     this.drawRoundedRect(
       ctx,
       0,
@@ -312,7 +337,6 @@ export class HUD extends ex.ScreenElement {
     ctx.fillStyle = "#222";
     ctx.fill();
 
-    // Fill
     if (fillWidth > 0) {
       ctx.save();
       this.drawRoundedRect(
@@ -370,8 +394,52 @@ export class HUD extends ex.ScreenElement {
     }
   }
 
+  private drawSegmentedBar(
+    ctx: CanvasRenderingContext2D,
+    value: number,
+    maxValue: number,
+    color: string
+  ) {
+    const segmentWidth =
+      (this.segmentBarWidth - (this.segmentCount - 1) * this.segmentGap) /
+      this.segmentCount;
+    const filledSegments = Math.ceil((value / maxValue) * this.segmentCount);
+
+    for (let i = 0; i < this.segmentCount; i++) {
+      const x = i * (segmentWidth + this.segmentGap);
+
+      this.drawRoundedRect(ctx, x, 0, segmentWidth, this.segmentBarHeight, 2);
+
+      if (i < filledSegments) {
+        ctx.fillStyle = color;
+      } else {
+        ctx.fillStyle = "#333";
+      }
+      ctx.fill();
+
+      ctx.strokeStyle = "#666";
+      ctx.lineWidth = 0.5;
+      ctx.stroke();
+    }
+  }
+
+  private drawHungerBar(ctx: CanvasRenderingContext2D) {
+    const player = this.engine.player;
+    const hunger = player.getHunger();
+
+    this.drawSegmentedBar(ctx, hunger, 100, "#FFFACD");
+  }
+
+  private drawThirstBar(ctx: CanvasRenderingContext2D) {
+    const player = this.engine.player;
+    const thirst = player.getThirst();
+
+    this.drawSegmentedBar(ctx, thirst, 100, "#4A90E2");
+  }
+
   onPreUpdate() {
     const player = this.engine.player;
+
     if (
       !player ||
       !this.healthText ||
@@ -381,7 +449,9 @@ export class HUD extends ex.ScreenElement {
       !this.healthBarCanvas ||
       !this.energyBarCanvas ||
       !this.manaBarCanvas ||
-      !this.temperatureCanvas
+      !this.temperatureCanvas ||
+      !this.hungerBarCanvas ||
+      !this.thirstBarCanvas
     )
       return;
 
@@ -404,5 +474,7 @@ export class HUD extends ex.ScreenElement {
     this.energyBarCanvas.flagDirty();
     this.manaBarCanvas.flagDirty();
     this.temperatureCanvas.flagDirty();
+    this.hungerBarCanvas.flagDirty();
+    this.thirstBarCanvas.flagDirty();
   }
 }

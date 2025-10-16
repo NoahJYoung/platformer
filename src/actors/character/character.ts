@@ -1,11 +1,11 @@
 import * as ex from "excalibur";
 import { Inventory } from "./inventory";
-import { CollisionGroups, SCALE } from "../config";
+import { CollisionGroups, SCALE, SPRITE_WIDTH } from "../config";
 import { AnimationController } from "./animation-controller";
 import { CombatSystem } from "./combat-system";
 import { StatsSystem } from "./stats-system";
 import { MagicProjectile } from "./magic-projectile";
-import type { EquipmentItem, InventoryItem } from "./types";
+import type { ArmorItem, EquipmentItem, InventoryItem } from "./types";
 import { EquipmentManager } from "./equipment-manager";
 
 export interface CharacterAppearanceOptions {
@@ -33,7 +33,7 @@ export abstract class Character extends ex.Actor {
   public skinTone: 1 | 2 | 3 | 4 | 5;
   public hairStyle: 1 | 2 | 3 | 4 | 5;
 
-  protected animController: AnimationController;
+  public animController: AnimationController;
   protected combatSystem: CombatSystem;
   protected statsSystem: StatsSystem;
 
@@ -134,17 +134,6 @@ export abstract class Character extends ex.Actor {
     });
   }
 
-  // public equipWeapon(slot: number) {
-  //   const item = this.inventory.getItem(slot);
-  //   if (item && item.type === "weapon") {
-  //     this.animController.equipWeapon(item);
-  //   }
-  // }
-
-  // public unequipWeapon() {
-  //   this.animController.unequipWeapon();
-  // }
-
   public equipItem(item: EquipmentItem) {
     const unequippedItem = this.equipmentManager.equip(item);
     if (unequippedItem) {
@@ -152,11 +141,18 @@ export abstract class Character extends ex.Actor {
     }
   }
 
-  public unequipItem() {
-    this.animController.unequipWeapon();
+  public unequipItem(slot: EquipmentItem["slot"]) {
+    const unequippedItem = this.equipmentManager.unequip(slot);
+    if (unequippedItem) {
+      this.inventory.addItem(0, unequippedItem);
+    }
   }
 
-  public getEquippedItem(): InventoryItem | null {
+  public getEquippedArmor(slot: ArmorItem["slot"]): ArmorItem | null {
+    return this.equipmentManager.getEquippedArmor(slot);
+  }
+
+  public getEquippedWeapon(): InventoryItem | null {
     return this.animController.getEquippedWeapon();
   }
 
@@ -215,6 +211,55 @@ export abstract class Character extends ex.Actor {
     }
   }
 
+  public createDisplayClone(): ex.Actor {
+    const originalState = this.animController.currentState;
+    const originalFacing = this.animController.facingRight;
+
+    this.animController.currentState = "idle";
+    this.animController.facingRight = false;
+    this.animController.updateAnimation(ex.vec(0, 0));
+    this.animController.updateWeaponAnimation();
+
+    const displayActor = new ex.Actor({
+      pos: this.pos.clone(),
+      width: this.width,
+      height: this.height,
+      anchor: this.anchor.clone(),
+      offset: ex.vec(-(SPRITE_WIDTH * SCALE) / 2, 0),
+      scale: this.scale.clone(),
+      collisionType: ex.CollisionType.PreventCollision,
+    });
+
+    const currentGraphic = this.graphics.current;
+    if (currentGraphic) {
+      displayActor.graphics.use(currentGraphic.clone());
+    }
+    displayActor.graphics.flipHorizontal = false;
+
+    this.children.forEach((child) => {
+      const childClone = new ex.Actor({
+        pos: child.pos.clone(),
+        offset: child.offset.clone(),
+        collisionType: ex.CollisionType.PreventCollision,
+      });
+
+      const childGraphic = child.graphics.current;
+      if (childGraphic) {
+        childClone.graphics.use(childGraphic.clone());
+        childClone.graphics.flipHorizontal = false;
+      }
+
+      displayActor.addChild(childClone);
+    });
+
+    this.animController.currentState = originalState;
+    this.animController.facingRight = originalFacing;
+    this.animController.updateAnimation(this.vel);
+    this.animController.updateWeaponAnimation();
+
+    return displayActor;
+  }
+
   public attack() {
     const equippedWeapon = this.equipmentManager.getEquippedWeapon();
     const oldEnergy = this.energy;
@@ -248,7 +293,7 @@ export abstract class Character extends ex.Actor {
 
   private createMagicProjectile(spellType: string) {
     const direction = this.facingRight ? 1 : -1;
-    const spawnOffset = 10; // Distance in front of player
+    const spawnOffset = 10;
 
     const projectile = new MagicProjectile(
       ex.vec(this.pos.x + spawnOffset * direction, this.pos.y),

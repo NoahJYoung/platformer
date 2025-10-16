@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { GameEngine } from "./game-engine";
 import { CharacterMenu } from "./react-components/character-menu";
 
+import "./globals.css";
+
 export const Game = () => {
   const gameRef = useRef(null);
   const engineRef = useRef<GameEngine | null>(null);
@@ -25,12 +27,10 @@ export const Game = () => {
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
-      // Toggle menu with C or I
       if (e.key === "c" || e.key === "i") {
         setIsMenuOpen((prev) => !prev);
       }
 
-      // Close menu with Escape
       if (e.key === "Escape" && isMenuOpen) {
         setIsMenuOpen(false);
       }
@@ -40,7 +40,6 @@ export const Game = () => {
     return () => window.removeEventListener("keydown", handleKeyPress);
   }, [isMenuOpen]);
 
-  // Pause game when menu is open
   useEffect(() => {
     if (engineRef.current) {
       if (isMenuOpen) {
@@ -99,6 +98,7 @@ export const Game = () => {
           player={engineRef.current.player}
           isOpen={isMenuOpen}
           onClose={() => setIsMenuOpen(false)}
+          engineRef={engineRef}
         />
       )}
     </div>

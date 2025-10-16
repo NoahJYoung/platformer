@@ -11,7 +11,7 @@ import {
   SPRITE_BUFFER,
 } from "../config";
 import type { Character } from "./character";
-import type { WeaponItem } from "./types";
+import type { WeaponItem, ArmorItem } from "./types";
 
 export type AnimationState =
   | "idle"
@@ -23,6 +23,16 @@ export type AnimationState =
   | "dodging"
   | "hurt"
   | "dead";
+
+interface EquippedArmor {
+  legs?: ArmorItem;
+  body?: ArmorItem;
+  head?: ArmorItem;
+  feet?: ArmorItem;
+  gloves?: ArmorItem;
+  mask?: ArmorItem;
+  back?: ArmorItem;
+}
 
 export class AnimationController {
   // Animation states
@@ -39,9 +49,10 @@ export class AnimationController {
   public currentState: AnimationState = "idle";
   public facingRight: boolean;
 
-  private weaponActor?: ex.Actor;
+  public weaponActor?: ex.Actor;
   public weaponSprites?: Map<string, ex.Animation>;
   private equippedWeapon: WeaponItem | null = null;
+  private equippedArmor: EquippedArmor = {};
 
   private character: Character;
   private sex: "male" | "female";
@@ -71,6 +82,7 @@ export class AnimationController {
       frameDuration: number,
       strategy: ex.AnimationStrategy = ex.AnimationStrategy.Loop
     ): ex.Animation => {
+      // Load skin sprite sheet
       const skinSheet = ex.SpriteSheet.fromImageSource({
         image: PlayerResources[this.sex].skin[`skin_${this.skinTone}`],
         grid: {
@@ -85,6 +97,7 @@ export class AnimationController {
         },
       });
 
+      // Load hair sprite sheet
       const hairSheet = ex.SpriteSheet.fromImageSource({
         image: PlayerResources[this.sex].hair[`hair_${this.hairStyle}`],
         grid: {
@@ -99,33 +112,148 @@ export class AnimationController {
         },
       });
 
+      // Helper function to load armor sprite sheet
+      const loadArmorSheet = (armorItem: ArmorItem | undefined) => {
+        if (!armorItem?.spriteSheet) return null;
+
+        return ex.SpriteSheet.fromImageSource({
+          image: armorItem.spriteSheet,
+          grid: {
+            rows: 7,
+            columns: frameCount,
+            spriteWidth: STANDARD_SPRITE_WIDTH,
+            spriteHeight: SPRITE_HEIGHT - SPRITE_BUFFER,
+          },
+          spacing: {
+            originOffset: { x: LEFT_MARGIN, y: SPRITE_BUFFER },
+            margin: { x: FRAME_SPACING, y: SPRITE_BUFFER },
+          },
+        });
+      };
+
+      // Load armor sheets if equipped
+      const legsSheet = loadArmorSheet(this.equippedArmor.legs);
+      const bodySheet = loadArmorSheet(this.equippedArmor.body);
+      const headSheet = loadArmorSheet(this.equippedArmor.head);
+      const feetSheet = loadArmorSheet(this.equippedArmor.feet);
+      const glovesSheet = loadArmorSheet(this.equippedArmor.gloves);
+      const maskSheet = loadArmorSheet(this.equippedArmor.mask);
+      const backSheet = loadArmorSheet(this.equippedArmor.back);
+
       const frames = ex.range(0, frameCount - 1).map((frameIndex) => {
         const skinSprite = skinSheet.getSprite(frameIndex, row);
         const hairSprite = hairSheet.getSprite(frameIndex, row);
 
-        if (skinSprite && hairSprite) {
-          skinSprite.scale = scale;
-          hairSprite.scale = scale;
-
-          const xOffset = 24 * SCALE;
-          const yOffset = -8 * SCALE + (SPRITE_BUFFER / 2) * SCALE;
-          const members: Array<{ graphic: ex.Graphic; offset: ex.Vector }> = [
-            { graphic: skinSprite, offset: ex.vec(xOffset, yOffset) },
-            { graphic: hairSprite, offset: ex.vec(xOffset, yOffset) },
-          ];
-
-          const group = new ex.GraphicsGroup({ members });
-          return { graphic: group, duration: frameDuration };
+        if (!skinSprite) {
+          throw new Error(
+            `Failed to create sprite at frame ${frameIndex}, row ${row}`
+          );
         }
 
-        if (skinSprite) {
-          skinSprite.scale = scale;
-          return { graphic: skinSprite, duration: frameDuration };
+        skinSprite.scale = scale;
+        if (hairSprite) hairSprite.scale = scale;
+
+        const xOffset = 24 * SCALE;
+        const yOffset = -8 * SCALE + (SPRITE_BUFFER / 2) * SCALE;
+
+        // Build layers in correct order (bottom to top)
+        const members: Array<{ graphic: ex.Graphic; offset: ex.Vector }> = [];
+
+        // 1. Back layer (behind everything)
+        if (backSheet) {
+          const backSprite = backSheet.getSprite(frameIndex, row);
+          if (backSprite) {
+            backSprite.scale = scale;
+            members.push({
+              graphic: backSprite,
+              offset: ex.vec(xOffset, yOffset),
+            });
+          }
         }
 
-        throw new Error(
-          `Failed to create sprite at frame ${frameIndex}, row ${row}`
-        );
+        // 2. Skin (base layer)
+        members.push({ graphic: skinSprite, offset: ex.vec(xOffset, yOffset) });
+
+        // 3. Legs
+        if (legsSheet) {
+          const legsSprite = legsSheet.getSprite(frameIndex, row);
+          if (legsSprite) {
+            legsSprite.scale = scale;
+            members.push({
+              graphic: legsSprite,
+              offset: ex.vec(xOffset, yOffset),
+            });
+          }
+        }
+
+        // 4. Body (note: dresses will render over legs naturally due to order)
+        if (bodySheet) {
+          const bodySprite = bodySheet.getSprite(frameIndex, row);
+          if (bodySprite) {
+            bodySprite.scale = scale;
+            members.push({
+              graphic: bodySprite,
+              offset: ex.vec(xOffset, yOffset),
+            });
+          }
+        }
+
+        // 5. Feet
+        if (feetSheet) {
+          const feetSprite = feetSheet.getSprite(frameIndex, row);
+          if (feetSprite) {
+            feetSprite.scale = scale;
+            members.push({
+              graphic: feetSprite,
+              offset: ex.vec(xOffset, yOffset),
+            });
+          }
+        }
+
+        // 6. Gloves
+        if (glovesSheet) {
+          const glovesSprite = glovesSheet.getSprite(frameIndex, row);
+          if (glovesSprite) {
+            glovesSprite.scale = scale;
+            members.push({
+              graphic: glovesSprite,
+              offset: ex.vec(xOffset, yOffset),
+            });
+          }
+        }
+
+        // 7. Hair (or Head armor if equipped - head replaces hair)
+        if (headSheet) {
+          const headSprite = headSheet.getSprite(frameIndex, row);
+          if (headSprite) {
+            headSprite.scale = scale;
+            members.push({
+              graphic: headSprite,
+              offset: ex.vec(xOffset, yOffset),
+            });
+          }
+        } else if (hairSprite) {
+          // Only show hair if no head armor
+          members.push({
+            graphic: hairSprite,
+            offset: ex.vec(xOffset, yOffset),
+          });
+        }
+
+        // 8. Mask (on top of everything except weapon)
+        if (maskSheet) {
+          const maskSprite = maskSheet.getSprite(frameIndex, row);
+          if (maskSprite) {
+            maskSprite.scale = scale;
+            members.push({
+              graphic: maskSprite,
+              offset: ex.vec(xOffset, yOffset),
+            });
+          }
+        }
+
+        const group = new ex.GraphicsGroup({ members });
+        return { graphic: group, duration: frameDuration };
       });
 
       return new ex.Animation({ frames, strategy });
@@ -145,6 +273,92 @@ export class AnimationController {
       100,
       ex.AnimationStrategy.Freeze
     );
+  }
+
+  // Armor equipment methods
+  public equipArmor(armor: ArmorItem) {
+    switch (armor.slot) {
+      case "legs":
+        this.equippedArmor.legs = armor;
+        break;
+      case "body":
+        this.equippedArmor.body = armor;
+        break;
+      case "helmet":
+        this.equippedArmor.head = armor;
+        break;
+      case "boots":
+        this.equippedArmor.feet = armor;
+        break;
+      case "gloves":
+        this.equippedArmor.gloves = armor;
+        break;
+      case "mask":
+        this.equippedArmor.mask = armor;
+        break;
+      case "back":
+        this.equippedArmor.back = armor;
+        break;
+    }
+
+    // Rebuild animations with new armor
+    this.setupAnimations();
+
+    // Reapply current animation
+    this.updateAnimation(this.character.vel);
+  }
+
+  public unequipArmor(slot: ArmorItem["slot"]) {
+    switch (slot) {
+      case "legs":
+        this.equippedArmor.legs = undefined;
+        break;
+      case "body":
+        this.equippedArmor.body = undefined;
+        break;
+      case "helmet":
+        this.equippedArmor.head = undefined;
+        break;
+      case "boots":
+        this.equippedArmor.feet = undefined;
+        break;
+      case "gloves":
+        this.equippedArmor.gloves = undefined;
+        break;
+      case "mask":
+        this.equippedArmor.mask = undefined;
+        break;
+      case "back":
+        this.equippedArmor.back = undefined;
+        break;
+    }
+
+    // Rebuild animations without armor
+    this.setupAnimations();
+
+    // Reapply current animation
+    this.updateAnimation(this.character.vel);
+  }
+
+  public getEquippedArmor(slot: ArmorItem["slot"]): ArmorItem | undefined {
+    switch (slot) {
+      case "legs":
+        return this.equippedArmor.legs;
+      case "body":
+        return this.equippedArmor.body;
+      case "helmet":
+        return this.equippedArmor.head;
+      case "boots":
+        return this.equippedArmor.feet;
+      case "gloves":
+        return this.equippedArmor.gloves;
+      case "mask":
+        return this.equippedArmor.mask;
+      case "back":
+        return this.equippedArmor.back;
+      default:
+        return undefined;
+    }
   }
 
   public updateAnimation(velocity: ex.Vector) {

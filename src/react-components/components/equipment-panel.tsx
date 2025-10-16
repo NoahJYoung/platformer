@@ -1,6 +1,7 @@
 import React from "react";
 import type { Player } from "../../actors/player/player";
 import type {
+  EquipmentItem,
   EquipmentSlot,
   InventoryItem,
 } from "../../actors/character/types";
@@ -10,16 +11,45 @@ interface EquipmentPanelProps {
   player: Player;
   onEquipmentChange: () => void;
   renderItemIcon: (item: InventoryItem) => React.ReactNode;
+  onSelectItem: (item: InventoryItem) => void;
+  onDeselectItem: () => void;
+  selectedItem: InventoryItem | null;
 }
 
 export const EquipmentPanel: React.FC<EquipmentPanelProps> = ({
   player,
   onEquipmentChange,
   renderItemIcon,
+  selectedItem,
+  onDeselectItem,
+  onSelectItem,
 }) => {
+  const isSelected = (item: InventoryItem | null) =>
+    !!item && selectedItem?.id === item.id;
+
   const handleUnequip = (slot: EquipmentSlot) => {
+    const item = player.equipmentManager.getEquipped(slot);
     player.unEquipItem(slot);
+    if (isSelected(item)) {
+      onDeselectItem();
+    }
     onEquipmentChange();
+  };
+
+  const handleClick = (slot: EquipmentSlot) => {
+    const item = player.equipmentManager.getEquipped(slot);
+    if (!item) {
+      if (!!selectedItem && ["armor", "weapon"].includes(selectedItem.type)) {
+        if ((selectedItem as EquipmentItem).slot === slot) {
+          player.equipItem(selectedItem as EquipmentItem);
+          onEquipmentChange();
+        }
+      }
+      return;
+    }
+    if (!isSelected(item)) {
+      onSelectItem(item);
+    }
   };
 
   const renderEquipmentPlaceholder = (slot: EquipmentSlot) => {
@@ -28,8 +58,8 @@ export const EquipmentPanel: React.FC<EquipmentPanelProps> = ({
         src={getPlaceholderImageUrl(slot)}
         alt={slot}
         style={{
-          width: "48px",
-          height: "48px",
+          width: "32px",
+          height: "32px",
           borderRadius: "8px",
           opacity: "0.1",
           imageRendering: "pixelated",
@@ -41,26 +71,32 @@ export const EquipmentPanel: React.FC<EquipmentPanelProps> = ({
 
   const renderSlot = (slot: EquipmentSlot, label: string) => {
     const equipped = player.equipmentManager.getEquipped(slot);
-    const hasItem = !!equipped;
+
+    const isActiveSlot =
+      equipped ||
+      (!!selectedItem && (selectedItem as EquipmentItem).slot === slot);
 
     return (
       <div
         key={slot}
         style={{
-          background: hasItem ? "#2a4a2a" : "#333",
+          background: isSelected(equipped) ? "#2a4a2a" : "#333",
           padding: "4px",
-          border: `1px solid ${hasItem ? "#4caf50" : "#555"}`,
+          border: `1px solid ${isSelected(equipped) ? "#4caf50" : "#555"}`,
           borderRadius: "4px",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
           gap: "4px",
-          cursor: equipped ? "pointer" : "default",
+          cursor: isActiveSlot ? "pointer" : "default",
           transition: "all 0.2s",
-          height: "48px",
-          width: "48px",
+          height: "42px",
+          width: "42px",
+          marginLeft: "auto",
+          marginRight: "auto",
         }}
+        onClick={() => handleClick(slot)}
         onDoubleClick={() => equipped && handleUnequip(slot)}
         title={
           equipped
@@ -68,14 +104,18 @@ export const EquipmentPanel: React.FC<EquipmentPanelProps> = ({
             : `Empty ${label} slot`
         }
         onMouseOver={(e) => {
-          if (equipped) {
+          if (isActiveSlot) {
             e.currentTarget.style.background = "#345a34";
             e.currentTarget.style.borderColor = "#777";
           }
         }}
         onMouseOut={(e) => {
-          e.currentTarget.style.background = hasItem ? "#2a4a2a" : "#333";
-          e.currentTarget.style.borderColor = hasItem ? "#4caf50" : "#555";
+          e.currentTarget.style.background = isSelected(equipped)
+            ? "#2a4a2a"
+            : "#333";
+          e.currentTarget.style.borderColor = isSelected(equipped)
+            ? "#4caf50"
+            : "#555";
         }}
       >
         <div
@@ -99,9 +139,13 @@ export const EquipmentPanel: React.FC<EquipmentPanelProps> = ({
     <div
       style={{
         background: "#1a1a1a",
-        padding: "20px",
+        padding: "12px",
         borderRadius: "6px",
         border: "1px solid #333",
+        width: 220,
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
       }}
     >
       <h2
@@ -121,7 +165,6 @@ export const EquipmentPanel: React.FC<EquipmentPanelProps> = ({
           gridTemplateColumns: "1fr 1fr 1fr",
           gap: "8px",
           maxWidth: "400px",
-          margin: "0 auto",
         }}
       >
         <div style={{ visibility: "hidden" }} />
@@ -129,8 +172,8 @@ export const EquipmentPanel: React.FC<EquipmentPanelProps> = ({
         <div style={{ visibility: "hidden" }} />
 
         {renderSlot("back", "Cape")}
-        {renderSlot("mask", "Mask")}
         {renderSlot("amulet", "Amulet")}
+        {renderSlot("mask", "Mask")}
 
         {renderSlot("weapon", "Weapon")}
         {renderSlot("body", "Body")}

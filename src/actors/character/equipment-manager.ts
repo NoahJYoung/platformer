@@ -1,5 +1,10 @@
 import type { AnimationController } from "./animation-controller";
-import type { EquipmentItem, EquipmentSlot, WeaponItem } from "./types";
+import type {
+  EquipmentItem,
+  EquipmentSlot,
+  WeaponItem,
+  ArmorItem,
+} from "./types";
 
 export class EquipmentManager {
   private slots: Map<EquipmentSlot, EquipmentItem | null> = new Map();
@@ -18,6 +23,7 @@ export class EquipmentManager {
       "ring1",
       "ring2",
       "amulet",
+      "back",
     ];
     allSlots.forEach((slot) => this.slots.set(slot, null));
   }
@@ -25,9 +31,13 @@ export class EquipmentManager {
   equip(item: EquipmentItem): EquipmentItem | null {
     const previousItem = this.slots.get(item.slot) || null;
     this.slots.set(item.slot, item);
+
     if (item.type === "weapon") {
       this.animController.equipWeapon(item as WeaponItem);
+    } else if (item.type === "armor") {
+      this.animController.equipArmor(item as ArmorItem);
     }
+
     return previousItem;
   }
 
@@ -37,6 +47,8 @@ export class EquipmentManager {
 
     if (item?.type === "weapon") {
       this.animController.unequipWeapon();
+    } else if (item?.type === "armor") {
+      this.animController.unequipArmor((item as ArmorItem).slot);
     }
 
     return item;
@@ -49,6 +61,11 @@ export class EquipmentManager {
   getEquippedWeapon(): WeaponItem | null {
     const weapon = this.slots.get("weapon");
     return weapon && weapon.type === "weapon" ? (weapon as WeaponItem) : null;
+  }
+
+  getEquippedArmor(slot: ArmorItem["slot"]): ArmorItem | null {
+    const armor = this.slots.get(slot);
+    return armor && armor.type === "armor" ? (armor as ArmorItem) : null;
   }
 
   getAllEquipped(): Map<EquipmentSlot, EquipmentItem | null> {

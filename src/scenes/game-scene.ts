@@ -15,6 +15,7 @@ import {
   BackgroundResources,
   FloorResources,
 } from "../resources";
+import { createItem } from "../items/item-creator";
 
 export class GameMapScene extends ex.Scene {
   public name: string = "unknown";
@@ -152,25 +153,9 @@ export class GameMapScene extends ex.Scene {
 
     this.add(enemy);
 
-    const weaponSpriteSheet =
-      enemyAppearance.sex === "male"
-        ? WeaponResources.male.iron_sword
-        : WeaponResources.female.iron_sword;
+    const ironSword = createItem("iron_sword", enemyAppearance.sex);
 
-    const ironSword: WeaponItem = {
-      id: uuid(),
-      iconUrl: "/assets/icons/weapons/iron_sword_icon.png",
-      name: "Enemy Sword",
-      type: "weapon",
-      slot: "weapon",
-      spriteSheet: weaponSpriteSheet,
-      damage: 15,
-      reach: 25,
-    };
-
-    // enemy.inventory.addItem(1, ironSword);
-    enemy.equipItem(ironSword);
-    // enemy.equipWeapon(1);
+    enemy.equipItem(ironSword as WeaponItem);
   }
 
   protected transitionTo(

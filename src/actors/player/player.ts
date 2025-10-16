@@ -2,8 +2,10 @@ import * as ex from "excalibur";
 import { Character } from "../character/character";
 import type {
   AppearanceOptions,
+  Attribute,
   EquipmentItem,
   EquipmentSlot,
+  Stats,
 } from "../character/types";
 import type { GameEngine } from "../../game-engine";
 
@@ -133,9 +135,9 @@ export class Player extends Character {
       }
     }
 
-    if (kb.wasPressed(ex.Keys.Key1)) {
-      this.unequipWeapon();
-    }
+    // if (kb.wasPressed(ex.Keys.Key1)) {
+    //   this.unequipWeapon();
+    // }
 
     // if (kb.wasPressed(ex.Keys.Key2)) {
     //   this.equipWeapon(1);
@@ -175,11 +177,29 @@ export class Player extends Character {
   }
 
   public equipItem(item: EquipmentItem): void {
+    if (!this.canEquip(item)) {
+      return;
+    }
     const previousItem = this.equipmentManager.equip(item);
     this.inventory.removeItemByReference(item);
     if (previousItem) {
       this.inventory.addItem(0, previousItem);
     }
+  }
+
+  public canEquip(item: EquipmentItem) {
+    if (!!item.requirements && !!Object.keys(item.requirements).length) {
+      return Object.keys(item.requirements).every((attribute) => {
+        const requiredLevel =
+          item.requirements?.[attribute as keyof typeof item.requirements] || 0;
+        const playerLevel = this.statsSystem.getStat(
+          attribute as Attribute
+        ).baseValue;
+
+        return playerLevel >= requiredLevel;
+      });
+    }
+    return true;
   }
 
   protected updateEnergy(deltaSeconds: number) {

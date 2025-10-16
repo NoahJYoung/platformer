@@ -1,4 +1,4 @@
-import type { StatConfig, Stats } from "./types";
+import type { Attribute, StatConfig, Stats } from "./types";
 
 export class StatsSystem {
   private stats: Stats;
@@ -67,6 +67,10 @@ export class StatsSystem {
   public onManaUsed(manaAmount: number): boolean {
     const xpGained = manaAmount * this.xpGainRates.manaUsed;
     return this.addStatXP("intelligence", xpGained);
+  }
+
+  public getStat(attribute: Attribute) {
+    return this.getStats()[attribute];
   }
 
   private addStatXP(

@@ -2,6 +2,7 @@ import { BackgroundResources } from "./background-resources";
 import { FloorResources } from "./floor-resources";
 import { PlayerResources } from "./player-resources";
 import { WeaponResources } from "./weapon-resources";
+import { ClothingResources } from "./clothing-resources";
 
 export const Resources = [
   // Background
@@ -54,7 +55,23 @@ export const Resources = [
   // Weapons
   // Male
   WeaponResources.male.iron_sword,
+  WeaponResources.male.iron_axe,
 
   // Female
   WeaponResources.female.iron_sword,
+  WeaponResources.female.iron_axe,
+
+  // Armor/Clothing
+  // Legs
+  // Male
+  ClothingResources.legs.male.blue_pants,
+  // Body
+  // Male
+  ClothingResources.body.male.blue_shirt,
+  // Back
+  // Male
+  ClothingResources.back.male.small_backpack,
+  // Head
+  // Male
+  ClothingResources.head.male.blue_feather_hat,
 ] as const;

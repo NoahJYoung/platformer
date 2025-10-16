@@ -31,15 +31,18 @@ export type Stats = Record<
 export type Attribute = (typeof Attributes)[keyof typeof Attributes];
 export type Resource = (typeof Resources)[keyof typeof Resources];
 
+export type ItemType = "weapon" | "armor" | "consumable" | "material" | "quest";
+
 export interface InventoryItem {
   id: string;
   iconUrl: string;
   name: string;
-  type: "weapon" | "armor" | "consumable";
+  type: ItemType;
+  description: string;
   spriteSheet?: ex.ImageSource;
 }
 
-export type BuffableAttribute = Attribute | Resource;
+export type BuffableAttribute = Attribute | Resource | "temperature";
 
 export type EquipmentBuff = Partial<Record<BuffableAttribute, number>>;
 
@@ -65,10 +68,13 @@ export interface EquipmentItem extends InventoryItem {
   requirements?: AttributeRequirement;
 }
 
+export type WeaponSubType = "sword" | "axe" | "pickaxe" | "sickle" | "hammer";
+
 export interface WeaponItem extends EquipmentItem {
   damage: number;
   reach: number;
   type: "weapon";
+  subtype: WeaponSubType;
   slot: "weapon";
 }
 
