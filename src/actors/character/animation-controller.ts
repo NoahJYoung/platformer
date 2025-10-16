@@ -223,6 +223,14 @@ export class AnimationController {
         }
 
         // 7. Hair (or Head armor if equipped - head replaces hair)
+        if (hairSprite) {
+          members.push({
+            graphic: hairSprite,
+            offset: ex.vec(xOffset, yOffset),
+          });
+        }
+
+        // 8. Head/Helmet (renders over hair)
         if (headSheet) {
           const headSprite = headSheet.getSprite(frameIndex, row);
           if (headSprite) {
@@ -232,12 +240,6 @@ export class AnimationController {
               offset: ex.vec(xOffset, yOffset),
             });
           }
-        } else if (hairSprite) {
-          // Only show hair if no head armor
-          members.push({
-            graphic: hairSprite,
-            offset: ex.vec(xOffset, yOffset),
-          });
         }
 
         // 8. Mask (on top of everything except weapon)
