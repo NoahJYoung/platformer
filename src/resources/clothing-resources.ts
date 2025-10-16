@@ -15,6 +15,13 @@ export const ClothingResources = {
       ),
     },
   },
+  face: {
+    male: {
+      brown_face_scarf: new ex.ImageSource(
+        "/assets/sprites/armor/face/male/brown_face_scarf.png"
+      ),
+    },
+  },
   body: {
     male: {
       blue_shirt: new ex.ImageSource(
@@ -26,6 +33,20 @@ export const ClothingResources = {
     male: {
       blue_pants: new ex.ImageSource(
         "/assets/sprites/armor/legs/male/blue_pants.png"
+      ),
+    },
+  },
+  feet: {
+    male: {
+      brown_boots: new ex.ImageSource(
+        "/assets/sprites/armor/feet/male/brown_boots.png"
+      ),
+    },
+  },
+  hands: {
+    male: {
+      brown_gloves: new ex.ImageSource(
+        "/assets/sprites/armor/hands/male/brown_gloves.png"
       ),
     },
   },

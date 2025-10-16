@@ -144,6 +144,9 @@ export class GameEngine extends ex.Engine {
     const blueShirt = createItem("blue_shirt", this.player.sex);
     const smallBackpack = createItem("small_backpack", this.player.sex);
     const blueHat = createItem("blue_feather_hat", this.player.sex);
+    const leatherBoots = createItem("leather_boots", this.player.sex);
+    const faceScarf = createItem("brown_scarf", this.player.sex);
+    const leatherGloves = createItem("leather_gloves", this.player.sex);
 
     this.player.inventory.addItem(0, ironSword);
     this.player.inventory.addItem(1, ironAxe);
@@ -151,5 +154,8 @@ export class GameEngine extends ex.Engine {
     this.player.inventory.addItem(3, blueShirt);
     this.player.inventory.addItem(4, smallBackpack);
     this.player.inventory.addItem(5, blueHat);
+    this.player.inventory.addItem(6, leatherBoots);
+    this.player.inventory.addItem(7, faceScarf);
+    this.player.inventory.addItem(8, leatherGloves);
   }
 }

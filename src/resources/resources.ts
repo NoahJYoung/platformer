@@ -65,13 +65,28 @@ export const Resources = [
   // Legs
   // Male
   ClothingResources.legs.male.blue_pants,
+
   // Body
   // Male
   ClothingResources.body.male.blue_shirt,
+
   // Back
   // Male
   ClothingResources.back.male.small_backpack,
+
   // Head
   // Male
   ClothingResources.head.male.blue_feather_hat,
+
+  // Feet
+  // Male
+  ClothingResources.feet.male.brown_boots,
+
+  // Hands
+  // Male
+  ClothingResources.hands.male.brown_gloves,
+
+  // Face
+  // Male
+  ClothingResources.face.male.brown_face_scarf,
 ] as const;

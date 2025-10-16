@@ -102,4 +102,52 @@ export const items = new Map<string, ItemFactoryData>([
       defense: 2,
     } satisfies ItemFactoryData,
   ],
+  [
+    "leather_boots",
+    {
+      iconUrl: "",
+      name: "Leather Boots",
+      type: "armor",
+      slot: "boots",
+      description: "A pair of boots made of leather",
+
+      spriteSheets: {
+        male: ClothingResources.feet.male.brown_boots,
+        female: WeaponResources.female.iron_axe,
+      },
+      defense: 3,
+    } satisfies ItemFactoryData,
+  ],
+  [
+    "brown_scarf",
+    {
+      iconUrl: "",
+      name: "Brown Scarf",
+      type: "armor",
+      slot: "mask",
+      description: "A brown scarf to cover your face",
+
+      spriteSheets: {
+        male: ClothingResources.face.male.brown_face_scarf,
+        female: WeaponResources.female.iron_axe,
+      },
+      defense: 1,
+    } satisfies ItemFactoryData,
+  ],
+  [
+    "leather_gloves",
+    {
+      iconUrl: "",
+      name: "Brown Scarf",
+      type: "armor",
+      slot: "gloves",
+      description: "A Pair of leather gloves",
+
+      spriteSheets: {
+        male: ClothingResources.hands.male.brown_gloves,
+        female: WeaponResources.female.iron_axe,
+      },
+      defense: 1,
+    } satisfies ItemFactoryData,
+  ],
 ]);
