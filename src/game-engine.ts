@@ -26,74 +26,41 @@ export class GameEngine extends ex.Engine {
         gravity: ex.vec(0, 800),
       },
     });
-
-    // Handle resize events
-    // window.addEventListener("resize", () => this.handleResize());
   }
 
-  /**
-   * Calculate optimal game dimensions based on viewport
-   */
-  /**
-   * Calculate optimal game dimensions based on viewport
-   */
   private static calculateGameDimensions(): { width: number; height: number } {
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
 
-    // Target aspect ratio (2:1 like your original 600x300)
     const targetAspectRatio = 2;
 
-    // Base resolution for design reference
     const baseHeight = 300;
-    const baseWidth = 600;
 
-    // Determine if device is mobile
     const isMobile = viewportWidth < 768;
 
     let width: number;
     let height: number;
 
     if (isMobile) {
-      // On mobile, zoom IN more (larger percentage of screen)
       height = Math.min(viewportHeight * 0.7, 450);
       width = height * targetAspectRatio;
 
-      // If width exceeds viewport, constrain by width instead
       if (width > viewportWidth * 0.95) {
         width = viewportWidth * 0.95;
         height = width / targetAspectRatio;
       }
     } else {
-      // On desktop, increase the RESOLUTION to show more of the game world
-      // This makes sprites smaller but shows more area
-      const heightMultiplier = 1.5; // Show 50% more vertical space
+      const heightMultiplier = 1.5;
 
-      height = baseHeight * heightMultiplier; // 450 instead of 300
-      width = height * targetAspectRatio; // 900 instead of 600
+      height = baseHeight * heightMultiplier;
+      width = height * targetAspectRatio;
     }
 
-    // Round to avoid sub-pixel rendering issues
     return {
       width: Math.round(width),
       height: Math.round(height),
     };
   }
-
-  // /**
-  //  * Handle window resize events
-  //  */
-  // private handleResize(): void {
-  //   const dimensions = GameEngine.calculateGameDimensions();
-
-  //   // Update canvas resolution
-  //   this.screen.resolution = ex.vec(dimensions.width, dimensions.height);
-
-  //   // Optionally update HUD or other UI elements
-  //   if (this.hud) {
-  //     this.hud.onResize?.(dimensions.width, dimensions.height);
-  //   }
-  // }
 
   async initialize() {
     const loader = new ex.Loader();
@@ -104,8 +71,9 @@ export class GameEngine extends ex.Engine {
 
     const playerAppearance: AppearanceOptions = {
       sex: "male",
-      skinTone: 3,
+      skinTone: 1,
       hairStyle: 4,
+      displayName: "Player",
     };
 
     this.player = new Player(ex.vec(100, 100), playerAppearance);
@@ -140,22 +108,25 @@ export class GameEngine extends ex.Engine {
 
     const ironSword = createItem("iron_sword", this.player.sex);
     const ironAxe = createItem("iron_axe", this.player.sex);
-    const bluePants = createItem("blue_pants", this.player.sex);
-    const blueShirt = createItem("blue_shirt", this.player.sex);
+    const darkPants = createItem("blue_pants", this.player.sex);
+
+    const blueShirt = createItem("dark_shirt", this.player.sex);
     const smallBackpack = createItem("small_backpack", this.player.sex);
-    const blueHat = createItem("blue_feather_hat", this.player.sex);
-    const leatherBoots = createItem("leather_boots", this.player.sex);
+    const blueHat = createItem("dark_hood", this.player.sex);
+    const leatherBoots = createItem("dark_boots", this.player.sex);
     const faceScarf = createItem("brown_scarf", this.player.sex);
-    const leatherGloves = createItem("leather_gloves", this.player.sex);
+    const leatherGloves = createItem("dark_gloves", this.player.sex);
+    const smallLantern = createItem("small_lantern", this.player.sex);
 
     this.player.inventory.addItem(0, ironSword);
     this.player.inventory.addItem(1, ironAxe);
-    this.player.inventory.addItem(2, bluePants);
+    this.player.inventory.addItem(2, smallLantern);
     this.player.inventory.addItem(3, blueShirt);
     this.player.inventory.addItem(4, smallBackpack);
     this.player.inventory.addItem(5, blueHat);
     this.player.inventory.addItem(6, leatherBoots);
     this.player.inventory.addItem(7, faceScarf);
     this.player.inventory.addItem(8, leatherGloves);
+    this.player.inventory.addItem(9, darkPants);
   }
 }

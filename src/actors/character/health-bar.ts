@@ -1,0 +1,86 @@
+import * as ex from "excalibur";
+import { SCALE } from "../config";
+
+export class HealthBar extends ex.Actor {
+  private barWidth: number = 40 * SCALE;
+  private barHeight: number = 4 * SCALE;
+  private parentCharacter: ex.Actor;
+  private getCurrentHealth: () => number;
+  private getMaxHealth: () => number;
+  private offsetY: number;
+
+  constructor(
+    parentCharacter: ex.Actor,
+    getCurrentHealth: () => number,
+    getMaxHealth: () => number,
+    offsetY: number = -30 * SCALE
+  ) {
+    super({
+      pos: ex.vec(0, offsetY),
+      width: 40 * SCALE,
+      height: 6 * SCALE,
+      collisionType: ex.CollisionType.PreventCollision,
+      anchor: ex.vec(0.5, 0.5),
+    });
+
+    this.parentCharacter = parentCharacter;
+    this.getCurrentHealth = getCurrentHealth;
+    this.getMaxHealth = getMaxHealth;
+    this.offsetY = offsetY;
+  }
+
+  onInitialize(engine: ex.Engine) {
+    this.graphics.use(this.createHealthBarGraphic());
+
+    this.on("preupdate", () => {
+      this.graphics.use(this.createHealthBarGraphic());
+    });
+  }
+
+  private createHealthBarGraphic(): ex.Canvas {
+    const canvas = new ex.Canvas({
+      width: this.barWidth + 2 * SCALE,
+      height: this.barHeight + 2 * SCALE,
+      draw: (ctx) => {
+        const currentHealth = this.getCurrentHealth();
+        const maxHealth = this.getMaxHealth();
+        const healthPercent = Math.max(
+          0,
+          Math.min(1, currentHealth / maxHealth)
+        );
+
+        ctx.fillStyle = "black";
+        ctx.fillRect(
+          0,
+          0,
+          this.barWidth + 2 * SCALE,
+          this.barHeight + 2 * SCALE
+        );
+
+        ctx.fillStyle = "#333333";
+        ctx.fillRect(SCALE, SCALE, this.barWidth, this.barHeight);
+
+        const healthColor = this.getHealthColor(healthPercent);
+        ctx.fillStyle = healthColor;
+        ctx.fillRect(
+          SCALE,
+          SCALE,
+          this.barWidth * healthPercent,
+          this.barHeight
+        );
+      },
+    });
+
+    return canvas;
+  }
+
+  private getHealthColor(healthPercent: number): string {
+    if (healthPercent > 0.6) {
+      return "#00ff00";
+    } else if (healthPercent > 0.3) {
+      return "#ffaa00";
+    } else {
+      return "#ff0000";
+    }
+  }
+}

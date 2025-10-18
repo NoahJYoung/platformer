@@ -17,7 +17,7 @@ export class Player extends Character {
   private thirst: number = 100;
 
   constructor(pos: ex.Vector, appearanceOptions: AppearanceOptions) {
-    super("player", pos, appearanceOptions, true);
+    super("player", pos, appearanceOptions, true, false);
   }
 
   protected getAttackTargets(): string[] {

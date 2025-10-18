@@ -9,6 +9,7 @@ import type {
 export class EquipmentManager {
   private slots: Map<EquipmentSlot, EquipmentItem | null> = new Map();
   private animController: AnimationController;
+  public equippedLightSources: EquipmentItem[] = [];
 
   constructor(animController: AnimationController) {
     this.animController = animController;
@@ -32,6 +33,10 @@ export class EquipmentManager {
     const previousItem = this.slots.get(item.slot) || null;
     this.slots.set(item.slot, item);
 
+    if (item.tags?.includes("light-source")) {
+      this.equippedLightSources.push(item);
+    }
+
     if (item.type === "weapon") {
       this.animController.equipWeapon(item as WeaponItem);
     } else if (item.type === "armor") {
@@ -44,6 +49,12 @@ export class EquipmentManager {
   unequip(slot: EquipmentSlot): EquipmentItem | null {
     const item = this.slots.get(slot) || null;
     this.slots.set(slot, null);
+
+    if (item?.tags?.includes("light-source")) {
+      this.equippedLightSources = this.equippedLightSources.filter(
+        (equippedItem) => equippedItem.id !== item.id
+      );
+    }
 
     if (item?.type === "weapon") {
       this.animController.unequipWeapon();

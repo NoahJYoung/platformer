@@ -4,6 +4,7 @@ import type {
   AttributeRequirement,
   WeaponSubType,
   EquipmentSlot,
+  ItemTag,
 } from "../actors/character/types";
 import type * as ex from "excalibur";
 
@@ -12,6 +13,7 @@ interface BaseItemFactoryData {
   name: string;
   description: string;
   spriteSheets: { male: ex.ImageSource; female: ex.ImageSource };
+  tags?: ItemTag[];
 }
 
 export interface WeaponFactoryData extends BaseItemFactoryData {

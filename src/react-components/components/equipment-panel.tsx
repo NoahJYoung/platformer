@@ -185,7 +185,7 @@ export const EquipmentPanel: React.FC<EquipmentPanelProps> = ({
 
         <div style={{ visibility: "hidden" }} />
         {renderSlot("boots", "Boots")}
-        <div style={{ visibility: "hidden" }} />
+        {renderSlot("offhand", "Offhand")}
       </div>
     </div>
   );

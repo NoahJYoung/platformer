@@ -1,6 +1,6 @@
 import * as ex from "excalibur";
 
-export const SCALE = 1.4;
+export const SCALE = 1;
 export const SPRITE_BUFFER = 4;
 export const SPRITE_HEIGHT = 64;
 export const SPRITE_WIDTH = 24;

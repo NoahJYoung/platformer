@@ -2,6 +2,7 @@ export interface AppearanceOptions {
   sex: "male" | "female";
   skinTone: 1 | 2 | 3 | 4 | 5;
   hairStyle: 1 | 2 | 3 | 4 | 5;
+  displayName: string;
 }
 
 export const Resources = {
@@ -33,6 +34,8 @@ export type Resource = (typeof Resources)[keyof typeof Resources];
 
 export type ItemType = "weapon" | "armor" | "consumable" | "material" | "quest";
 
+export type ItemTag = "light-source";
+
 export interface InventoryItem {
   id: string;
   iconUrl: string;
@@ -40,6 +43,7 @@ export interface InventoryItem {
   type: ItemType;
   description: string;
   spriteSheet?: ex.ImageSource;
+  tags?: ItemTag[];
 }
 
 export type BuffableAttribute = Attribute | Resource | "temperature";
@@ -59,7 +63,8 @@ export type EquipmentSlot =
   | "ring1"
   | "ring2"
   | "amulet"
-  | "back";
+  | "back"
+  | "offhand";
 
 export interface EquipmentItem extends InventoryItem {
   slot: EquipmentSlot;

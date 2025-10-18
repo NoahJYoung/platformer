@@ -3,6 +3,7 @@ import type { EquipmentSlot } from "../../actors/character/types";
 export const getPlaceholderImageUrl = (slot: EquipmentSlot) => {
   const slotToUrlMap: Record<EquipmentSlot, string> = {
     back: "/assets/icons/slots/back",
+    offhand: "/assets/icons/slots/offhand",
     amulet: "/assets/icons/slots/amulet",
     body: "/assets/icons/slots/body",
     boots: "/assets/icons/slots/boots",

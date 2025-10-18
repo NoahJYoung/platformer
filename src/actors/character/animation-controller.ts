@@ -32,6 +32,7 @@ interface EquippedArmor {
   gloves?: ArmorItem;
   mask?: ArmorItem;
   back?: ArmorItem;
+  offhand?: ArmorItem;
 }
 
 export class AnimationController {
@@ -80,8 +81,10 @@ export class AnimationController {
       row: number,
       frameCount: number,
       frameDuration: number,
-      strategy: ex.AnimationStrategy = ex.AnimationStrategy.Loop
+      strategy: ex.AnimationStrategy = ex.AnimationStrategy.Loop,
+      frameOffset: number = 0
     ): ex.Animation => {
+      const offset = frameOffset * STANDARD_SPRITE_WIDTH;
       // Load skin sprite sheet
       const skinSheet = ex.SpriteSheet.fromImageSource({
         image: PlayerResources[this.sex].skin[`skin_${this.skinTone}`],
@@ -92,7 +95,10 @@ export class AnimationController {
           spriteHeight: SPRITE_HEIGHT - SPRITE_BUFFER,
         },
         spacing: {
-          originOffset: { x: LEFT_MARGIN, y: SPRITE_BUFFER },
+          originOffset: {
+            x: LEFT_MARGIN + offset,
+            y: SPRITE_BUFFER,
+          },
           margin: { x: FRAME_SPACING, y: SPRITE_BUFFER },
         },
       });
@@ -107,7 +113,7 @@ export class AnimationController {
           spriteHeight: SPRITE_HEIGHT - SPRITE_BUFFER,
         },
         spacing: {
-          originOffset: { x: LEFT_MARGIN, y: SPRITE_BUFFER },
+          originOffset: { x: LEFT_MARGIN + offset, y: SPRITE_BUFFER },
           margin: { x: FRAME_SPACING, y: SPRITE_BUFFER },
         },
       });
@@ -125,7 +131,7 @@ export class AnimationController {
             spriteHeight: SPRITE_HEIGHT - SPRITE_BUFFER,
           },
           spacing: {
-            originOffset: { x: LEFT_MARGIN, y: SPRITE_BUFFER },
+            originOffset: { x: LEFT_MARGIN + offset, y: SPRITE_BUFFER },
             margin: { x: FRAME_SPACING, y: SPRITE_BUFFER },
           },
         });
@@ -139,6 +145,7 @@ export class AnimationController {
       const glovesSheet = loadArmorSheet(this.equippedArmor.gloves);
       const maskSheet = loadArmorSheet(this.equippedArmor.mask);
       const backSheet = loadArmorSheet(this.equippedArmor.back);
+      const offhandSheet = loadArmorSheet(this.equippedArmor.offhand);
 
       const frames = ex.range(0, frameCount - 1).map((frameIndex) => {
         const skinSprite = skinSheet.getSprite(frameIndex, row);
@@ -158,6 +165,17 @@ export class AnimationController {
 
         // Build layers in correct order (bottom to top)
         const members: Array<{ graphic: ex.Graphic; offset: ex.Vector }> = [];
+
+        if (offhandSheet) {
+          const backSprite = offhandSheet.getSprite(frameIndex, row);
+          if (backSprite) {
+            backSprite.scale = scale;
+            members.push({
+              graphic: backSprite,
+              offset: ex.vec(xOffset, yOffset),
+            });
+          }
+        }
 
         // 1. Back layer (behind everything)
         if (backSheet) {
@@ -260,11 +278,15 @@ export class AnimationController {
 
       return new ex.Animation({ frames, strategy });
     };
+    // this.runAnim = createLayeredAnimation(2, 8, 80);
 
     this.idleAnim = createLayeredAnimation(0, 5, 100);
     this.hurtAnim = createLayeredAnimation(3, 1, 150);
+
     this.walkAnim = createLayeredAnimation(1, 8, 100);
+    // this.runAnim = createLayeredAnimation(2, 1, 80, undefined, 3.9);
     this.runAnim = createLayeredAnimation(2, 8, 80);
+
     this.jumpAnim = createLayeredAnimation(3, 4, 100);
     this.dodgeAnim = createLayeredAnimation(3, 4, 20, ex.AnimationStrategy.End);
     this.fallAnim = createLayeredAnimation(4, 4, 100);
@@ -301,6 +323,9 @@ export class AnimationController {
       case "back":
         this.equippedArmor.back = armor;
         break;
+      case "offhand":
+        this.equippedArmor.offhand = armor;
+        break;
     }
 
     // Rebuild animations with new armor
@@ -333,6 +358,9 @@ export class AnimationController {
       case "back":
         this.equippedArmor.back = undefined;
         break;
+      case "offhand":
+        this.equippedArmor.offhand = undefined;
+        break;
     }
 
     // Rebuild animations without armor
@@ -358,6 +386,8 @@ export class AnimationController {
         return this.equippedArmor.mask;
       case "back":
         return this.equippedArmor.back;
+      case "offhand":
+        return this.equippedArmor.offhand;
       default:
         return undefined;
     }
@@ -434,6 +464,7 @@ export class AnimationController {
           this.jumpAnim &&
           this.character.graphics.current !== this.dodgeAnim
         ) {
+          this.dodgeAnim.tint = ex.Color.fromRGB(0, 0, 0, 0.5);
           this.character.graphics.use(this.dodgeAnim);
           this.afterimageTimer = 0;
         }

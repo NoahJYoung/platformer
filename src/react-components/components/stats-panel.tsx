@@ -80,7 +80,7 @@ export const StatsPanel = ({ player, canvasRef }: StatsPanelProps) => {
         Character Stats
       </h2>
 
-      <div style={{ display: "flex", gap: "1rem" }}>
+      <div style={{ display: "flex", gap: "0.5rem" }}>
         <InventorySprite canvasRef={canvasRef} player={player} />
         <div>Char and Equipment stats</div>
       </div>

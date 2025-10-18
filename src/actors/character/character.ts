@@ -5,14 +5,16 @@ import { AnimationController } from "./animation-controller";
 import { CombatSystem } from "./combat-system";
 import { StatsSystem } from "./stats-system";
 import { MagicProjectile } from "./magic-projectile";
-import type { ArmorItem, EquipmentItem, InventoryItem } from "./types";
+import type {
+  AppearanceOptions,
+  ArmorItem,
+  EquipmentItem,
+  InventoryItem,
+} from "./types";
 import { EquipmentManager } from "./equipment-manager";
-
-export interface CharacterAppearanceOptions {
-  sex: "male" | "female";
-  skinTone: 1 | 2 | 3 | 4 | 5;
-  hairStyle: 1 | 2 | 3 | 4 | 5;
-}
+import { DamageNumber } from "./damage-number";
+import { HealthBar } from "./health-bar";
+import { NameLabel } from "./name-label";
 
 export abstract class Character extends ex.Actor {
   public health: number = 100;
@@ -51,11 +53,17 @@ export abstract class Character extends ex.Actor {
   protected abstract getAttackTargets(): string[];
   private originalCollisionGroup: ex.CollisionGroup;
 
+  public displayName: string;
+  protected nameLabel?: NameLabel;
+  protected healthBar?: HealthBar;
+  protected showHealthBar: boolean = true;
+
   constructor(
     name: string,
     pos: ex.Vector,
-    appearanceOptions: CharacterAppearanceOptions,
-    facingRight: boolean
+    appearanceOptions: AppearanceOptions,
+    facingRight: boolean,
+    showHealthBar: boolean = false
   ) {
     super({
       name: name,
@@ -73,6 +81,7 @@ export abstract class Character extends ex.Actor {
     this.sex = appearanceOptions.sex;
     this.skinTone = appearanceOptions.skinTone;
     this.hairStyle = appearanceOptions.hairStyle;
+    this.displayName = appearanceOptions.displayName;
 
     this.animController = new AnimationController(
       this,
@@ -109,10 +118,26 @@ export abstract class Character extends ex.Actor {
         this.onStrengthLevelUp();
       }
     });
+
+    this.showHealthBar = showHealthBar;
   }
 
   onInitialize(engine: ex.Engine) {
     this.animController.setupAnimations();
+
+    const nameLabelOffset = this.showHealthBar ? -40 * SCALE : -35 * SCALE;
+    this.nameLabel = new NameLabel(this.displayName, nameLabelOffset);
+    this.addChild(this.nameLabel);
+
+    if (this.showHealthBar) {
+      this.healthBar = new HealthBar(
+        this,
+        () => this.health,
+        () => this.maxHealth,
+        -30 * SCALE // Offset above character
+      );
+      this.addChild(this.healthBar);
+    }
 
     this.on("preupdate", (evt) => {
       if (this.animController.currentState !== "dead") {
@@ -331,6 +356,12 @@ export abstract class Character extends ex.Actor {
 
     const actualDamage = oldHealth - this.health;
     if (actualDamage > 0) {
+      const damageNumber = new DamageNumber(
+        ex.vec(this.pos.x, this.pos.y - this.height / 2),
+        actualDamage
+      );
+      this.scene?.add(damageNumber);
+
       const leveledUp = this.statsSystem.onDamageReceived(actualDamage);
       if (leveledUp) {
         this.onVitalityLevelUp();

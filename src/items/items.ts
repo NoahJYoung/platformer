@@ -1,3 +1,4 @@
+import type { ItemTag } from "../actors/character/types";
 import { WeaponResources } from "../resources";
 import { ClothingResources } from "../resources/clothing-resources";
 import type { ItemFactoryData } from "./types";
@@ -55,6 +56,22 @@ export const items = new Map<string, ItemFactoryData>([
     } satisfies ItemFactoryData,
   ],
   [
+    "dark_pants",
+    {
+      iconUrl: "",
+      name: "Dark Pants",
+      type: "armor",
+      slot: "legs",
+      description: "A pair of dark pants",
+
+      spriteSheets: {
+        male: ClothingResources.legs.male.black_pants,
+        female: WeaponResources.female.iron_axe,
+      },
+      defense: 5,
+    } satisfies ItemFactoryData,
+  ],
+  [
     "blue_shirt",
     {
       iconUrl: "",
@@ -65,6 +82,22 @@ export const items = new Map<string, ItemFactoryData>([
 
       spriteSheets: {
         male: ClothingResources.body.male.blue_shirt,
+        female: WeaponResources.female.iron_axe,
+      },
+      defense: 5,
+    } satisfies ItemFactoryData,
+  ],
+  [
+    "dark_shirt",
+    {
+      iconUrl: "",
+      name: "Dark Shirt",
+      type: "armor",
+      slot: "body",
+      description: "A dark colored shirt",
+
+      spriteSheets: {
+        male: ClothingResources.body.male.black_shirt,
         female: WeaponResources.female.iron_axe,
       },
       defense: 5,
@@ -103,6 +136,22 @@ export const items = new Map<string, ItemFactoryData>([
     } satisfies ItemFactoryData,
   ],
   [
+    "dark_hood",
+    {
+      iconUrl: "",
+      name: "Dark Hood",
+      type: "armor",
+      slot: "helmet",
+      description: "A Dark Colored Hood",
+
+      spriteSheets: {
+        male: ClothingResources.head.male.black_hood,
+        female: WeaponResources.female.iron_axe,
+      },
+      defense: 2,
+    } satisfies ItemFactoryData,
+  ],
+  [
     "leather_boots",
     {
       iconUrl: "",
@@ -113,6 +162,22 @@ export const items = new Map<string, ItemFactoryData>([
 
       spriteSheets: {
         male: ClothingResources.feet.male.brown_boots,
+        female: WeaponResources.female.iron_axe,
+      },
+      defense: 3,
+    } satisfies ItemFactoryData,
+  ],
+  [
+    "dark_boots",
+    {
+      iconUrl: "",
+      name: "Dark Boots",
+      type: "armor",
+      slot: "boots",
+      description: "A pair of dark boots",
+
+      spriteSheets: {
+        male: ClothingResources.feet.male.black_boots,
         female: WeaponResources.female.iron_axe,
       },
       defense: 3,
@@ -138,7 +203,7 @@ export const items = new Map<string, ItemFactoryData>([
     "leather_gloves",
     {
       iconUrl: "",
-      name: "Brown Scarf",
+      name: "Leather Gloves",
       type: "armor",
       slot: "gloves",
       description: "A Pair of leather gloves",
@@ -146,6 +211,39 @@ export const items = new Map<string, ItemFactoryData>([
       spriteSheets: {
         male: ClothingResources.hands.male.brown_gloves,
         female: WeaponResources.female.iron_axe,
+      },
+      defense: 1,
+    } satisfies ItemFactoryData,
+  ],
+  [
+    "dark_gloves",
+    {
+      iconUrl: "",
+      name: "Dark Gloves",
+      type: "armor",
+      slot: "gloves",
+      description: "A Pair of dark gloves",
+
+      spriteSheets: {
+        male: ClothingResources.hands.male.black_gloves,
+        female: WeaponResources.female.iron_axe,
+      },
+      defense: 1,
+    } satisfies ItemFactoryData,
+  ],
+  [
+    "small_lantern",
+    {
+      iconUrl: "",
+      name: "Small Lantern",
+      type: "armor",
+      slot: "offhand",
+      description: "A small lantern",
+      tags: ["light-source"],
+
+      spriteSheets: {
+        male: ClothingResources.back.male.small_lantern,
+        female: ClothingResources.back.female.small_lantern,
       },
       defense: 1,
     } satisfies ItemFactoryData,

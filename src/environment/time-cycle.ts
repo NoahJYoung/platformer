@@ -8,6 +8,7 @@ import {
   TextAlign,
 } from "excalibur";
 import type { GameEngine } from "../game-engine";
+import { StarField } from "./star-field";
 
 export type Season = "summer" | "fall" | "winter" | "spring";
 
@@ -21,8 +22,8 @@ export class TimeCycle {
   private daysPerSeason: number;
   private seasonChangeCallbacks: ((season: Season) => void)[];
   private addedScenes: Set<ex.Scene> = new Set();
+  public starField: StarField | null = null;
 
-  // Season transition
   private isTransitioning: boolean = false;
   private transitionProgress: number = 0;
   private transitionDuration: number = 3;
@@ -44,13 +45,14 @@ export class TimeCycle {
     this.overlay.graphics.opacity = 0;
     this.overlay.anchor = vec(0.5, 0.5);
 
-    this.timeOfDay = 7;
-    this.cycleSpeed = 0.04;
+    this.timeOfDay = 12;
+    this.cycleSpeed = 0.4;
 
     this.season = "spring";
     this.dayInSeason = 1;
     this.daysPerSeason = 30;
     this.seasonChangeCallbacks = [];
+    // this.starField = new StarField(game);
   }
 
   update(delta: number) {
@@ -65,7 +67,6 @@ export class TimeCycle {
     this.overlay.graphics.color = nightData.color;
     this.overlay.graphics.opacity = nightData.opacity;
 
-    // Update ambient temperature
     this.ambientTemperature = this.calculateAmbientTemperature();
 
     if (this.game.currentScene && this.game.currentScene.camera) {
@@ -83,6 +84,8 @@ export class TimeCycle {
     if (this.isTransitioning) {
       this.updateTransition(delta / 1000);
     }
+
+    this.starField?.update(delta);
   }
 
   private calculateAmbientTemperature(): number {
@@ -276,9 +279,23 @@ export class TimeCycle {
     this.seasonChangeCallbacks.push(callback);
   }
 
-  calculateNightEffect(hour: number) {
+  private getSceneLightStrength = () => {
+    const player = this.game.player;
+    let lightStrength = 0;
+    const itemLightStrength = 0.2;
+
+    if (player) {
+      const playerLightSources = player.equipmentManager.equippedLightSources;
+      playerLightSources.forEach(() => (lightStrength += itemLightStrength));
+    }
+
+    return lightStrength;
+  };
+
+  public calculateNightEffect(hour: number) {
     const baseColor = Color.fromHex("#0c0c1aff");
-    const maxOpacity = 0.8;
+    const sceneLightStrength = this.getSceneLightStrength();
+    const maxOpacity = 0.95 - sceneLightStrength;
 
     let opacity = 0;
 

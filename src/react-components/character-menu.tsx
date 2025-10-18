@@ -114,7 +114,7 @@ export const CharacterMenu: React.FC<CharacterMenuProps> = ({
         left: 0,
         width: "100%",
         height: "100%",
-        background: "rgba(0, 0, 0, 0.85)",
+        background: "transparent",
         zIndex: 1000,
         display: "flex",
         alignItems: "center",

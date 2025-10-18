@@ -20,7 +20,7 @@ export class Enemy extends Character {
   constructor(config: EnemyConfig) {
     const { name, pos, appearanceOptions, facingRight } = config;
 
-    super("enemy", pos, appearanceOptions, facingRight);
+    super("enemy", pos, appearanceOptions, facingRight, true);
     this.patrolStartX = pos.x;
 
     this.name = name.startsWith("enemy") ? name : `enemy-${name}`;
@@ -80,9 +80,9 @@ export class Enemy extends Character {
   private patrol() {
     const distanceFromStart = Math.abs(this.pos.x - this.patrolStartX);
 
-    if (distanceFromStart >= this.patrolDistance) {
-      this.facingRight = !this.facingRight;
-    }
+    // if (distanceFromStart >= this.patrolDistance) {
+    //   this.facingRight = !this.facingRight;
+    // }
 
     const patrolSpeed = this.moveSpeed * 0.5;
     this.vel.x = this.facingRight ? patrolSpeed : -patrolSpeed;

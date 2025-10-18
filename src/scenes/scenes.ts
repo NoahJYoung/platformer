@@ -34,7 +34,12 @@ export const scenes: SceneConfig[] = [
       {
         name: "enemy",
         pos: ex.vec(1800, 650),
-        appearanceOptions: { sex: "male", skinTone: 2, hairStyle: 1 },
+        appearanceOptions: {
+          sex: "male",
+          skinTone: 2,
+          hairStyle: 1,
+          displayName: "Enemy",
+        },
         facingRight: false,
       },
     ],
@@ -72,7 +77,12 @@ export const scenes: SceneConfig[] = [
       {
         name: "enemy",
         pos: ex.vec(1800, 650),
-        appearanceOptions: { sex: "male", skinTone: 2, hairStyle: 1 },
+        appearanceOptions: {
+          sex: "male",
+          skinTone: 2,
+          hairStyle: 1,
+          displayName: "Enemy",
+        },
         facingRight: false,
       },
     ],

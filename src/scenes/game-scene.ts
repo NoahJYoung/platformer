@@ -7,14 +7,7 @@ import { CollisionGroups } from "../actors/config";
 import { Enemy } from "../actors/enemy/enemy";
 import type { EnemyConfig } from "../actors/enemy/types";
 import { GroundTileManager } from "./ground-tile-manager";
-
-import { v4 as uuid } from "uuid";
-
-import {
-  WeaponResources,
-  BackgroundResources,
-  FloorResources,
-} from "../resources";
+import { BackgroundResources, FloorResources } from "../resources";
 import { createItem } from "../items/item-creator";
 
 export class GameMapScene extends ex.Scene {
@@ -57,6 +50,12 @@ export class GameMapScene extends ex.Scene {
     );
 
     this.createLevel(engine);
+
+    engine.timeCycle.starField?.createStars(
+      this,
+      this.levelWidth,
+      this.levelHeight
+    );
 
     this.createExits(engine);
 
@@ -107,6 +106,7 @@ export class GameMapScene extends ex.Scene {
       sex: "male",
       skinTone: 3,
       hairStyle: 4,
+      displayName: "Player",
     };
 
     return new Player(ex.vec(x, y), playerAppearance);
@@ -143,17 +143,14 @@ export class GameMapScene extends ex.Scene {
   }
 
   private spawnEnemy(enemyConfig: EnemyConfig): void {
-    const enemyAppearance: AppearanceOptions = {
-      sex: Math.random() > 0.5 ? "male" : "female",
-      skinTone: (Math.floor(Math.random() * 5) + 1) as 1 | 2 | 3 | 4 | 5,
-      hairStyle: (Math.floor(Math.random() * 5) + 1) as 1 | 2 | 3 | 4 | 5,
-    };
-
     const enemy = new Enemy(enemyConfig);
 
     this.add(enemy);
 
-    const ironSword = createItem("iron_sword", enemyAppearance.sex);
+    const ironSword = createItem(
+      "iron_sword",
+      enemyConfig.appearanceOptions.sex
+    );
 
     enemy.equipItem(ironSword as WeaponItem);
   }
@@ -181,6 +178,11 @@ export class GameMapScene extends ex.Scene {
     }
 
     this.createParallaxBackground(engine);
+    engine.timeCycle.starField?.createStars(
+      this,
+      this.levelWidth,
+      this.levelHeight
+    );
   }
 
   protected createParallaxBackground(engine: GameEngine): void {
@@ -191,7 +193,9 @@ export class GameMapScene extends ex.Scene {
 
     const layers = [
       { resource: backgrounds.layer5, speed: -0.6 },
+      { resource: backgrounds.layer5Night, speed: -0.6, isNightLayer: true }, // Add night layer
       { resource: backgrounds.layer4, speed: -0.5 },
+      { resource: backgrounds.layer4Night, speed: -0.5, isNightLayer: true },
       { resource: backgrounds.layer3, speed: -0.4 },
       { resource: backgrounds.layer2, speed: -0.3 },
       { resource: backgrounds.layer1, speed: -0.2 },
@@ -216,10 +220,14 @@ export class GameMapScene extends ex.Scene {
     layers.forEach((layer, index) => {
       const startOffset = -Math.ceil(maxParallaxOffset / scaledWidth);
 
-      const verticalScaleMultiplier = 1 + (4 - index) * 0.3;
+      // Adjust index for night layer (treat it same as layer 5)
+      // Better approach: each night layer should match its day layer's visual index
+      const dayLayerIndex = layer.isNightLayer ? index - 1 : index;
+      const visualIndex = dayLayerIndex > 1 ? Math.floor(dayLayerIndex / 2) : 0;
+      const verticalScaleMultiplier = 1 + (4 - visualIndex) * 0.3;
       const scaleY = baseScaleY * verticalScaleMultiplier;
 
-      const isFurthestLayer = index === 0;
+      const isFurthestLayer = visualIndex === 0;
       const yOffset = isFurthestLayer ? 0 : this.levelHeight * 0.05;
 
       for (let i = startOffset; i < tilesNeeded + startOffset; i++) {
@@ -227,13 +235,21 @@ export class GameMapScene extends ex.Scene {
 
         sprite.scale = ex.vec(baseScaleY, scaleY);
 
+        // Night layer should be just above the day layer
+        const zIndex = layer.isNightLayer ? -99.5 + index : -100 + index;
+
         const background = new ex.Actor({
           pos: ex.vec(i * scaledWidth, this.levelHeight / 2 + yOffset),
           anchor: ex.vec(0, 0.5),
-          z: -100 + index,
+          z: zIndex,
         });
 
         background.graphics.use(sprite);
+
+        // Set initial opacity for night layer
+        if (layer.isNightLayer) {
+          sprite.opacity = 0;
+        }
 
         const initialX = i * scaledWidth;
 
@@ -247,6 +263,14 @@ export class GameMapScene extends ex.Scene {
               initialX - parallaxOffset,
               cameraPos.y + yOffset
             );
+
+            // Update night layer opacity based on time cycle
+            if (layer.isNightLayer) {
+              const nightData = engine.timeCycle.calculateNightEffect(
+                engine.timeCycle.getTimeOfDay()
+              );
+              sprite.opacity = nightData.opacity / 0.8; // Normalize to 0-1
+            }
           }
         });
 

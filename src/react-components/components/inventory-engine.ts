@@ -9,8 +9,8 @@ export class InventoryEngine {
   constructor(canvasId: string) {
     this.engine = new ex.Engine({
       canvasElementId: canvasId,
-      width: 72,
-      height: 72,
+      width: 96,
+      height: 108,
       displayMode: ex.DisplayMode.Fixed,
       pixelArt: true,
       backgroundColor: ex.Color.Transparent,
@@ -35,7 +35,8 @@ export class InventoryEngine {
     try {
       this.playerDisplay = player.createDisplayClone();
 
-      this.playerDisplay.pos = ex.vec(32, 32);
+      this.playerDisplay.pos = ex.vec(40, 48);
+      this.scene.camera.zoom = 1.5;
 
       this.scene.add(this.playerDisplay);
     } catch (error) {
