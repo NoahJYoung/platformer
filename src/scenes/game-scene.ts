@@ -18,6 +18,9 @@ export class GameMapScene extends ex.Scene {
   protected levelHeight: number;
   private groundTileManager = new GroundTileManager(FloorResources.floor1);
 
+  private AUTO_SPAWN_ENEMIES = true;
+  private spawnInterval: ex.Timer | null = null;
+
   constructor(config: SceneConfig) {
     super();
     this.config = config;
@@ -58,6 +61,8 @@ export class GameMapScene extends ex.Scene {
     engine.timeCycle.onSeasonChange(() => {
       this.rebuildBackground(engine);
     });
+
+    this.setupEnemySpawning();
   }
 
   onActivate(context: ex.SceneActivationContext<unknown>): void {
@@ -85,6 +90,14 @@ export class GameMapScene extends ex.Scene {
     this.add(this.player);
   }
 
+  onDeactivate(): void {
+    if (this.spawnInterval) {
+      this.spawnInterval.stop();
+      this.remove(this.spawnInterval);
+      this.spawnInterval = null;
+    }
+  }
+
   protected getSpawnPosition(entryPoint: string): ex.Vector {
     const spawns = this.config.spawnPoints || {};
 
@@ -95,15 +108,63 @@ export class GameMapScene extends ex.Scene {
     return ex.vec(this.levelWidth / 2, this.levelHeight / 2);
   }
 
-  protected createPlayer(x: number, y: number): Player {
-    const playerAppearance: AppearanceOptions = {
-      sex: "male",
-      skinTone: 3,
-      hairStyle: 4,
-      displayName: "Player",
+  private setupEnemySpawning(): void {
+    if (!this.AUTO_SPAWN_ENEMIES) return;
+
+    this.spawnInterval = new ex.Timer({
+      interval: 20000, // 20 seconds
+      repeats: true,
+      fcn: () => {
+        this.spawnRandomEnemy();
+      },
+    });
+
+    this.add(this.spawnInterval);
+    this.spawnInterval.start();
+  }
+
+  private spawnRandomEnemy(): void {
+    if (!this.player) return;
+
+    const spawnDistance = 300 + Math.random() * 200;
+    const spawnSide = Math.random() > 0.5 ? 1 : -1;
+
+    const spawnX = this.player.pos.x + spawnDistance * spawnSide;
+    const spawnY = this.levelHeight - 100;
+    const clampedX = ex.clamp(spawnX, 100, this.levelWidth - 100);
+
+    const enemyConfig: EnemyConfig = {
+      name: `enemy_${Date.now()}`,
+      pos: ex.vec(clampedX, spawnY),
+      appearanceOptions: {
+        sex: Math.random() > 0.5 ? "male" : "female",
+        skinTone: (Math.floor(Math.random() * 5) + 1) as 1 | 2 | 3 | 4 | 5,
+        hairStyle: (Math.floor(Math.random() * 5) + 1) as 1 | 2 | 3 | 4 | 5,
+        displayName: `Enemy ${Math.floor(Math.random() * 100)}`,
+      },
+      facingRight: spawnSide < 0,
     };
 
-    return new Player(ex.vec(x, y), playerAppearance);
+    this.spawnEnemy(enemyConfig);
+
+    // Log all actors in the scene
+    console.log("=== SCENE ACTORS AFTER SPAWN ===");
+    console.log(`Total actors: ${this.actors.length}`);
+
+    // Group actors by type
+    const actorsByType: Record<string, number> = {};
+    this.actors.forEach((actor) => {
+      const type = actor.name?.split("_")[0] || "unnamed";
+      actorsByType[type] = (actorsByType[type] || 0) + 1;
+    });
+
+    console.log("Actors by type:", actorsByType);
+
+    // Show alive vs killed
+    const aliveActors = this.actors.filter((a) => !a.isKilled()).length;
+    const killedActors = this.actors.filter((a) => a.isKilled()).length;
+    console.log(`Alive: ${aliveActors}, Killed: ${killedActors}`);
+    console.log("================================");
   }
 
   protected createExits(engine: GameEngine): void {

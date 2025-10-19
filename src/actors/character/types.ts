@@ -18,12 +18,20 @@ export const Attributes = {
   Vitality: "vitality",
 } as const;
 
+export interface AttributesConfig {
+  [Attributes.Vitality]: number;
+  [Attributes.Strength]: number;
+  [Attributes.Agility]: number;
+  [Attributes.Intelligence]: number;
+}
+
 export interface StatConfig {
   baseValue: number;
   currentXP: number;
   xpToNextLevel: number;
-  growthRate: number;
 }
+
+export type Element = "fire" | "water" | "earth" | "ice";
 
 export type Stats = Record<
   (typeof Attributes)[keyof typeof Attributes],

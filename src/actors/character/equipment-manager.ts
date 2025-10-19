@@ -82,4 +82,21 @@ export class EquipmentManager {
   getAllEquipped(): Map<EquipmentSlot, EquipmentItem | null> {
     return new Map(this.slots);
   }
+
+  getTotalPhysicalDefense(): number {
+    let totalDefense = 0;
+
+    this.slots.forEach((item) => {
+      if (item && item.type === "armor") {
+        const armorItem = item as ArmorItem;
+        totalDefense += armorItem.defense || 0;
+      }
+    });
+
+    return totalDefense;
+  }
+
+  getTotalElementalDefense() {
+    return { fire: 0, water: 0, ice: 0, earth: 0 };
+  }
 }

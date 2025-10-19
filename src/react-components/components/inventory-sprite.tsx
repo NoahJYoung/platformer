@@ -12,7 +12,6 @@ export const InventorySprite = ({ canvasRef }: InventorySpriteProps) => {
         position: "relative",
         borderRadius: "8px",
         overflow: "hidden",
-        marginBottom: "2rem",
         width: "64px",
         height: "88px",
       }}

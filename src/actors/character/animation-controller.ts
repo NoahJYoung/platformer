@@ -582,8 +582,11 @@ export class AnimationController {
 
     this.weaponActor = new ex.Actor({
       pos: ex.vec(0, 0),
+      name: "player-weapon",
       collisionType: ex.CollisionType.PreventCollision,
     });
+
+    this.weaponActor?.addTag("player-weapon");
 
     this.character.addChild(this.weaponActor);
     this.loadWeaponSprites(weapon);

@@ -2,6 +2,7 @@ import type { Attribute, StatConfig, Stats } from "./types";
 
 export class StatsSystem {
   private stats: Stats;
+  private level: number;
 
   private xpGainRates = {
     damageReceived: 0.5,
@@ -11,10 +12,10 @@ export class StatsSystem {
   };
 
   constructor(
-    initialVitality: number = 10,
-    initialStrength: number = 10,
-    initialAgility: number = 10,
-    initialIntelligence: number = 10
+    initialVitality: number = 5,
+    initialStrength: number = 5,
+    initialAgility: number = 5,
+    initialIntelligence: number = 5
   ) {
     this.stats = {
       vitality: this.createStat(initialVitality),
@@ -22,15 +23,44 @@ export class StatsSystem {
       agility: this.createStat(initialAgility),
       intelligence: this.createStat(initialIntelligence),
     };
+
+    this.level = this.calculateCharacterLevel();
   }
 
   private createStat(baseValue: number): StatConfig {
     return {
       baseValue: baseValue,
       currentXP: 0,
-      xpToNextLevel: 100,
-      growthRate: 1.15,
+      xpToNextLevel: this.calculateXPForLevel(baseValue),
     };
+  }
+
+  private calculateXPForLevel(level: number): number {
+    const levelDiff = level - 5;
+    return Math.floor(100 + levelDiff * levelDiff * 10);
+  }
+
+  private levelUpStat(statName: keyof typeof this.stats): boolean {
+    const stat = this.stats[statName];
+
+    stat.baseValue += 1;
+    stat.currentXP -= stat.xpToNextLevel;
+
+    stat.xpToNextLevel = this.calculateXPForLevel(stat.baseValue);
+
+    console.log(
+      `${statName.toUpperCase()} increased to ${
+        stat.baseValue
+      }! Next level requires ${stat.xpToNextLevel} XP.`
+    );
+
+    this.level = this.calculateCharacterLevel();
+
+    return true;
+  }
+
+  public getLevel() {
+    return this.level;
   }
 
   public getVitality(): number {
@@ -59,6 +89,11 @@ export class StatsSystem {
     return this.addStatXP("strength", xpGained);
   }
 
+  public onMagicDamageDealt(damageAmount: number): boolean {
+    const xpGained = damageAmount * this.xpGainRates.damageDealt;
+    return this.addStatXP("intelligence", xpGained);
+  }
+
   public onEnergyUsed(energyAmount: number): boolean {
     const xpGained = energyAmount * this.xpGainRates.energyUsed;
     return this.addStatXP("agility", xpGained);
@@ -73,6 +108,18 @@ export class StatsSystem {
     return this.getStats()[attribute];
   }
 
+  private calculateCharacterLevel() {
+    let combinedStatValues = 0;
+    const stats = Object.keys(this.getStats());
+    stats.forEach((key) => {
+      combinedStatValues +=
+        this.stats[key as keyof typeof this.stats].baseValue;
+    });
+
+    const level = Math.round(combinedStatValues / stats.length);
+    return level;
+  }
+
   private addStatXP(
     statName: keyof typeof this.stats,
     xpAmount: number
@@ -85,23 +132,6 @@ export class StatsSystem {
     }
 
     return false;
-  }
-
-  private levelUpStat(statName: keyof typeof this.stats): boolean {
-    const stat = this.stats[statName];
-
-    stat.baseValue += 1;
-    stat.currentXP -= stat.xpToNextLevel;
-
-    stat.xpToNextLevel = Math.floor(stat.xpToNextLevel * stat.growthRate);
-
-    console.log(
-      `${statName.toUpperCase()} increased to ${
-        stat.baseValue
-      }! Next level requires ${stat.xpToNextLevel} XP.`
-    );
-
-    return true;
   }
 
   public getStatProgress(statName: keyof typeof this.stats): {
@@ -125,12 +155,16 @@ export class StatsSystem {
     return Math.floor(100 + (this.stats.agility.baseValue - 10) * 5);
   }
 
-  public getMoveSpeed(): number {
-    return Math.floor(100 + (this.stats.agility.baseValue - 10) * 2);
+  public getRunSpeed(): number {
+    return Math.floor(125 + (this.stats.agility.baseValue - 10) * 2);
   }
 
-  public getDamageMultiplier(): number {
+  public getStrengthDamageMultiplier(): number {
     return 1 + (this.stats.strength.baseValue - 10) * 0.05;
+  }
+
+  public getIntelligenceDamageMultiplier(): number {
+    return 1 + (this.stats.intelligence.baseValue - 10) * 0.05;
   }
 
   public getEnergyRecoveryRate(): number {

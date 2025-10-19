@@ -3,9 +3,9 @@ import { Character } from "../character/character";
 import type {
   AppearanceOptions,
   Attribute,
+  AttributesConfig,
   EquipmentItem,
   EquipmentSlot,
-  Stats,
 } from "../character/types";
 import type { GameEngine } from "../../game-engine";
 
@@ -16,8 +16,12 @@ export class Player extends Character {
   private hunger: number = 100;
   private thirst: number = 100;
 
-  constructor(pos: ex.Vector, appearanceOptions: AppearanceOptions) {
-    super("player", pos, appearanceOptions, true, false);
+  constructor(
+    pos: ex.Vector,
+    appearanceOptions: AppearanceOptions,
+    attributes?: AttributesConfig
+  ) {
+    super("player", pos, appearanceOptions, true, false, attributes);
   }
 
   protected getAttackTargets(): string[] {
@@ -55,9 +59,7 @@ export class Player extends Character {
 
     const canRun = this.isRunMode && this.energy > 0;
 
-    const adjustedMoveSpeed = canRun
-      ? this.moveSpeed * this.runMultiplier
-      : this.moveSpeed;
+    const adjustedMoveSpeed = canRun ? this.runSpeed : this.walkSpeed;
 
     const isInAir = this.vel.y !== 0;
 
@@ -111,7 +113,17 @@ export class Player extends Character {
     }
 
     if (kb.wasPressed(ex.Keys.K) && this.currentState !== "hurt") {
-      this.magicAttack("fireball");
+      this.magicAttack("fire");
+    }
+
+    if (kb.wasPressed(ex.Keys.L) && this.currentState !== "hurt") {
+      this.magicAttack("ice");
+    }
+    if (kb.wasPressed(ex.Keys.N) && this.currentState !== "hurt") {
+      this.magicAttack("earth");
+    }
+    if (kb.wasPressed(ex.Keys.M) && this.currentState !== "hurt") {
+      this.magicAttack("water");
     }
 
     if (

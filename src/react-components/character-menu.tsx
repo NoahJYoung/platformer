@@ -28,29 +28,43 @@ export const CharacterMenu: React.FC<CharacterMenuProps> = ({
     useState<InventoryEngine | null>(null);
 
   useEffect(() => {
+    let mounted = true;
+    let engine: InventoryEngine | null = null;
+
+    const setupEngine = async () => {
+      if (!isOpen || selectedItem || !canvasRef.current) return;
+
+      const canvasId = `inventory-canvas-${Date.now()}`;
+      canvasRef.current.id = canvasId;
+
+      if (engineRef.current) {
+        engineRef.current.forceSingleUpdate();
+      }
+
+      engine = new InventoryEngine(canvasId);
+      if (player && mounted) {
+        engine.setPlayer(player);
+        setCharacterDisplayEngine(engine);
+      }
+    };
+
+    // Cleanup previous engine before creating new one
     if (characterDisplayEngine) {
-      characterDisplayEngine.destroy();
-      setCharacterDisplayEngine(null);
+      characterDisplayEngine.destroy().then(() => {
+        setCharacterDisplayEngine(null);
+        if (mounted) {
+          setupEngine();
+        }
+      });
+    } else {
+      setupEngine();
     }
-
-    if (!isOpen || selectedItem || !canvasRef.current) return;
-
-    const canvasId = `inventory-canvas-${Date.now()}`;
-    canvasRef.current.id = canvasId;
-
-    if (engineRef.current) {
-      engineRef.current.forceSingleUpdate();
-    }
-
-    const engine = new InventoryEngine(canvasId);
-    if (player) {
-      engine.setPlayer(player);
-    }
-
-    setCharacterDisplayEngine(engine);
 
     return () => {
-      engine.destroy();
+      mounted = false;
+      if (engine) {
+        engine.destroy();
+      }
     };
   }, [isOpen, selectedItem]);
 

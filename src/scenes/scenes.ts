@@ -12,16 +12,16 @@ export const scenes: SceneConfig[] = [
       default: ex.vec(200, 700),
       from_forest: ex.vec(2350, 700),
     },
-    exits: [
-      {
-        x: 2390,
-        y: 400,
-        width: 20,
-        height: 800,
-        targetScene: "forest-2",
-        targetEntry: "from_forest-1",
-      },
-    ],
+    // exits: [
+    //   {
+    //     x: 2390,
+    //     y: 400,
+    //     width: 20,
+    //     height: 800,
+    //     targetScene: "forest-2",
+    //     targetEntry: "from_forest-1",
+    //   },
+    // ],
     platforms: [
       { x: 400, y: 750, width: 160, height: 64 },
       { x: 700, y: 500, width: 160, height: 20 },
@@ -41,6 +41,12 @@ export const scenes: SceneConfig[] = [
           displayName: "Enemy",
         },
         facingRight: false,
+        attributes: {
+          strength: 5,
+          vitality: 5,
+          agility: 5,
+          intelligence: 5,
+        },
       },
     ],
   },

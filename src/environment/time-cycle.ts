@@ -47,7 +47,7 @@ export class TimeCycle {
 
     this.createGradientCanvas();
 
-    this.timeOfDay = 8;
+    this.timeOfDay = 20;
     this.cycleSpeed = 0.017;
 
     this.season = "spring";

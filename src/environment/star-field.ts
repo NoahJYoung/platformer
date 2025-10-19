@@ -1,17 +1,23 @@
-import { Actor, Circle, Color, vec } from "excalibur";
+import { Actor, Canvas, Color, vec } from "excalibur";
 import type { GameEngine } from "../game-engine";
 
 export class StarField {
-  private stars: Actor[] = [];
+  private starCanvas: Actor | null = null;
   private game: GameEngine;
   private currentScene: ex.Scene | null = null;
-  private seed: number = 12345; // Change this to get different star patterns
+  private seed: number = 12345;
+  private starData: Array<{
+    x: number;
+    y: number;
+    size: number;
+    brightness: number;
+    twinkleOffset: number;
+  }> = [];
 
   constructor(game: GameEngine) {
     this.game = game;
   }
 
-  // Seeded random number generator (LCG algorithm)
   private seededRandom(seed: number): () => number {
     let currentSeed = seed;
     return () => {
@@ -22,81 +28,82 @@ export class StarField {
 
   createStars(scene: ex.Scene) {
     this.removeStars();
-
     this.currentScene = scene;
-    const numStars = 150;
 
+    const numStars = 150;
     const viewportWidth = this.game.drawWidth;
     const viewportHeight = this.game.drawHeight;
-
     const random = this.seededRandom(this.seed);
 
+    this.starData = [];
     for (let i = 0; i < numStars; i++) {
-      const x = random() * viewportWidth;
-      const y = random() * (viewportHeight * 0.6);
-      const size = random() * 1.5 + 0.5;
-      const brightness = 1;
-
-      const star = new Actor({
-        pos: vec(x, y),
-        z: -98.5,
+      this.starData.push({
+        x: random() * viewportWidth,
+        y: random() * (viewportHeight * 0.6),
+        size: random() * 1.5 + 0.5,
+        brightness: 1,
+        twinkleOffset: random() * Math.PI * 2,
       });
-
-      const starGraphic = new Circle({
-        radius: size,
-        color: Color.White,
-      });
-
-      star.graphics.use(starGraphic);
-      starGraphic.opacity = 0;
-
-      (star as any).viewportX = x;
-      (star as any).viewportY = y;
-      (star as any).brightness = brightness;
-      (star as any).twinkleOffset = random() * Math.PI * 2;
-
-      scene.add(star);
-      this.stars.push(star);
     }
+
+    this.starCanvas = new Actor({
+      pos: vec(0, 0),
+      width: viewportWidth,
+      height: viewportHeight,
+      anchor: vec(0, 0),
+      z: -98.5,
+    });
+
+    const canvas = new Canvas({
+      width: viewportWidth,
+      height: viewportHeight,
+      draw: (ctx) => {
+        const timeOfDay = this.game.timeCycle.getTimeOfDay();
+        const nightData = this.game.timeCycle.calculateNightEffect(timeOfDay);
+        const starVisibility = Math.max(0, (nightData.opacity - 0.3) / 0.65);
+
+        if (starVisibility <= 0) return;
+
+        const twinkleSpeed = 0.001;
+        const now = Date.now();
+
+        this.starData.forEach((star) => {
+          const twinkle =
+            Math.sin(now * twinkleSpeed + star.twinkleOffset) * 0.3 + 0.7;
+          const opacity = starVisibility * star.brightness * twinkle;
+
+          ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+          ctx.beginPath();
+          ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+          ctx.fill();
+        });
+      },
+    });
+
+    this.starCanvas.graphics.use(canvas);
+    scene.add(this.starCanvas);
   }
 
   update(delta: number) {
-    if (!this.currentScene || !this.game.currentScene?.camera) return;
+    if (!this.starCanvas || !this.game.currentScene?.camera) return;
 
     const camera = this.game.currentScene.camera;
-    const timeOfDay = this.game.timeCycle.getTimeOfDay();
-    const nightData = this.game.timeCycle.calculateNightEffect(timeOfDay);
-
-    const starVisibility = Math.max(0, (nightData.opacity - 0.3) / 0.65);
-
     const viewportWidth = this.game.drawWidth;
     const viewportHeight = this.game.drawHeight;
 
-    this.stars.forEach((star, index) => {
-      star.pos = vec(
-        camera.pos.x - viewportWidth / 2 + (star as any).viewportX,
-        camera.pos.y - viewportHeight / 2 + (star as any).viewportY
-      );
-
-      const twinkleSpeed = 0.001;
-      const twinkle =
-        Math.sin(Date.now() * twinkleSpeed + (star as any).twinkleOffset) *
-          0.3 +
-        0.7;
-
-      const graphic = star.graphics.current as Circle | null;
-      if (graphic) {
-        graphic.opacity = starVisibility * (star as any).brightness * twinkle;
-      }
-    });
+    // Update canvas position to follow camera
+    this.starCanvas.pos = vec(
+      camera.pos.x - viewportWidth / 2,
+      camera.pos.y - viewportHeight / 2
+    );
   }
 
   removeStars() {
-    if (this.currentScene) {
-      this.stars.forEach((star) => {
-        this.currentScene?.remove(star);
-      });
+    if (this.currentScene && this.starCanvas) {
+      this.currentScene.remove(this.starCanvas);
+      this.starCanvas.kill(); // Kill the actor
+      this.starCanvas = null;
     }
-    this.stars = [];
+    this.starData = [];
   }
 }

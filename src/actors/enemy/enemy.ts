@@ -17,9 +17,9 @@ export class Enemy extends Character {
   private consecutiveHits: number = 0;
 
   constructor(config: EnemyConfig) {
-    const { name, pos, appearanceOptions, facingRight } = config;
+    const { name, pos, appearanceOptions, facingRight, attributes } = config;
 
-    super("enemy", pos, appearanceOptions, facingRight, true);
+    super("enemy", pos, appearanceOptions, facingRight, true, attributes);
     this.patrolStartX = pos.x;
 
     this.name = name.startsWith("enemy") ? name : `enemy-${name}`;
@@ -77,8 +77,7 @@ export class Enemy extends Character {
   }
 
   private patrol() {
-    const patrolSpeed = this.moveSpeed * 0.5;
-    this.vel.x = this.facingRight ? patrolSpeed : -patrolSpeed;
+    this.vel.x = this.facingRight ? this.walkSpeed : -this.walkSpeed;
 
     if (Math.abs(this.vel.x) > 0.1) {
       this.currentState = "walking";
@@ -91,7 +90,7 @@ export class Enemy extends Character {
     if (!this.player) return;
 
     const direction = this.player.pos.x > this.pos.x ? 1 : -1;
-    this.vel.x = direction * (this.moveSpeed * this.runMultiplier);
+    this.vel.x = direction * this.runSpeed;
     this.currentState = "running";
   }
 

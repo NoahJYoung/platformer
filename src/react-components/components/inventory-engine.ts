@@ -30,40 +30,43 @@ export class InventoryEngine {
   public setPlayer(player: Player) {
     if (this.playerDisplay) {
       this.scene.remove(this.playerDisplay);
+      this.playerDisplay.kill();
+      this.playerDisplay = null;
     }
 
     try {
       this.playerDisplay = player.createDisplayClone();
+
+      const children = [...this.playerDisplay.children];
+
+      children.forEach((child) => {
+        if (child.name !== "player-weapon") {
+          this.playerDisplay!.removeChild(child);
+          child.kill();
+        }
+      });
 
       this.playerDisplay.pos = ex.vec(40, 48);
       this.scene.camera.zoom = 1.5;
 
       this.scene.add(this.playerDisplay);
     } catch (error) {
-      console.error("createDisplayClone failed, trying simple clone:", error);
+      console.error("createDisplayClone failed:", error);
 
-      try {
-        this.playerDisplay = player.createDisplayClone();
-        this.playerDisplay.pos = ex.vec(100, 150);
-        this.scene.add(this.playerDisplay);
-      } catch (error2) {
-        console.error("All clone methods failed:", error2);
+      this.playerDisplay = new ex.Actor({
+        pos: ex.vec(40, 48),
+        width: player.width,
+        height: player.height,
+        collisionType: ex.CollisionType.PreventCollision,
+      });
 
-        this.playerDisplay = new ex.Actor({
-          pos: ex.vec(100, 150),
-          width: player.width,
-          height: player.height,
-          collisionType: ex.CollisionType.PreventCollision,
-        });
-
-        const currentGraphic = player.graphics.current;
-        if (currentGraphic) {
-          this.playerDisplay.graphics.use(currentGraphic);
-        }
-
-        this.playerDisplay.scale = player.scale;
-        this.scene.add(this.playerDisplay);
+      const currentGraphic = player.graphics.current;
+      if (currentGraphic) {
+        this.playerDisplay.graphics.use(currentGraphic);
       }
+
+      this.playerDisplay.scale = player.scale;
+      this.scene.add(this.playerDisplay);
     }
   }
 
@@ -71,10 +74,19 @@ export class InventoryEngine {
     this.setPlayer(player);
   }
 
-  public destroy() {
+  public async destroy() {
     if (this.playerDisplay) {
       this.scene.remove(this.playerDisplay);
+      this.playerDisplay.kill();
+      this.playerDisplay = null;
     }
-    this.engine.stop();
+
+    this.scene.clear();
+
+    await this.engine.stop();
+
+    if (this.scene) {
+      this.scene.clear();
+    }
   }
 }

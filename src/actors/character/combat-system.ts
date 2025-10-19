@@ -103,7 +103,8 @@ export class CombatSystem {
         this.canDealDamage &&
         validTargets.some((targetName) => target?.name?.startsWith(targetName))
       ) {
-        const damage = weapon.damage || 10;
+        const baseDamage = weapon.damage || 10;
+        const damage = this.character.getStrengthDamageMultiplier(baseDamage);
         if (typeof (target as Character).takeDamage === "function") {
           (target as Character).takeDamage(damage);
           damageDealt = true;
@@ -228,7 +229,9 @@ export class CombatSystem {
         this.canDealDamage &&
         validTargets.some((targetName) => target?.name?.startsWith(targetName))
       ) {
-        const damage = 5;
+        const baseDamage = 5;
+        const damage = this.character.getStrengthDamageMultiplier(baseDamage);
+
         if (typeof (target as Character).takeDamage === "function") {
           (target as Character).takeDamage(damage);
           damageDealt = true;

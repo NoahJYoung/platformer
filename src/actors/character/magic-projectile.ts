@@ -1,26 +1,40 @@
 import * as ex from "excalibur";
 import { CollisionGroups } from "../config";
 import { Character } from "./character";
+import type { Element } from "./types";
 
 export class MagicProjectile extends ex.Actor {
   private emitter!: ex.ParticleEmitter;
-  private spellType: string;
+  private spellType: Element;
+  private damage: number;
+  private radius: number;
+  private onDamageDealt?: (damage: number) => void;
 
-  constructor(pos: ex.Vector, direction: number, spellType: string) {
+  constructor(
+    pos: ex.Vector,
+    direction: number,
+    spellType: Element,
+    damage: number,
+    onDamageDealt?: (damage: number) => void
+  ) {
+    const radius = ex.clamp(damage / 4, 2, 20);
+
     super({
       pos: pos,
-      width: 8,
-      height: 8,
+      width: radius * 2,
+      height: radius * 2,
       collisionType: ex.CollisionType.Active,
       collisionGroup: CollisionGroups.Weapon,
     });
+    this.damage = damage;
+    this.radius = radius;
+    this.onDamageDealt = onDamageDealt;
 
     this.body.useGravity = false;
 
     this.spellType = spellType;
-    this.vel = ex.vec(300 * direction, 0); // Projectile speed
+    this.vel = ex.vec(300 * direction, 0);
 
-    // Set what it collides with
     this.body.group = ex.CollisionGroup.collidesWith([
       CollisionGroups.Enemy,
       CollisionGroups.Interactable,
@@ -32,7 +46,7 @@ export class MagicProjectile extends ex.Actor {
     this.emitter = new ex.ParticleEmitter({
       pos: ex.vec(0, 0),
       emitterType: ex.EmitterType.Circle,
-      radius: 3,
+      radius: this.radius,
       isEmitting: true,
       emitRate: 50,
       particle: {
@@ -56,7 +70,7 @@ export class MagicProjectile extends ex.Actor {
     this.addChild(this.emitter);
 
     const circle = new ex.Circle({
-      radius: 4,
+      radius: this.radius,
       color: this.getSpellColor(),
     });
     this.graphics.use(circle);
@@ -68,12 +82,14 @@ export class MagicProjectile extends ex.Actor {
 
   private getSpellColor(): ex.Color {
     switch (this.spellType) {
-      case "fireball":
+      case "fire":
         return ex.Color.Orange;
       case "ice":
         return ex.Color.Cyan;
-      case "lightning":
-        return ex.Color.Yellow;
+      case "earth":
+        return ex.Color.Green;
+      case "water":
+        return ex.Color.Azure;
       default:
         return ex.Color.White;
     }
@@ -83,15 +99,15 @@ export class MagicProjectile extends ex.Actor {
     const other = evt.other.owner as ex.Actor;
 
     if (other?.name?.startsWith("enemy")) {
-      const damage = this.getSpellDamage();
       if (other instanceof Character) {
-        other.takeDamage(damage);
+        other.takeDamage(this.damage);
+
+        if (this.onDamageDealt) {
+          this.onDamageDealt(this.damage);
+        }
       }
 
-      // Create impact effect
       this.createImpactEffect();
-
-      // Destroy projectile
       this.kill();
     }
 
@@ -99,54 +115,37 @@ export class MagicProjectile extends ex.Actor {
       other?.name?.startsWith("platform") ||
       other?.name?.startsWith("wall")
     ) {
-      // Hit environment
       this.createImpactEffect();
       this.kill();
     }
   }
 
-  private getSpellDamage(): number {
-    switch (this.spellType) {
-      case "fireball":
-        return 25;
-      case "ice":
-        return 15; // Less damage but slows enemy
-      case "lightning":
-        return 30; // High damage
-      default:
-        return 20;
-    }
-  }
-
   private createImpactEffect() {
-    // Create explosion particles at impact point
     const explosion = new ex.ParticleEmitter({
       pos: this.pos.clone(),
       emitterType: ex.EmitterType.Circle,
-      radius: 5, // Reduced from 10
+      radius: 5,
       isEmitting: false,
-      emitRate: 30, // Reduced from 50
+      emitRate: 30,
       particle: {
-        minSpeed: 50, // Reduced from 100
-        maxSpeed: 150, // Reduced from 300
+        minSpeed: 50,
+        maxSpeed: 150,
         minAngle: 0,
         maxAngle: Math.PI * 2,
-        life: 300, // Reduced from 500
+        life: 300,
         opacity: 1,
         fade: true,
-        minSize: 3, // Reduced from 8
-        maxSize: 8, // Reduced from 20
-        startSize: 6, // Reduced from 15
-        endSize: 1, // Reduced from 2
-        acc: ex.vec(0, 50), // Reduced gravity from 100
+        minSize: 3,
+        maxSize: 8,
+        startSize: 6,
+        endSize: 1,
+        acc: ex.vec(0, 50),
         beginColor: this.getSpellColor(),
         endColor: ex.Color.Transparent,
       },
     });
 
     this.scene?.add(explosion);
-
-    // Emit burst and clean up
     explosion.emitParticles(20);
 
     setTimeout(() => {

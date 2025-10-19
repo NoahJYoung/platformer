@@ -8,6 +8,8 @@ import { MagicProjectile } from "./magic-projectile";
 import type {
   AppearanceOptions,
   ArmorItem,
+  AttributesConfig,
+  Element,
   EquipmentItem,
   InventoryItem,
 } from "./types";
@@ -23,11 +25,16 @@ export abstract class Character extends ex.Actor {
   public maxEnergy: number = 100;
   public mana: number = 100;
   public maxMana: number = 100;
-  public moveSpeed: number = 100;
+  public runSpeed: number = 100;
+  public walkSpeed: number = 100;
   public jumpSpeed: number = -400;
-  public runMultiplier = 1.5;
   public canJump: boolean = false;
   public hasTakenDamage = false;
+
+  private baseFireDamage = 10;
+  private baseIceDamage = 10;
+  private baseWaterDamage = 10;
+  private baseEarthDamage = 10;
 
   public inventory: Inventory;
   public equipmentManager: EquipmentManager;
@@ -38,7 +45,7 @@ export abstract class Character extends ex.Actor {
 
   public animController: AnimationController;
   protected combatSystem: CombatSystem;
-  protected statsSystem: StatsSystem;
+  public statsSystem: StatsSystem;
 
   protected runEnergyDrain: number = 4;
   protected jumpEnergyCost: number = 4;
@@ -64,7 +71,8 @@ export abstract class Character extends ex.Actor {
     pos: ex.Vector,
     appearanceOptions: AppearanceOptions,
     facingRight: boolean,
-    showHealthBar: boolean = false
+    showHealthBar: boolean = false,
+    attributes?: AttributesConfig
   ) {
     super({
       name: name,
@@ -95,13 +103,18 @@ export abstract class Character extends ex.Actor {
     this.inventory = new Inventory();
     this.equipmentManager = new EquipmentManager(this.animController);
 
-    this.statsSystem = new StatsSystem();
+    this.statsSystem = new StatsSystem(
+      attributes?.vitality,
+      attributes?.strength,
+      attributes?.agility,
+      attributes?.intelligence
+    );
 
     this.maxHealth = this.statsSystem.getMaxHealth();
     this.health = this.maxHealth;
     this.maxEnergy = this.statsSystem.getMaxEnergy();
     this.energy = this.maxEnergy;
-    this.moveSpeed = this.statsSystem.getMoveSpeed();
+    this.runSpeed = this.statsSystem.getRunSpeed();
     this.jumpEnergyCost = 4;
     this.attackEnergyCost = 8;
     this.energyRecoveryRate = this.statsSystem.getEnergyRecoveryRate();
@@ -139,7 +152,7 @@ export abstract class Character extends ex.Actor {
         this,
         () => this.health,
         () => this.maxHealth,
-        -30 * SCALE // Offset above character
+        -30 * SCALE
       );
       this.addChild(this.healthBar);
     }
@@ -151,7 +164,7 @@ export abstract class Character extends ex.Actor {
         this.animController.updateAnimation(this.vel);
         this.animController.updateWeaponAnimation();
         this.trackFallVelocity();
-        this.updateEnergy(deltaSeconds);
+        this.updateResources(deltaSeconds);
       }
     });
 
@@ -190,8 +203,10 @@ export abstract class Character extends ex.Actor {
     this.lastYVelocity = this.vel.y;
   }
 
-  protected updateEnergy(deltaSeconds: number) {
+  protected updateResources(deltaSeconds: number) {
     const energyRecoveryRate = this.statsSystem.getEnergyRecoveryRate();
+    const manaRecoveryRate = 2;
+    const healthRecoveryRate = 0.5;
 
     if (this.animController.currentState === "running") {
       const energyUsed = this.runEnergyDrain * deltaSeconds;
@@ -208,6 +223,20 @@ export abstract class Character extends ex.Actor {
       this.energy = Math.min(
         this.maxEnergy,
         this.energy + energyRecoveryRate * deltaSeconds
+      );
+    }
+
+    if (this.mana < this.maxMana) {
+      this.mana = Math.min(
+        this.maxMana,
+        this.mana + manaRecoveryRate * deltaSeconds
+      );
+    }
+
+    if (this.health < this.maxHealth) {
+      this.health = Math.min(
+        this.maxHealth,
+        this.health + healthRecoveryRate * deltaSeconds
       );
     }
   }
@@ -268,12 +297,13 @@ export abstract class Character extends ex.Actor {
 
     this.children.forEach((child) => {
       const childClone = new ex.Actor({
-        pos: child.pos.clone(),
-        offset: child.offset.clone(),
+        pos: (child as ex.Actor).pos.clone(),
+        name: child.name,
+        offset: (child as ex.Actor).offset.clone(),
         collisionType: ex.CollisionType.PreventCollision,
       });
 
-      const childGraphic = child.graphics.current;
+      const childGraphic = (child as ex.Actor).graphics.current;
       if (childGraphic) {
         childClone.graphics.use(childGraphic.clone());
         childClone.graphics.flipHorizontal = false;
@@ -305,10 +335,20 @@ export abstract class Character extends ex.Actor {
     }
   }
 
-  public magicAttack(spellType: "fireball" | "ice" | "lightning") {
+  public getStrengthDamageMultiplier(baseDamage: number): number {
+    const multiplier = this.statsSystem.getStrengthDamageMultiplier();
+    return Math.round(baseDamage * multiplier);
+  }
+
+  public getIntelligenceDamageMultiplier(baseDamage: number): number {
+    const multiplier = this.statsSystem.getIntelligenceDamageMultiplier();
+    return Math.round(baseDamage * multiplier);
+  }
+  public magicAttack(spellType: Element) {
     if (!this.animController.attackAnim) {
       return;
     }
+
     if (this.mana >= this.manaCost) {
       this.mana = this.combatSystem.magicAttack(this.mana);
 
@@ -321,14 +361,23 @@ export abstract class Character extends ex.Actor {
     }
   }
 
-  private createMagicProjectile(spellType: string) {
+  private createMagicProjectile(spellType: Element) {
     const direction = this.facingRight ? 1 : -1;
     const spawnOffset = 10;
+    const baseDamage = 20;
+    const damage = this.getIntelligenceDamageMultiplier(baseDamage);
 
     const projectile = new MagicProjectile(
       ex.vec(this.pos.x + spawnOffset * direction, this.pos.y),
       direction,
-      spellType
+      spellType,
+      damage,
+      (damageDealt: number) => {
+        const leveledUp = this.statsSystem.onMagicDamageDealt(damageDealt);
+        if (leveledUp) {
+          this.onIntelligenceLevelUp();
+        }
+      }
     );
 
     this.scene?.add(projectile);
@@ -355,16 +404,30 @@ export abstract class Character extends ex.Actor {
     this.body.group = this.originalCollisionGroup;
   }
 
-  public takeDamage(amount: number) {
+  public takeDamage(amount: number, element?: Element) {
     this.hasTakenDamage = true;
     const oldHealth = this.health;
-    this.health = this.combatSystem.takeDamage(this.health, amount);
+
+    let damageAfterDefense = amount;
+
+    if (element) {
+      const elementalDefense =
+        this.equipmentManager.getTotalElementalDefense()[element];
+      damageAfterDefense -= elementalDefense;
+    } else {
+      damageAfterDefense -= this.equipmentManager.getTotalPhysicalDefense();
+    }
+
+    this.health = this.combatSystem.takeDamage(
+      this.health,
+      Math.max(damageAfterDefense, 1)
+    );
 
     const actualDamage = oldHealth - this.health;
     if (actualDamage > 0) {
       const damageNumber = new DamageNumber(
         ex.vec(this.pos.x, this.pos.y - this.height / 2),
-        actualDamage
+        Math.round(actualDamage)
       );
       this.scene?.add(damageNumber);
 
@@ -388,17 +451,57 @@ export abstract class Character extends ex.Actor {
 
   protected onAgilityLevelUp() {
     this.maxEnergy = this.statsSystem.getMaxEnergy();
-    this.moveSpeed = this.statsSystem.getMoveSpeed();
+    this.runSpeed = this.statsSystem.getRunSpeed();
     this.energyRecoveryRate = this.statsSystem.getEnergyRecoveryRate();
     console.log(
-      `Agility improved! Speed: ${this.moveSpeed}, Energy: ${this.maxEnergy}`
+      `Agility improved! Speed: ${this.runSpeed}, Energy: ${this.maxEnergy}`
     );
+  }
+
+  public getEquipmentStats() {
+    const physicalDamage =
+      (this.equipmentManager.getEquippedWeapon()?.damage || 5) *
+      this.statsSystem.getStrengthDamageMultiplier();
+    const physicalDefense = this.equipmentManager.getTotalPhysicalDefense();
+    const elementalDefense = this.equipmentManager.getTotalElementalDefense();
+
+    const fireDamage =
+      this.baseFireDamage * this.statsSystem.getIntelligenceDamageMultiplier();
+    const iceDamage =
+      this.baseIceDamage * this.statsSystem.getIntelligenceDamageMultiplier();
+    const waterDamage =
+      this.baseWaterDamage * this.statsSystem.getIntelligenceDamageMultiplier();
+    const earthDamage =
+      this.baseEarthDamage * this.statsSystem.getIntelligenceDamageMultiplier();
+
+    return {
+      physicalDamage,
+      physicalDefense,
+      fireDamage,
+      fireDefense: elementalDefense.fire,
+      iceDamage,
+      iceDefense: elementalDefense.ice,
+      waterDamage,
+      waterDefense: elementalDefense.water,
+      earthDamage,
+      earthDefense: elementalDefense.earth,
+    };
   }
 
   protected onStrengthLevelUp() {
     console.log(
-      `Strength increased! Damage multiplier: ${this.statsSystem.getDamageMultiplier()}`
+      `Strength increased! Damage multiplier: ${this.statsSystem.getStrengthDamageMultiplier()}`
     );
+  }
+
+  protected onIntelligenceLevelUp() {
+    console.log(
+      `Intelligence increased! Damage multiplier: ${this.statsSystem.getIntelligenceDamageMultiplier()}`
+    );
+  }
+
+  public get level() {
+    return this.statsSystem.getLevel();
   }
 
   public get isInvincible() {

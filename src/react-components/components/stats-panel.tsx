@@ -1,4 +1,5 @@
 import type { Player } from "../../actors/player/player";
+import { EquipmentStats } from "./equipment-stats";
 import { InventorySprite } from "./inventory-sprite";
 
 interface StatsPanelProps {
@@ -68,24 +69,35 @@ export const StatsPanel = ({ player, canvasRef }: StatsPanelProps) => {
         justifyContent: "space-between",
       }}
     >
-      <h2
+      <div
         style={{
-          margin: "0 0 15px 0",
+          margin: "0 0 6px 0",
           fontSize: "14px",
+          fontWeight: "bold",
           color: "#aaa",
           borderBottom: "2px solid #444",
           paddingBottom: "10px",
+          display: "flex",
+          justifyContent: "space-between",
         }}
       >
-        Character Stats
-      </h2>
-
-      <div style={{ display: "flex", gap: "0.5rem" }}>
-        <InventorySprite canvasRef={canvasRef} player={player} />
-        <div>Char and Equipment stats</div>
+        <span>{player.displayName}</span>
+        <span>{`Lv ${player.level}`}</span>
       </div>
 
-      <div style={{ display: "flex", gap: "1rem" }}>
+      <div
+        style={{
+          display: "flex",
+          gap: "0.5rem",
+          justifyContent: "space-evenly",
+          alignItems: "center",
+        }}
+      >
+        <InventorySprite canvasRef={canvasRef} player={player} />
+        <EquipmentStats player={player} />
+      </div>
+
+      <div style={{ display: "flex", gap: "0.5rem" }}>
         <div
           style={{
             display: "flex",
@@ -95,30 +107,75 @@ export const StatsPanel = ({ player, canvasRef }: StatsPanelProps) => {
           }}
         >
           {[
-            { label: "Strength", value: stats.strength.baseValue },
-            { label: "Agility", value: stats.agility.baseValue },
-            { label: "Intelligence", value: stats.intelligence.baseValue },
-            { label: "Vitality", value: stats.vitality.baseValue },
-          ].map(({ label, value }) => (
-            <div
-              key={label}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                gap: "1em",
-                padding: "4px",
-                background: "#333",
-                borderRadius: "8px",
-                border: "1px solid #444",
-                fontSize: "14px",
-              }}
-            >
-              <span>{label}:</span>
-              <span style={{ fontWeight: "bold", color: "#ffd700" }}>
-                {value}
-              </span>
-            </div>
-          ))}
+            {
+              label: "Strength",
+              attr: "strength" as const,
+              value: stats.strength.baseValue,
+            },
+            {
+              label: "Agility",
+              attr: "agility" as const,
+              value: stats.agility.baseValue,
+            },
+            {
+              label: "Intelligence",
+              attr: "intelligence" as const,
+              value: stats.intelligence.baseValue,
+            },
+            {
+              label: "Vitality",
+              attr: "vitality" as const,
+              value: stats.vitality.baseValue,
+            },
+          ].map(({ label, attr, value }) => {
+            const progress = player.statsSystem.getStatProgress(attr);
+            return (
+              <div
+                key={label}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "2px",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    gap: "1em",
+                    padding: "4px",
+                    background: "#333",
+                    borderRadius: "8px",
+                    border: "1px solid #444",
+                    fontSize: "14px",
+                  }}
+                >
+                  <span>{label}:</span>
+                  <span style={{ fontWeight: "bold", color: "#ffd700" }}>
+                    {value}
+                  </span>
+                </div>
+                <div
+                  style={{
+                    width: "100%",
+                    height: "2px",
+                    background: "#222",
+                    borderRadius: "2px",
+                    overflow: "hidden",
+                  }}
+                >
+                  <div
+                    style={{
+                      height: "100%",
+                      width: `${progress.percentage}%`,
+                      background: "#ff8800",
+                      transition: "width 0.3s ease",
+                    }}
+                  />
+                </div>
+              </div>
+            );
+          })}
         </div>
         <div
           style={{
