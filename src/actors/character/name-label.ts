@@ -1,10 +1,16 @@
 import * as ex from "excalibur";
 import { SCALE } from "../config";
+import type { Character } from "./character";
 
 export class NameLabel extends ex.Actor {
-  private displayName: string;
+  private parentCharacter: Character;
+  private alwaysVisible: boolean;
 
-  constructor(displayName: string, offsetY: number = -40 * SCALE) {
+  constructor(
+    parentCharacter: Character,
+    offsetY: number = -40 * SCALE,
+    alwaysVisible: boolean
+  ) {
     super({
       pos: ex.vec(0, offsetY),
       width: 100,
@@ -13,11 +19,12 @@ export class NameLabel extends ex.Actor {
       anchor: ex.vec(0.5, 0.5),
     });
 
-    this.displayName = displayName || "Unknown";
+    this.parentCharacter = parentCharacter;
+    this.alwaysVisible = alwaysVisible;
   }
 
   onInitialize(engine: ex.Engine) {
-    const textToDisplay = this.displayName || "Unknown";
+    const textToDisplay = this.parentCharacter.displayName || "Unknown";
 
     const text = new ex.Text({
       text: textToDisplay,
@@ -33,6 +40,10 @@ export class NameLabel extends ex.Actor {
       }),
     });
 
-    this.graphics.use(text);
+    this.on("preupdate", () => {
+      if (this.parentCharacter.hasTakenDamage || this.alwaysVisible) {
+        this.graphics.use(text);
+      }
+    });
   }
 }

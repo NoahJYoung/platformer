@@ -6,6 +6,7 @@ import {
   Label,
   Font,
   TextAlign,
+  Canvas,
 } from "excalibur";
 import type { GameEngine } from "../game-engine";
 import { StarField } from "./star-field";
@@ -31,6 +32,7 @@ export class TimeCycle {
   private seasonLabel: Label | null = null;
 
   private ambientTemperature: number = 20;
+  private gradientCanvas: Canvas | null = null;
 
   constructor(game: GameEngine) {
     this.game = game;
@@ -38,21 +40,47 @@ export class TimeCycle {
       pos: vec(0, 0),
       width: game.drawWidth * 2,
       height: game.drawHeight * 2,
-      color: Color.fromHex("#1a1a4d"),
       collisionType: CollisionType.PreventCollision,
       z: 1000,
     });
-    this.overlay.graphics.opacity = 0;
     this.overlay.anchor = vec(0.5, 0.5);
 
-    this.timeOfDay = 12;
-    this.cycleSpeed = 0.4;
+    this.createGradientCanvas();
+
+    this.timeOfDay = 8;
+    this.cycleSpeed = 0.017;
 
     this.season = "spring";
     this.dayInSeason = 1;
     this.daysPerSeason = 30;
     this.seasonChangeCallbacks = [];
-    // this.starField = new StarField(game);
+    this.starField = new StarField(game);
+  }
+
+  private createGradientCanvas() {
+    const width = this.game.drawWidth * 2;
+    const height = this.game.drawHeight * 2;
+
+    this.gradientCanvas = new Canvas({
+      width: width,
+      height: height,
+      cache: true,
+      draw: (ctx) => {
+        const gradient = ctx.createLinearGradient(0, 0, 0, height);
+
+        gradient.addColorStop(0, "rgba(12, 12, 26, 0)");
+        gradient.addColorStop(0.19, "rgba(12, 12, 26, 0)");
+        gradient.addColorStop(0.2, "rgba(12, 12, 26, 0.7)");
+        gradient.addColorStop(0.4, "rgba(12, 12, 26, 0.95)");
+        gradient.addColorStop(0.6, "rgba(12, 12, 26, 0.99)");
+        gradient.addColorStop(1, "rgba(12, 12, 26, 1)");
+
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, width, height);
+      },
+    });
+
+    this.overlay.graphics.use(this.gradientCanvas);
   }
 
   update(delta: number) {
@@ -64,7 +92,7 @@ export class TimeCycle {
     }
 
     const nightData = this.calculateNightEffect(this.timeOfDay);
-    this.overlay.graphics.color = nightData.color;
+
     this.overlay.graphics.opacity = nightData.opacity;
 
     this.ambientTemperature = this.calculateAmbientTemperature();
@@ -295,7 +323,7 @@ export class TimeCycle {
   public calculateNightEffect(hour: number) {
     const baseColor = Color.fromHex("#0c0c1aff");
     const sceneLightStrength = this.getSceneLightStrength();
-    const maxOpacity = 0.95 - sceneLightStrength;
+    const maxOpacity = 0.96 - sceneLightStrength;
 
     let opacity = 0;
 
@@ -310,6 +338,10 @@ export class TimeCycle {
     }
 
     return { color: baseColor, opacity };
+  }
+
+  public get isNight() {
+    return this.timeOfDay >= 21;
   }
 
   getCurrentSeason() {

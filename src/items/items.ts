@@ -1,4 +1,3 @@
-import type { ItemTag } from "../actors/character/types";
 import { WeaponResources } from "../resources";
 import { ClothingResources } from "../resources/clothing-resources";
 import type { ItemFactoryData } from "./types";
@@ -18,7 +17,7 @@ export const items = new Map<string, ItemFactoryData>([
         female: WeaponResources.female.iron_sword,
       },
       damage: 15,
-      reach: 25,
+      reach: 50,
     } satisfies ItemFactoryData,
   ],
   [

@@ -18,7 +18,7 @@ export const BackgroundResources = {
     layer1: new ex.ImageSource("/assets/backgrounds/winter/layer1.png"),
     layer2: new ex.ImageSource("/assets/backgrounds/winter/layer2.png"),
     layer3: new ex.ImageSource("/assets/backgrounds/winter/layer3.png"),
-    layer4: new ex.ImageSource("/assets/backgrounds/winter/layer4-night.png"),
+    layer4: new ex.ImageSource("/assets/backgrounds/winter/layer4.png"),
     layer4Night: new ex.ImageSource(
       "/assets/backgrounds/fall/layer4-night.png"
     ),

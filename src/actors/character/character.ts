@@ -27,6 +27,7 @@ export abstract class Character extends ex.Actor {
   public jumpSpeed: number = -400;
   public runMultiplier = 1.5;
   public canJump: boolean = false;
+  public hasTakenDamage = false;
 
   public inventory: Inventory;
   public equipmentManager: EquipmentManager;
@@ -126,7 +127,11 @@ export abstract class Character extends ex.Actor {
     this.animController.setupAnimations();
 
     const nameLabelOffset = this.showHealthBar ? -40 * SCALE : -35 * SCALE;
-    this.nameLabel = new NameLabel(this.displayName, nameLabelOffset);
+    this.nameLabel = new NameLabel(
+      this,
+      nameLabelOffset,
+      this.name === "player"
+    );
     this.addChild(this.nameLabel);
 
     if (this.showHealthBar) {
@@ -351,6 +356,7 @@ export abstract class Character extends ex.Actor {
   }
 
   public takeDamage(amount: number) {
+    this.hasTakenDamage = true;
     const oldHealth = this.health;
     this.health = this.combatSystem.takeDamage(this.health, amount);
 

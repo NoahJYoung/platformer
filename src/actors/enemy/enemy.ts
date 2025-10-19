@@ -6,8 +6,7 @@ import type { EnemyConfig } from "./types";
 
 export class Enemy extends Character {
   private detectionRange: number = 300 * SCALE;
-  private attackRange: number = 30 * SCALE;
-  private pursuitSpeed: number = 1;
+  private attackRange: number = 20 * SCALE;
   private patrolDistance: number = 100 * SCALE;
   private patrolStartX: number;
   private aiState: "idle" | "patrol" | "chase" | "attack" | "retreat" = "idle";
@@ -78,12 +77,6 @@ export class Enemy extends Character {
   }
 
   private patrol() {
-    const distanceFromStart = Math.abs(this.pos.x - this.patrolStartX);
-
-    // if (distanceFromStart >= this.patrolDistance) {
-    //   this.facingRight = !this.facingRight;
-    // }
-
     const patrolSpeed = this.moveSpeed * 0.5;
     this.vel.x = this.facingRight ? patrolSpeed : -patrolSpeed;
 
@@ -98,7 +91,7 @@ export class Enemy extends Character {
     if (!this.player) return;
 
     const direction = this.player.pos.x > this.pos.x ? 1 : -1;
-    this.vel.x = direction * this.moveSpeed * this.pursuitSpeed;
+    this.vel.x = direction * (this.moveSpeed * this.runMultiplier);
     this.currentState = "running";
   }
 
@@ -157,13 +150,6 @@ export class Enemy extends Character {
     if (wasHit) {
       dodgeChance = Math.min(0.8, 0.2 + this.consecutiveHits * 0.2);
     }
-
-    console.log({
-      hits: this.consecutiveHits,
-      dodgeChance,
-      random,
-      shouldDodge: random < dodgeChance,
-    });
 
     return random < dodgeChance;
   }

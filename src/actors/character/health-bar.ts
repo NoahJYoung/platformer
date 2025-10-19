@@ -1,16 +1,17 @@
 import * as ex from "excalibur";
 import { SCALE } from "../config";
+import type { Character } from "./character";
 
 export class HealthBar extends ex.Actor {
   private barWidth: number = 40 * SCALE;
   private barHeight: number = 4 * SCALE;
-  private parentCharacter: ex.Actor;
+  private parentCharacter: Character;
   private getCurrentHealth: () => number;
   private getMaxHealth: () => number;
   private offsetY: number;
 
   constructor(
-    parentCharacter: ex.Actor,
+    parentCharacter: Character,
     getCurrentHealth: () => number,
     getMaxHealth: () => number,
     offsetY: number = -30 * SCALE
@@ -30,10 +31,14 @@ export class HealthBar extends ex.Actor {
   }
 
   onInitialize(engine: ex.Engine) {
-    this.graphics.use(this.createHealthBarGraphic());
+    // if (this.parentCharacter.hasTakenDamage) {
+    //   this.graphics.use(this.createHealthBarGraphic());
+    // }
 
     this.on("preupdate", () => {
-      this.graphics.use(this.createHealthBarGraphic());
+      if (this.parentCharacter.hasTakenDamage) {
+        this.graphics.use(this.createHealthBarGraphic());
+      }
     });
   }
 

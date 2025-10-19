@@ -51,12 +51,6 @@ export class GameMapScene extends ex.Scene {
 
     this.createLevel(engine);
 
-    engine.timeCycle.starField?.createStars(
-      this,
-      this.levelWidth,
-      this.levelHeight
-    );
-
     this.createExits(engine);
 
     this.createEnemies(this.config.enemies || []);
@@ -177,15 +171,11 @@ export class GameMapScene extends ex.Scene {
       this.remove(oldGroundActor);
     }
 
-    this.createParallaxBackground(engine);
-    engine.timeCycle.starField?.createStars(
-      this,
-      this.levelWidth,
-      this.levelHeight
-    );
+    this.createBackground(engine);
+    engine.timeCycle.starField?.createStars(this);
   }
 
-  protected createParallaxBackground(engine: GameEngine): void {
+  protected createBackground(engine: GameEngine): void {
     const season = engine.timeCycle.getCurrentSeason();
     const theme =
       season === "winter" ? "winter" : season === "fall" ? "fall" : "normal";
@@ -193,7 +183,7 @@ export class GameMapScene extends ex.Scene {
 
     const layers = [
       { resource: backgrounds.layer5, speed: -0.6 },
-      { resource: backgrounds.layer5Night, speed: -0.6, isNightLayer: true }, // Add night layer
+      { resource: backgrounds.layer5Night, speed: -0.6, isNightLayer: true },
       { resource: backgrounds.layer4, speed: -0.5 },
       { resource: backgrounds.layer4Night, speed: -0.5, isNightLayer: true },
       { resource: backgrounds.layer3, speed: -0.4 },
@@ -220,8 +210,6 @@ export class GameMapScene extends ex.Scene {
     layers.forEach((layer, index) => {
       const startOffset = -Math.ceil(maxParallaxOffset / scaledWidth);
 
-      // Adjust index for night layer (treat it same as layer 5)
-      // Better approach: each night layer should match its day layer's visual index
       const dayLayerIndex = layer.isNightLayer ? index - 1 : index;
       const visualIndex = dayLayerIndex > 1 ? Math.floor(dayLayerIndex / 2) : 0;
       const verticalScaleMultiplier = 1 + (4 - visualIndex) * 0.3;
@@ -235,7 +223,6 @@ export class GameMapScene extends ex.Scene {
 
         sprite.scale = ex.vec(baseScaleY, scaleY);
 
-        // Night layer should be just above the day layer
         const zIndex = layer.isNightLayer ? -99.5 + index : -100 + index;
 
         const background = new ex.Actor({
@@ -246,7 +233,6 @@ export class GameMapScene extends ex.Scene {
 
         background.graphics.use(sprite);
 
-        // Set initial opacity for night layer
         if (layer.isNightLayer) {
           sprite.opacity = 0;
         }
@@ -264,18 +250,18 @@ export class GameMapScene extends ex.Scene {
               cameraPos.y + yOffset
             );
 
-            // Update night layer opacity based on time cycle
             if (layer.isNightLayer) {
               const nightData = engine.timeCycle.calculateNightEffect(
                 engine.timeCycle.getTimeOfDay()
               );
-              sprite.opacity = nightData.opacity / 0.8; // Normalize to 0-1
+              sprite.opacity = nightData.opacity / 0.8;
             }
           }
         });
 
         this.add(background);
       }
+      engine.timeCycle.starField?.createStars(this);
     });
   }
 
@@ -316,7 +302,6 @@ export class GameMapScene extends ex.Scene {
 
       platform.graphics.use(canvasGraphic);
     } else {
-      // Fallback to colored platform
       platform.graphics.use(
         new ex.Rectangle({
           width: width,
@@ -385,7 +370,7 @@ export class GameMapScene extends ex.Scene {
   }
 
   protected createLevel(engine: GameEngine): void {
-    this.createParallaxBackground(engine);
+    this.createBackground(engine);
     this.createPlatforms();
 
     const ground = this.getGroundFromSeason(engine);

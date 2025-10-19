@@ -35,8 +35,8 @@ export const scenes: SceneConfig[] = [
         name: "enemy",
         pos: ex.vec(1800, 650),
         appearanceOptions: {
-          sex: "male",
-          skinTone: 2,
+          sex: "female",
+          skinTone: 5,
           hairStyle: 1,
           displayName: "Enemy",
         },
@@ -52,7 +52,7 @@ export const scenes: SceneConfig[] = [
     height: 800,
     spawnPoints: {
       default: ex.vec(1600, 700),
-      from_village: ex.vec(50, 700),
+      "from_forest-1": ex.vec(50, 700),
     },
     exits: [
       {

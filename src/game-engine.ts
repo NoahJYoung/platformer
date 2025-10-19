@@ -64,6 +64,7 @@ export class GameEngine extends ex.Engine {
 
   async initialize() {
     const loader = new ex.Loader();
+
     Resources.forEach((resource) => loader.addResource(resource));
     loader.backgroundColor = "#1a1a1a";
 
@@ -108,7 +109,7 @@ export class GameEngine extends ex.Engine {
 
     const ironSword = createItem("iron_sword", this.player.sex);
     const ironAxe = createItem("iron_axe", this.player.sex);
-    const darkPants = createItem("blue_pants", this.player.sex);
+    const darkPants = createItem("dark_pants", this.player.sex);
 
     const blueShirt = createItem("dark_shirt", this.player.sex);
     const smallBackpack = createItem("small_backpack", this.player.sex);
