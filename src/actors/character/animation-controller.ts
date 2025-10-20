@@ -21,6 +21,7 @@ export type AnimationState =
   | "falling"
   | "attacking"
   | "dodging"
+  | "shielding"
   | "hurt"
   | "dead";
 
@@ -36,7 +37,6 @@ interface EquippedArmor {
 }
 
 export class AnimationController {
-  // Animation states
   public idleAnim?: ex.Animation;
   public runAnim?: ex.Animation;
   public walkAnim?: ex.Animation;
@@ -46,6 +46,7 @@ export class AnimationController {
   public hurtAnim?: ex.Animation;
   public deadAnim?: ex.Animation;
   public dodgeAnim?: ex.Animation;
+  public shieldAnim?: ex.Animation;
 
   public currentState: AnimationState = "idle";
   public facingRight: boolean;
@@ -85,7 +86,7 @@ export class AnimationController {
       frameOffset: number = 0
     ): ex.Animation => {
       const offset = frameOffset * STANDARD_SPRITE_WIDTH;
-      // Load skin sprite sheet
+
       const skinSheet = ex.SpriteSheet.fromImageSource({
         image: PlayerResources[this.sex].skin[`skin_${this.skinTone}`],
         grid: {
@@ -103,7 +104,6 @@ export class AnimationController {
         },
       });
 
-      // Load hair sprite sheet
       const hairSheet = ex.SpriteSheet.fromImageSource({
         image: PlayerResources[this.sex].hair[`hair_${this.hairStyle}`],
         grid: {
@@ -118,7 +118,6 @@ export class AnimationController {
         },
       });
 
-      // Helper function to load armor sprite sheet
       const loadArmorSheet = (armorItem: ArmorItem | undefined) => {
         if (!armorItem?.spriteSheet) return null;
 
@@ -137,7 +136,6 @@ export class AnimationController {
         });
       };
 
-      // Load armor sheets if equipped
       const legsSheet = loadArmorSheet(this.equippedArmor.legs);
       const bodySheet = loadArmorSheet(this.equippedArmor.body);
       const headSheet = loadArmorSheet(this.equippedArmor.head);
@@ -163,7 +161,6 @@ export class AnimationController {
         const xOffset = 24 * SCALE;
         const yOffset = -8 * SCALE + (SPRITE_BUFFER / 2) * SCALE;
 
-        // Build layers in correct order (bottom to top)
         const members: Array<{ graphic: ex.Graphic; offset: ex.Vector }> = [];
 
         if (offhandSheet) {
@@ -177,7 +174,6 @@ export class AnimationController {
           }
         }
 
-        // 1. Back layer (behind everything)
         if (backSheet) {
           const backSprite = backSheet.getSprite(frameIndex, row);
           if (backSprite) {
@@ -189,10 +185,8 @@ export class AnimationController {
           }
         }
 
-        // 2. Skin (base layer)
         members.push({ graphic: skinSprite, offset: ex.vec(xOffset, yOffset) });
 
-        // 3. Legs
         if (legsSheet) {
           const legsSprite = legsSheet.getSprite(frameIndex, row);
           if (legsSprite) {
@@ -204,7 +198,6 @@ export class AnimationController {
           }
         }
 
-        // 4. Body (note: dresses will render over legs naturally due to order)
         if (bodySheet) {
           const bodySprite = bodySheet.getSprite(frameIndex, row);
           if (bodySprite) {
@@ -216,7 +209,6 @@ export class AnimationController {
           }
         }
 
-        // 5. Feet
         if (feetSheet) {
           const feetSprite = feetSheet.getSprite(frameIndex, row);
           if (feetSprite) {
@@ -228,7 +220,6 @@ export class AnimationController {
           }
         }
 
-        // 6. Gloves
         if (glovesSheet) {
           const glovesSprite = glovesSheet.getSprite(frameIndex, row);
           if (glovesSprite) {
@@ -240,7 +231,6 @@ export class AnimationController {
           }
         }
 
-        // 7. Hair (or Head armor if equipped - head replaces hair)
         if (hairSprite) {
           members.push({
             graphic: hairSprite,
@@ -248,7 +238,6 @@ export class AnimationController {
           });
         }
 
-        // 8. Head/Helmet (renders over hair)
         if (headSheet) {
           const headSprite = headSheet.getSprite(frameIndex, row);
           if (headSprite) {
@@ -260,7 +249,6 @@ export class AnimationController {
           }
         }
 
-        // 8. Mask (on top of everything except weapon)
         if (maskSheet) {
           const maskSprite = maskSheet.getSprite(frameIndex, row);
           if (maskSprite) {
@@ -278,28 +266,35 @@ export class AnimationController {
 
       return new ex.Animation({ frames, strategy });
     };
-    // this.runAnim = createLayeredAnimation(2, 8, 80);
 
     this.idleAnim = createLayeredAnimation(0, 5, 100);
     this.hurtAnim = createLayeredAnimation(3, 1, 150);
 
     this.walkAnim = createLayeredAnimation(1, 8, 100);
-    // this.runAnim = createLayeredAnimation(2, 1, 80, undefined, 3.9);
+
     this.runAnim = createLayeredAnimation(2, 8, 80);
 
     this.jumpAnim = createLayeredAnimation(3, 4, 100);
     this.dodgeAnim = createLayeredAnimation(3, 4, 20, ex.AnimationStrategy.End);
     this.fallAnim = createLayeredAnimation(4, 4, 100);
     this.attackAnim = createLayeredAnimation(5, 6, 100);
+
     this.deadAnim = createLayeredAnimation(
       6,
       9,
       100,
       ex.AnimationStrategy.Freeze
     );
+
+    this.shieldAnim = createLayeredAnimation(
+      5,
+      3,
+      100,
+      ex.AnimationStrategy.Freeze,
+      0
+    );
   }
 
-  // Armor equipment methods
   public equipArmor(armor: ArmorItem) {
     switch (armor.slot) {
       case "legs":
@@ -328,10 +323,8 @@ export class AnimationController {
         break;
     }
 
-    // Rebuild animations with new armor
     this.setupAnimations();
 
-    // Reapply current animation
     this.updateAnimation(this.character.vel);
   }
 
@@ -363,10 +356,8 @@ export class AnimationController {
         break;
     }
 
-    // Rebuild animations without armor
     this.setupAnimations();
 
-    // Reapply current animation
     this.updateAnimation(this.character.vel);
   }
 
@@ -448,6 +439,15 @@ export class AnimationController {
           this.character.graphics.use(this.fallAnim);
         }
         break;
+      case "shielding":
+        if (
+          this.shieldAnim &&
+          this.character.graphics.current !== this.shieldAnim
+        ) {
+          console.log("using shield animation");
+          this.character.graphics.use(this.shieldAnim);
+        }
+        break;
       case "hurt":
         if (
           this.hurtAnim &&
@@ -508,7 +508,6 @@ export class AnimationController {
     afterimage.actions.fade(0, 200).die();
   }
 
-  // Weapon sprite management
   public loadWeaponSprites(weapon: WeaponItem) {
     if (!weapon.spriteSheet) return;
 
@@ -566,9 +565,15 @@ export class AnimationController {
     this.weaponSprites.set("fall", createWeaponAnimation(4, 4));
     this.weaponSprites.set("hurt", createWeaponAnimation(1, 3, 150));
     this.weaponSprites.set("attack", createWeaponAnimation(6, 5));
+
     this.weaponSprites.set(
       "dead",
       createWeaponAnimation(9, 6, 100, ex.AnimationStrategy.Freeze)
+    );
+
+    this.weaponSprites.set(
+      "shield",
+      createWeaponAnimation(3, 5, 100, ex.AnimationStrategy.Freeze)
     );
   }
 
@@ -622,6 +627,8 @@ export class AnimationController {
         ? "hurt"
         : this.currentState === "attacking"
         ? "attack"
+        : this.currentState === "shielding"
+        ? "shield"
         : this.currentState === "dead"
         ? "dead"
         : "idle";

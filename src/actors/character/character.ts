@@ -285,8 +285,9 @@ export abstract class Character extends ex.Actor {
     if (this.isShieldActive || this.mana <= 0) return;
 
     this.isShieldActive = true;
+    this.currentState = "shielding";
 
-    const shieldRadius = Math.max(this.width, this.height) * 0.65;
+    const shieldRadius = Math.max(this.width, this.height) * 0.8;
     this.protectionShield = new ProtectionShield(
       shieldRadius,
       this.statsSystem.getIntelligence()
@@ -298,6 +299,7 @@ export abstract class Character extends ex.Actor {
     if (!this.isShieldActive) return;
 
     this.isShieldActive = false;
+    this.currentState = "idle";
 
     if (this.protectionShield) {
       this.protectionShield.deactivate();

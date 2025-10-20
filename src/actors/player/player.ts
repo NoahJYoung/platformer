@@ -81,9 +81,10 @@ export class Player extends Character {
       }
     }
     if (
-      (isInAir || this.currentState !== "attacking") &&
+      this.currentState !== "attacking" &&
       this.currentState !== "hurt" &&
-      this.currentState !== "dodging"
+      this.currentState !== "dodging" &&
+      this.currentState !== "shielding"
     ) {
       if (kb.isHeld(ex.Keys.Left) || kb.isHeld(ex.Keys.A)) {
         if (this.isShieldActive) return;
@@ -109,7 +110,8 @@ export class Player extends Character {
     if (
       this.currentState !== "attacking" &&
       this.currentState !== "hurt" &&
-      this.currentState !== "dodging"
+      this.currentState !== "dodging" &&
+      this.currentState !== "shielding"
     ) {
       if (this.vel.y < 0) {
         this.currentState = "jumping";
