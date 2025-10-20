@@ -1,4 +1,4 @@
-import type { EquipmentSlot } from "../../actors/character/types";
+import type { EquipmentSlot } from "../../../actors/character/types";
 
 export const getPlaceholderImageUrl = (slot: EquipmentSlot) => {
   const slotToUrlMap: Record<EquipmentSlot, string> = {

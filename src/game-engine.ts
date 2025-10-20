@@ -4,10 +4,7 @@ import { Player } from "./actors/player/player";
 import { HUD } from "./hud/hud";
 import { scenes } from "./scenes/scenes";
 import { TimeCycle } from "./environment/time-cycle";
-import type {
-  AppearanceOptions,
-  AttributesConfig,
-} from "./actors/character/types";
+import type { AppearanceOptions } from "./actors/character/types";
 import { GameMapScene } from "./scenes/game-scene";
 import { createItem } from "./items/item-creator";
 

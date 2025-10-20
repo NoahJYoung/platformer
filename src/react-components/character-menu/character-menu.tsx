@@ -1,12 +1,15 @@
 import React, { useEffect, useRef, useState } from "react";
-import type { Player } from "../actors/player/player";
-import type { EquipmentItem, InventoryItem } from "../actors/character/types";
+import type { Player } from "../../actors/player/player";
+import type {
+  EquipmentItem,
+  InventoryItem,
+} from "../../actors/character/types";
 import { EquipmentPanel } from "./components/equipment-panel";
 import { InventoryPanel } from "./components/inventory-panel";
 import { StatsPanel } from "./components/stats-panel";
 import { ItemDetails } from "./components/item-details";
 import { InventoryEngine } from "./components/inventory-engine";
-import type { GameEngine } from "../game-engine";
+import type { GameEngine } from "../../game-engine";
 
 interface CharacterMenuProps {
   player: Player;
@@ -182,12 +185,16 @@ export const CharacterMenu: React.FC<CharacterMenuProps> = ({
           }}
         >
           <EquipmentPanel
+            title="Equipment"
+            equipment={player.equipmentManager.getAllEquipped()}
             selectedItem={selectedItem}
             onSelectItem={handleSelectItem}
             onDeselectItem={handleDeselectItem}
-            player={player}
             renderItemIcon={renderItemIcon}
             onEquipmentChange={handleForceUpdate}
+            mode="player"
+            onEquip={(slot, item) => player.equipItem(item)}
+            onUnequip={(slot) => player.unequipItem(slot)}
           />
 
           {selectedItem ? (
@@ -201,6 +208,8 @@ export const CharacterMenu: React.FC<CharacterMenuProps> = ({
           )}
 
           <InventoryPanel
+            title="Inventory"
+            inventory={player.inventory}
             selectedItem={selectedItem}
             onSelectItem={handleSelectItem}
             player={player}

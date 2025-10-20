@@ -41,7 +41,7 @@ export const items = new Map<string, ItemFactoryData>([
   [
     "blue_pants",
     {
-      iconUrl: "",
+      iconUrl: "/assets/icons/armor/legs/blue_pants_icon.png",
       name: "Blue Pants",
       type: "armor",
       slot: "legs",
@@ -57,7 +57,7 @@ export const items = new Map<string, ItemFactoryData>([
   [
     "dark_pants",
     {
-      iconUrl: "",
+      iconUrl: "/assets/icons/armor/legs/black_pants_icon.png",
       name: "Dark Pants",
       type: "armor",
       slot: "legs",
@@ -137,7 +137,7 @@ export const items = new Map<string, ItemFactoryData>([
   [
     "dark_hood",
     {
-      iconUrl: "",
+      iconUrl: "/assets/icons/armor/head/black_hood_icon.png",
       name: "Dark Hood",
       type: "armor",
       slot: "helmet",

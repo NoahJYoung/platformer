@@ -4,8 +4,8 @@ import type {
   WeaponItem,
   BuffableAttribute,
   Attribute,
-} from "../../actors/character/types";
-import type { Player } from "../../actors/player/player";
+} from "../../../actors/character/types";
+import type { Player } from "../../../actors/player/player";
 
 interface ItemStatsDisplayProps {
   item: EquipmentItem;

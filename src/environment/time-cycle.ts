@@ -308,9 +308,10 @@ export class TimeCycle {
   }
 
   private getSceneLightStrength = () => {
+    // TODO: Get Scene light sources
     const player = this.game.player;
     let lightStrength = 0;
-    const itemLightStrength = 0.2;
+    const itemLightStrength = 0.1;
 
     if (player) {
       const playerLightSources = player.equipmentManager.equippedLightSources;

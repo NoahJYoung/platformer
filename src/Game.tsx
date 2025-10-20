@@ -1,13 +1,35 @@
 import React, { useEffect, useRef, useState } from "react";
 import { GameEngine } from "./game-engine";
-import { CharacterMenu } from "./react-components/character-menu";
+import { CharacterMenu } from "./react-components/character-menu/character-menu";
 
 import "./globals.css";
+import type { LootDrop } from "./actors/character/loot-drop";
+import { LootMenu } from "./react-components/loot-menu/loot-menu";
 
 export const Game = () => {
   const gameRef = useRef(null);
   const engineRef = useRef<GameEngine | null>(null);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [characterMenuOpen, setCharacterMenuOpen] = useState(false);
+  const [lootMenuOpen, setLootMenuOpen] = useState(false);
+  const [currentLootDrop, setCurrentLootDrop] = useState<LootDrop | null>(null);
+
+  // Add keyboard handler for 'E' key
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (event.key.toLowerCase() === "e") {
+        const player = engineRef.current?.player;
+        const nearbyLoot = player?.getNearbyLootDrop();
+
+        if (nearbyLoot && nearbyLoot.getIsPlayerNearby()) {
+          setCurrentLootDrop(nearbyLoot);
+          setLootMenuOpen(true);
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);
+  }, [engineRef]);
 
   useEffect(() => {
     if (engineRef.current) return;
@@ -28,27 +50,27 @@ export const Game = () => {
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if (e.key === "c" || e.key === "i") {
-        setIsMenuOpen((prev) => !prev);
+        setCharacterMenuOpen((prev) => !prev);
       }
 
-      if (e.key === "Escape" && isMenuOpen) {
-        setIsMenuOpen(false);
+      if (e.key === "Escape" && characterMenuOpen) {
+        setCharacterMenuOpen(false);
       }
     };
 
     window.addEventListener("keydown", handleKeyPress);
     return () => window.removeEventListener("keydown", handleKeyPress);
-  }, [isMenuOpen]);
+  }, [characterMenuOpen]);
 
   useEffect(() => {
     if (engineRef.current) {
-      if (isMenuOpen) {
+      if ([characterMenuOpen, lootMenuOpen].some((state) => !!state)) {
         engineRef.current.stop();
       } else {
         engineRef.current.start();
       }
     }
-  }, [isMenuOpen]);
+  }, [characterMenuOpen, lootMenuOpen]);
 
   useEffect(() => {
     const preventBrowserHotkeys = (e: KeyboardEvent) => {
@@ -94,12 +116,25 @@ export const Game = () => {
       </div>
 
       {engineRef.current?.player && (
-        <CharacterMenu
-          player={engineRef.current.player}
-          isOpen={isMenuOpen}
-          onClose={() => setIsMenuOpen(false)}
-          engineRef={engineRef}
-        />
+        <>
+          <CharacterMenu
+            player={engineRef.current.player}
+            isOpen={characterMenuOpen}
+            onClose={() => setCharacterMenuOpen(false)}
+            engineRef={engineRef}
+          />
+          {lootMenuOpen && currentLootDrop && (
+            <LootMenu
+              player={engineRef.current.player}
+              lootDrop={currentLootDrop}
+              isOpen={lootMenuOpen}
+              onClose={() => {
+                setLootMenuOpen(false);
+                setCurrentLootDrop(null);
+              }}
+            />
+          )}
+        </>
       )}
     </div>
   );

@@ -17,6 +17,7 @@ import { EquipmentManager } from "./equipment-manager";
 import { DamageNumber } from "./damage-number";
 import { HealthBar } from "./health-bar";
 import { NameLabel } from "./name-label";
+import { LootDrop } from "./loot-drop";
 
 export abstract class Character extends ex.Actor {
   public health: number = 100;
@@ -530,5 +531,25 @@ export abstract class Character extends ex.Actor {
 
   public get stats() {
     return this.statsSystem.getStats();
+  }
+
+  public die() {
+    this.currentState = "dead";
+    this.body.collisionType = ex.CollisionType.PreventCollision;
+
+    // Spawn loot drop at character's position
+    this.spawnLootDrop();
+  }
+
+  private spawnLootDrop() {
+    if (!this.scene) return;
+
+    const lootDrop = new LootDrop(
+      this.pos.clone(),
+      this.inventory,
+      this.equipmentManager
+    );
+
+    this.scene.add(lootDrop);
   }
 }

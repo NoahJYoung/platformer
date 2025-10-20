@@ -1,35 +1,46 @@
 import React from "react";
-import type { Player } from "../../actors/player/player";
 import type {
   EquipmentItem,
   EquipmentSlot,
   InventoryItem,
-} from "../../actors/character/types";
+} from "../../../actors/character/types";
 import { getPlaceholderImageUrl } from "./get-placeholder-image-url";
 
 interface EquipmentPanelProps {
-  player: Player;
+  title: string;
+  equipment: Map<string, EquipmentItem | null>;
   onEquipmentChange: () => void;
   renderItemIcon: (item: InventoryItem) => React.ReactNode;
   onSelectItem: (item: InventoryItem) => void;
   onDeselectItem: () => void;
   selectedItem: InventoryItem | null;
+  mode?: "player" | "loot";
+  onEquip?: (slot: EquipmentSlot, item: EquipmentItem) => void;
+  onUnequip?: (slot: EquipmentSlot) => void;
+  onTakeEquipment?: (slot: string) => void;
 }
 
 export const EquipmentPanel: React.FC<EquipmentPanelProps> = ({
-  player,
+  title,
+  equipment,
   onEquipmentChange,
   renderItemIcon,
   selectedItem,
   onDeselectItem,
   onSelectItem,
+  mode = "player",
+  onEquip,
+  onUnequip,
+  onTakeEquipment,
 }) => {
   const isSelected = (item: InventoryItem | null) =>
     !!item && selectedItem?.id === item.id;
 
   const handleUnequip = (slot: EquipmentSlot) => {
-    const item = player.equipmentManager.getEquipped(slot);
-    player.unEquipItem(slot);
+    if (mode === "loot" || !onUnequip) return;
+
+    const item = equipment.get(slot) || null;
+    onUnequip(slot);
     if (isSelected(item)) {
       onDeselectItem();
     }
@@ -37,11 +48,21 @@ export const EquipmentPanel: React.FC<EquipmentPanelProps> = ({
   };
 
   const handleClick = (slot: EquipmentSlot) => {
-    const item = player.equipmentManager.getEquipped(slot);
+    const item = equipment.get(slot);
+
+    if (mode === "loot") {
+      // Loot mode: clicking transfers item to player
+      if (item && onTakeEquipment) {
+        onTakeEquipment(slot);
+      }
+      return;
+    }
+
+    // Player mode
     if (!item) {
       if (!!selectedItem && ["armor", "weapon"].includes(selectedItem.type)) {
-        if ((selectedItem as EquipmentItem).slot === slot) {
-          player.equipItem(selectedItem as EquipmentItem);
+        if ((selectedItem as EquipmentItem).slot === slot && onEquip) {
+          onEquip(slot, selectedItem as EquipmentItem);
           onEquipmentChange();
         }
       }
@@ -70,11 +91,13 @@ export const EquipmentPanel: React.FC<EquipmentPanelProps> = ({
   };
 
   const renderSlot = (slot: EquipmentSlot, label: string) => {
-    const equipped = player.equipmentManager.getEquipped(slot);
+    const equipped = equipment.get(slot) || null;
 
     const isActiveSlot =
       equipped ||
-      (!!selectedItem && (selectedItem as EquipmentItem).slot === slot);
+      (mode === "player" &&
+        !!selectedItem &&
+        (selectedItem as EquipmentItem).slot === slot);
 
     return (
       <div
@@ -97,10 +120,16 @@ export const EquipmentPanel: React.FC<EquipmentPanelProps> = ({
           marginRight: "auto",
         }}
         onClick={() => handleClick(slot)}
-        onDoubleClick={() => equipped && handleUnequip(slot)}
+        onDoubleClick={() =>
+          mode === "player" && equipped && handleUnequip(slot)
+        }
         title={
-          equipped
-            ? `${equipped.name} (Click to unequip)`
+          mode === "loot"
+            ? equipped
+              ? `${equipped.name} (Click to take)`
+              : `Empty ${label} slot`
+            : equipped
+            ? `${equipped.name} (Double-click to unequip)`
             : `Empty ${label} slot`
         }
         onMouseOver={(e) => {
@@ -157,7 +186,7 @@ export const EquipmentPanel: React.FC<EquipmentPanelProps> = ({
           paddingBottom: "10px",
         }}
       >
-        Equipment
+        {title}
       </h2>
       <div
         style={{

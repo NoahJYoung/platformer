@@ -1,5 +1,5 @@
 import * as ex from "excalibur";
-import type { Player } from "../../actors/player/player";
+import type { Player } from "../../../actors/player/player";
 
 export class InventoryEngine {
   private engine: ex.Engine;

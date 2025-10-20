@@ -1,4 +1,4 @@
-import type { Player } from "../../actors/player/player";
+import type { Player } from "../../../actors/player/player";
 
 interface InventorySpriteProps {
   player: Player;

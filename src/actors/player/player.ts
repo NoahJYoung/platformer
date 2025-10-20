@@ -8,6 +8,7 @@ import type {
   EquipmentSlot,
 } from "../character/types";
 import type { GameEngine } from "../../game-engine";
+import type { LootDrop } from "../character/loot-drop";
 
 export class Player extends Character {
   public isRunMode: boolean = false;
@@ -233,5 +234,15 @@ export class Player extends Character {
         this.energy + this.energyRecoveryRate * deltaSeconds
       );
     }
+  }
+
+  private nearbyLootDrop: LootDrop | null = null;
+
+  public setNearbyLootDrop(lootDrop: LootDrop | null) {
+    this.nearbyLootDrop = lootDrop;
+  }
+
+  public getNearbyLootDrop(): LootDrop | null {
+    return this.nearbyLootDrop;
   }
 }

@@ -1,8 +1,8 @@
 import type {
   EquipmentItem,
   InventoryItem,
-} from "../../actors/character/types";
-import type { Player } from "../../actors/player/player";
+} from "../../../actors/character/types";
+import type { Player } from "../../../actors/player/player";
 import { ItemStatsDisplay } from "./item-stats-display";
 
 interface ItemDetailsProps {

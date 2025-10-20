@@ -1,30 +1,48 @@
 import type {
   EquipmentItem,
   InventoryItem,
-} from "../../actors/character/types";
-import type { Player } from "../../actors/player/player";
+} from "../../../actors/character/types";
+import type { Player } from "../../../actors/player/player";
+import type { Inventory } from "../../../actors/character/inventory";
 
 interface InventoryPanelProps {
-  player: Player;
+  title: string;
+  inventory: Inventory;
+  player?: Player;
   onInventoryChange: () => void;
   renderItemIcon: (item: InventoryItem) => React.ReactNode;
   onSelectItem: (item: InventoryItem) => void;
   selectedItem: InventoryItem | null;
+  mode?: "player" | "loot";
 }
 
 export const InventoryPanel = ({
+  title,
+  inventory,
   player,
   onInventoryChange,
   renderItemIcon,
   onSelectItem,
   selectedItem,
+  mode = "player",
 }: InventoryPanelProps) => {
   const isSelected = (item: InventoryItem | null) =>
     !!item && selectedItem === item;
 
   const handleClick = (item: InventoryItem | null, slot: number) => {
+    if (mode === "loot") {
+      if (item && player) {
+        const success = player.inventory.addItem(0, item);
+        if (success) {
+          inventory.removeItem(slot);
+          onInventoryChange();
+        }
+      }
+      return;
+    }
+
     if (!item) {
-      if (selectedItem) {
+      if (selectedItem && player) {
         const oldSlot = player.inventory.getSlotFromItem(selectedItem);
         if (oldSlot !== -1) {
           player.inventory.moveItemToSlot(oldSlot, slot);
@@ -47,13 +65,16 @@ export const InventoryPanel = ({
   };
 
   const handleEquipFromInventory = (slot: number) => {
-    const item = player.inventory.getItem(slot);
+    if (mode === "loot" || !player) return;
+
+    const item = inventory.getItem(slot);
     if (!item) return;
     const equipmentItem = item;
     if (!(equipmentItem as EquipmentItem)?.slot) return;
     player.equipItem(equipmentItem as EquipmentItem);
     onInventoryChange();
   };
+
   return (
     <div
       style={{
@@ -75,7 +96,7 @@ export const InventoryPanel = ({
           paddingBottom: "10px",
         }}
       >
-        Inventory
+        {title}
       </h2>
       <div
         className="hide-scrollbar"
@@ -87,10 +108,11 @@ export const InventoryPanel = ({
           overflow: "auto",
         }}
       >
-        {Array.from({ length: player.inventory.maxSlots }).map((_, i) => {
-          const item = player.inventory.getItem(i);
+        {Array.from({ length: inventory.maxSlots }).map((_, i) => {
+          const item = inventory.getItem(i);
           const equipmentItem = item;
-          const canEquip = (equipmentItem as EquipmentItem)?.slot;
+          const canEquip =
+            mode === "player" && (equipmentItem as EquipmentItem)?.slot;
 
           return (
             <div
@@ -104,7 +126,7 @@ export const InventoryPanel = ({
                 flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
-                cursor: "pointer",
+                cursor: item || mode === "player" ? "pointer" : "default",
                 fontSize: "11px",
                 textAlign: "center",
                 padding: "6px",
@@ -116,15 +138,21 @@ export const InventoryPanel = ({
               onClick={() => handleClick(item, i)}
               onDoubleClick={() => canEquip && handleEquipFromInventory(i)}
               title={
-                item
-                  ? `${item.name}${canEquip ? " (Click to equip)" : ""}`
+                mode === "loot"
+                  ? item
+                    ? `${item.name} (Click to take)`
+                    : "Empty slot"
+                  : item
+                  ? `${item.name}${canEquip ? " (Double-click to equip)" : ""}`
                   : "Empty slot"
               }
               onMouseOver={(e) => {
-                e.currentTarget.style.background = isSelected(item)
-                  ? "#345a34"
-                  : "#3a3a3a";
-                e.currentTarget.style.borderColor = "#777";
+                if (item || mode === "player") {
+                  e.currentTarget.style.background = isSelected(item)
+                    ? "#345a34"
+                    : "#3a3a3a";
+                  e.currentTarget.style.borderColor = "#777";
+                }
               }}
               onMouseOut={(e) => {
                 e.currentTarget.style.background = isSelected(item)

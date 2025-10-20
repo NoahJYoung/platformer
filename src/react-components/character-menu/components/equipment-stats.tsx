@@ -1,4 +1,4 @@
-import type { Player } from "../../actors/player/player";
+import type { Player } from "../../../actors/player/player";
 import { getPlaceholderImageUrl } from "./get-placeholder-image-url";
 
 interface EquipmentStatsProps {
