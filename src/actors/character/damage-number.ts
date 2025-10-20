@@ -6,7 +6,7 @@ export class DamageNumber extends ex.Actor {
   private elapsed: number = 0;
   private floatSpeed: number = -50;
 
-  constructor(pos: ex.Vector, damage: number) {
+  constructor(pos: ex.Vector, damage: number, color: ex.Color = ex.Color.Red) {
     super({
       pos: pos.clone(),
       width: 20,
@@ -21,7 +21,7 @@ export class DamageNumber extends ex.Actor {
         size: 16 * SCALE,
         family: "Arial",
         bold: true,
-        color: ex.Color.Red,
+        color,
       }),
     });
 

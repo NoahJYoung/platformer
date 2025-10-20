@@ -55,7 +55,15 @@ export class Enemy extends Character {
 
     const distanceToPlayer = this.pos.distance(this.player.pos);
 
-    if (distanceToPlayer <= this.attackRange && this.attackCooldown <= 0) {
+    // Adjust attack range if player has shield active
+    let effectiveAttackRange = this.attackRange;
+    if (this.player.isShieldActive && this.player.protectionShield) {
+      // Add shield radius to attack range so enemy attacks the shield
+      const shieldRadius = this.player.protectionShield.width / 3;
+      effectiveAttackRange = this.attackRange + shieldRadius;
+    }
+
+    if (distanceToPlayer <= effectiveAttackRange && this.attackCooldown <= 0) {
       this.aiState = "attack";
     } else if (distanceToPlayer <= this.detectionRange) {
       this.aiState = "chase";

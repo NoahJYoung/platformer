@@ -65,16 +65,33 @@ export class Player extends Character {
     const isInAir = this.vel.y !== 0;
 
     let xVel = 0;
+
+    if (kb.isHeld(ex.Keys.K) && this.currentState !== "hurt") {
+      if (!this.isShieldActive && this.mana >= 3) {
+        this.activateShield();
+      } else {
+        return;
+      }
+
+      xVel = 0;
+      this.vel.x = 0;
+    } else {
+      if (this.isShieldActive) {
+        this.deactivateShield();
+      }
+    }
     if (
       (isInAir || this.currentState !== "attacking") &&
       this.currentState !== "hurt" &&
       this.currentState !== "dodging"
     ) {
       if (kb.isHeld(ex.Keys.Left) || kb.isHeld(ex.Keys.A)) {
+        if (this.isShieldActive) return;
         xVel = -adjustedMoveSpeed;
         this.facingRight = false;
       }
       if (kb.isHeld(ex.Keys.Right) || kb.isHeld(ex.Keys.D)) {
+        if (this.isShieldActive) return;
         xVel = adjustedMoveSpeed;
         this.facingRight = true;
       }
@@ -147,14 +164,6 @@ export class Player extends Character {
         this.attack();
       }
     }
-
-    // if (kb.wasPressed(ex.Keys.Key1)) {
-    //   this.unequipWeapon();
-    // }
-
-    // if (kb.wasPressed(ex.Keys.Key2)) {
-    //   this.equipWeapon(1);
-    // }
   }
 
   getTemperature(): number {

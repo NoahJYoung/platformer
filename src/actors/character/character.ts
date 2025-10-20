@@ -18,6 +18,7 @@ import { DamageNumber } from "./damage-number";
 import { HealthBar } from "./health-bar";
 import { NameLabel } from "./name-label";
 import { LootDrop } from "./loot-drop";
+import { ProtectionShield } from "./protection-shield";
 
 export abstract class Character extends ex.Actor {
   public health: number = 100;
@@ -66,6 +67,10 @@ export abstract class Character extends ex.Actor {
   protected nameLabel?: NameLabel;
   protected healthBar?: HealthBar;
   protected showHealthBar: boolean = true;
+
+  public protectionShield?: ProtectionShield;
+  public isShieldActive: boolean = false;
+  protected baseShieldManaCost: number = 5;
 
   constructor(
     name: string,
@@ -211,6 +216,20 @@ export abstract class Character extends ex.Actor {
     const manaRecoveryRate = 2;
     const healthRecoveryRate = 0.5;
 
+    if (this.isShieldActive) {
+      const manaDrain = this.getShieldManaCost() * deltaSeconds;
+      this.mana = Math.max(0, this.mana - manaDrain);
+
+      const leveledUp = this.statsSystem.onManaUsed(manaDrain);
+      if (leveledUp) {
+        this.onIntelligenceLevelUp();
+      }
+
+      if (this.mana <= 0) {
+        this.deactivateShield();
+      }
+    }
+
     if (this.animController.currentState === "running") {
       const energyUsed = this.runEnergyDrain * deltaSeconds;
       this.energy = Math.max(0, this.energy - energyUsed);
@@ -229,7 +248,7 @@ export abstract class Character extends ex.Actor {
       );
     }
 
-    if (this.mana < this.maxMana) {
+    if (this.mana < this.maxMana && !this.isShieldActive) {
       this.mana = Math.min(
         this.maxMana,
         this.mana + manaRecoveryRate * deltaSeconds
@@ -243,7 +262,6 @@ export abstract class Character extends ex.Actor {
       );
     }
   }
-
   protected handleCollisionStart(evt: ex.CollisionStartEvent) {
     const otherActor = evt.other.owner as ex.Actor;
 
@@ -261,6 +279,37 @@ export abstract class Character extends ex.Actor {
         this.canJump = true;
       }
     }
+  }
+
+  public activateShield() {
+    if (this.isShieldActive || this.mana <= 0) return;
+
+    this.isShieldActive = true;
+
+    const shieldRadius = Math.max(this.width, this.height) * 0.65;
+    this.protectionShield = new ProtectionShield(
+      shieldRadius,
+      this.statsSystem.getIntelligence()
+    );
+    this.addChild(this.protectionShield);
+  }
+
+  public deactivateShield() {
+    if (!this.isShieldActive) return;
+
+    this.isShieldActive = false;
+
+    if (this.protectionShield) {
+      this.protectionShield.deactivate();
+      this.protectionShield = undefined;
+    }
+  }
+
+  protected getShieldManaCost(): number {
+    const intelligenceReduction =
+      (this.statsSystem.getIntelligence() - 10) * 0.05;
+    const reduction = Math.max(0, Math.min(0.5, intelligenceReduction));
+    return this.baseShieldManaCost * (1 - reduction);
   }
 
   protected handleCollisionEnd(evt: ex.CollisionEndEvent) {
@@ -405,6 +454,41 @@ export abstract class Character extends ex.Actor {
   }
 
   public takeDamage(amount: number, element?: Element) {
+    if (this.isShieldActive) {
+      const oldMana = this.mana;
+
+      let damageAfterDefense = amount;
+
+      if (element) {
+        const elementalDefense =
+          this.equipmentManager.getTotalElementalDefense()[element];
+        damageAfterDefense -= elementalDefense;
+      } else {
+        damageAfterDefense -= this.equipmentManager.getTotalPhysicalDefense();
+      }
+
+      const finalDamage = Math.max(damageAfterDefense, 1);
+
+      this.mana = Math.max(0, this.mana - finalDamage);
+
+      const actualManaDamage = oldMana - this.mana;
+
+      if (actualManaDamage > 0) {
+        const damageNumber = new DamageNumber(
+          ex.vec(this.pos.x, this.pos.y - this.height / 2),
+          Math.round(actualManaDamage),
+          ex.Color.Cyan
+        );
+        this.scene?.add(damageNumber);
+      }
+
+      if (this.mana <= 0) {
+        this.deactivateShield();
+      }
+
+      return;
+    }
+
     this.hasTakenDamage = true;
     const oldHealth = this.health;
 
@@ -536,7 +620,6 @@ export abstract class Character extends ex.Actor {
     this.currentState = "dead";
     this.body.collisionType = ex.CollisionType.PreventCollision;
 
-    // Spawn loot drop at character's position
     this.spawnLootDrop();
   }
 
