@@ -241,10 +241,27 @@ export const items = new Map<string, ItemFactoryData>([
       tags: ["light-source"],
 
       spriteSheets: {
-        male: ClothingResources.back.male.small_lantern,
-        female: ClothingResources.back.female.small_lantern,
+        male: ClothingResources.offhand.male.small_lantern,
+        female: ClothingResources.offhand.female.small_lantern,
       },
-      defense: 1,
+      defense: 0,
+    } satisfies ItemFactoryData,
+  ],
+  [
+    "torch",
+    {
+      iconUrl: "",
+      name: "Torch",
+      type: "armor",
+      slot: "offhand",
+      description: "A torch to light your way",
+      tags: ["light-source"],
+
+      spriteSheets: {
+        male: ClothingResources.offhand.male.torch,
+        female: ClothingResources.offhand.male.torch,
+      },
+      defense: 0,
     } satisfies ItemFactoryData,
   ],
 ]);

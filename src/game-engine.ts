@@ -77,7 +77,14 @@ export class GameEngine extends ex.Engine {
       displayName: "Player",
     };
 
-    this.player = new Player(ex.vec(100, 100), playerAppearance);
+    const testSkillLevel = 5;
+
+    this.player = new Player(ex.vec(100, 100), playerAppearance, {
+      strength: testSkillLevel,
+      intelligence: testSkillLevel,
+      agility: testSkillLevel,
+      vitality: testSkillLevel,
+    });
     this.setupNewPlayer();
 
     scenes.forEach((sceneConfig) => {
@@ -118,6 +125,7 @@ export class GameEngine extends ex.Engine {
     const faceScarf = createItem("brown_scarf", this.player.sex);
     const leatherGloves = createItem("dark_gloves", this.player.sex);
     const smallLantern = createItem("small_lantern", this.player.sex);
+    const torch = createItem("torch", this.player.sex);
 
     this.player.inventory.addItem(0, ironSword);
     this.player.inventory.addItem(1, ironAxe);
@@ -129,5 +137,6 @@ export class GameEngine extends ex.Engine {
     this.player.inventory.addItem(7, faceScarf);
     this.player.inventory.addItem(8, leatherGloves);
     this.player.inventory.addItem(9, darkPants);
+    this.player.inventory.addItem(10, torch);
   }
 }

@@ -1,3 +1,5 @@
+import { Color } from "excalibur";
+
 export interface AppearanceOptions {
   sex: "male" | "female";
   skinTone: 1 | 2 | 3 | 4 | 5;
@@ -31,7 +33,34 @@ export interface StatConfig {
   xpToNextLevel: number;
 }
 
-export type Element = "fire" | "water" | "earth" | "ice";
+export type Element = "fire" | "water" | "earth" | "wind";
+
+export const ElementColors = {
+  fire: {
+    primary: Color.Orange,
+    secondary: Color.Red,
+    hexPrimary: "#ffa500",
+    hexSecondary: "#ff0000",
+  },
+  water: {
+    primary: Color.Azure,
+    secondary: Color.Cyan,
+    hexPrimary: "#007fff",
+    hexSecondary: "#00ffff",
+  },
+  earth: {
+    primary: Color.Green,
+    secondary: Color.Brown,
+    hexPrimary: "#00ff00",
+    hexSecondary: "#964b00",
+  },
+  wind: {
+    primary: Color.White,
+    secondary: Color.Gray,
+    hexPrimary: "#ffffff",
+    hexSecondary: "#808080",
+  },
+};
 
 export type Stats = Record<
   (typeof Attributes)[keyof typeof Attributes],

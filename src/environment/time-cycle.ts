@@ -324,7 +324,7 @@ export class TimeCycle {
   public calculateNightEffect(hour: number) {
     const baseColor = Color.fromHex("#0c0c1aff");
     const sceneLightStrength = this.getSceneLightStrength();
-    const maxOpacity = 0.96 - sceneLightStrength;
+    const maxOpacity = 0.99 - sceneLightStrength;
 
     let opacity = 0;
 

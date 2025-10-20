@@ -47,8 +47,8 @@ export class LootDrop extends ex.Actor {
       collisionType: ex.CollisionType.PreventCollision,
     });
 
-    const eKeyText = new ex.Text({
-      text: "[E]",
+    const keyText = new ex.Text({
+      text: "[F]",
       font: new ex.Font({
         size: 10 * SCALE,
         family: "Arial",
@@ -61,7 +61,7 @@ export class LootDrop extends ex.Actor {
       }),
     });
 
-    this.interactionIndicator.graphics.use(eKeyText);
+    this.interactionIndicator.graphics.use(keyText);
     this.interactionIndicator.graphics.visible = false;
     this.addChild(this.interactionIndicator);
 

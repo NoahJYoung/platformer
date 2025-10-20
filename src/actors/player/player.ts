@@ -113,12 +113,12 @@ export class Player extends Character {
       this.dodge("left");
     }
 
-    if (kb.wasPressed(ex.Keys.K) && this.currentState !== "hurt") {
+    if (kb.wasPressed(ex.Keys.U) && this.currentState !== "hurt") {
       this.magicAttack("fire");
     }
 
-    if (kb.wasPressed(ex.Keys.L) && this.currentState !== "hurt") {
-      this.magicAttack("ice");
+    if (kb.wasPressed(ex.Keys.I) && this.currentState !== "hurt") {
+      this.magicAttack("wind");
     }
     if (kb.wasPressed(ex.Keys.N) && this.currentState !== "hurt") {
       this.magicAttack("earth");

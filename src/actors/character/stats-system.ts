@@ -148,11 +148,15 @@ export class StatsSystem {
   }
 
   public getMaxHealth(): number {
-    return Math.floor(100 + (this.stats.vitality.baseValue - 10) * 10);
+    return Math.floor(100 + (this.stats.vitality.baseValue - 10) * 5);
+  }
+
+  public getMaxMana(): number {
+    return Math.floor(100 + (this.stats.intelligence.baseValue - 10) * 1.5);
   }
 
   public getMaxEnergy(): number {
-    return Math.floor(100 + (this.stats.agility.baseValue - 10) * 5);
+    return Math.floor(100 + (this.stats.agility.baseValue - 10) * 1.5);
   }
 
   public getRunSpeed(): number {

@@ -13,10 +13,10 @@ export const Game = () => {
   const [lootMenuOpen, setLootMenuOpen] = useState(false);
   const [currentLootDrop, setCurrentLootDrop] = useState<LootDrop | null>(null);
 
-  // Add keyboard handler for 'E' key
+  // Add keyboard handler for 'F' key
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
-      if (event.key.toLowerCase() === "e") {
+      if (event.key.toLowerCase() === "f") {
         const player = engineRef.current?.player;
         const nearbyLoot = player?.getNearbyLootDrop();
 
@@ -49,7 +49,7 @@ export const Game = () => {
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
-      if (e.key === "c" || e.key === "i") {
+      if (e.key === "c") {
         setCharacterMenuOpen((prev) => !prev);
       }
 

@@ -79,13 +79,19 @@ export const Resources = [
   ClothingResources.body.male.blue_shirt,
   ClothingResources.body.male.black_shirt,
 
+  // Offhand
+  // Male
+  ClothingResources.offhand.male.small_lantern,
+  ClothingResources.offhand.male.torch,
+
+  // Female
+  ClothingResources.offhand.female.small_lantern,
+
   // Back
   // Male
   ClothingResources.back.male.small_backpack,
-  ClothingResources.back.male.small_lantern,
 
   // Female
-  ClothingResources.back.female.small_lantern,
 
   // Head
   // Male

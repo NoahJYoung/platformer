@@ -1,20 +1,28 @@
 import * as ex from "excalibur";
 
 export const ClothingResources = {
-  back: {
+  offhand: {
     male: {
-      small_backpack: new ex.ImageSource(
-        "/assets/sprites/armor/back/male/small_backpack.png",
+      small_lantern: new ex.ImageSource(
+        "/assets/sprites/armor/offhand/male/small_lantern.png",
         { filtering: ex.ImageFiltering.Pixel }
       ),
-      small_lantern: new ex.ImageSource(
-        "/assets/sprites/armor/back/male/small_lantern.png",
+      torch: new ex.ImageSource(
+        "/assets/sprites/armor/offhand/male/torch.png",
         { filtering: ex.ImageFiltering.Pixel }
       ),
     },
     female: {
       small_lantern: new ex.ImageSource(
-        "/assets/sprites/armor/back/female/small_lantern.png",
+        "/assets/sprites/armor/offhand/female/small_lantern.png",
+        { filtering: ex.ImageFiltering.Pixel }
+      ),
+    },
+  },
+  back: {
+    male: {
+      small_backpack: new ex.ImageSource(
+        "/assets/sprites/armor/back/male/small_backpack.png",
         { filtering: ex.ImageFiltering.Pixel }
       ),
     },

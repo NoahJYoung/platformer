@@ -97,6 +97,6 @@ export class EquipmentManager {
   }
 
   getTotalElementalDefense() {
-    return { fire: 0, water: 0, ice: 0, earth: 0 };
+    return { fire: 0, water: 0, wind: 0, earth: 0 };
   }
 }

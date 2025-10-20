@@ -33,7 +33,7 @@ export abstract class Character extends ex.Actor {
   public hasTakenDamage = false;
 
   private baseFireDamage = 10;
-  private baseIceDamage = 10;
+  private baseWindDamage = 10;
   private baseWaterDamage = 10;
   private baseEarthDamage = 10;
 
@@ -115,6 +115,8 @@ export abstract class Character extends ex.Actor {
     this.health = this.maxHealth;
     this.maxEnergy = this.statsSystem.getMaxEnergy();
     this.energy = this.maxEnergy;
+    this.maxMana = this.statsSystem.getMaxMana();
+    this.mana = this.maxMana;
     this.runSpeed = this.statsSystem.getRunSpeed();
     this.jumpEnergyCost = 4;
     this.attackEnergyCost = 8;
@@ -353,10 +355,7 @@ export abstract class Character extends ex.Actor {
     if (this.mana >= this.manaCost) {
       this.mana = this.combatSystem.magicAttack(this.mana);
 
-      setTimeout(
-        () => this.createMagicProjectile(spellType),
-        this.animController.attackAnim.frameDuration * 4
-      );
+      this.createMagicProjectile(spellType);
 
       this.mana -= this.manaCost;
     }
@@ -468,8 +467,8 @@ export abstract class Character extends ex.Actor {
 
     const fireDamage =
       this.baseFireDamage * this.statsSystem.getIntelligenceDamageMultiplier();
-    const iceDamage =
-      this.baseIceDamage * this.statsSystem.getIntelligenceDamageMultiplier();
+    const windDamage =
+      this.baseWindDamage * this.statsSystem.getIntelligenceDamageMultiplier();
     const waterDamage =
       this.baseWaterDamage * this.statsSystem.getIntelligenceDamageMultiplier();
     const earthDamage =
@@ -480,8 +479,8 @@ export abstract class Character extends ex.Actor {
       physicalDefense,
       fireDamage,
       fireDefense: elementalDefense.fire,
-      iceDamage,
-      iceDefense: elementalDefense.ice,
+      windDamage,
+      windDefense: elementalDefense.wind,
       waterDamage,
       waterDefense: elementalDefense.water,
       earthDamage,

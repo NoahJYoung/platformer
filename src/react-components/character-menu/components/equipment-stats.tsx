@@ -1,3 +1,4 @@
+import { ElementColors } from "../../../actors/character/types";
 import type { Player } from "../../../actors/player/player";
 import { getPlaceholderImageUrl } from "./get-placeholder-image-url";
 
@@ -19,25 +20,25 @@ export const EquipmentStats = ({ player }: EquipmentStatsProps) => {
       label: "Fire",
       damage: equipStats.fireDamage,
       defense: equipStats.fireDefense,
-      color: "#ff922b",
+      color: ElementColors.fire.hexPrimary,
     },
     {
-      label: "Ice",
-      damage: equipStats.iceDamage,
-      defense: equipStats.iceDefense,
-      color: "#74c0fc",
+      label: "Wind",
+      damage: equipStats.windDamage,
+      defense: equipStats.windDefense,
+      color: ElementColors.wind.hexPrimary,
     },
     {
       label: "Water",
       damage: equipStats.waterDamage,
       defense: equipStats.waterDefense,
-      color: "#4dabf7",
+      color: ElementColors.water.hexPrimary,
     },
     {
       label: "Earth",
       damage: equipStats.earthDamage,
       defense: equipStats.earthDefense,
-      color: "#8ce99a",
+      color: ElementColors.earth.hexPrimary,
     },
   ];
 
