@@ -175,6 +175,20 @@ export class StatsSystem {
     return 8 + (this.stats.agility.baseValue - 10) * 0.2;
   }
 
+  public getHealthRecoveryRate(): number {
+    const value = Math.max(1 + (this.stats.vitality.baseValue - 10) * 0.2, 1);
+    return Math.round(value);
+  }
+
+  public getManaRecoveryRate(): number {
+    const value = Math.max(
+      1 + (this.stats.intelligence.baseValue - 10) * 0.2,
+      1
+    );
+
+    return Math.round(value);
+  }
+
   public getAttackSpeed(): number {
     const baseSpeed = 1000;
     const reduction = (this.stats.agility.baseValue - 10) * 20;

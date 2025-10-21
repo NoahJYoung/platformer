@@ -4,15 +4,24 @@ import { v4 as uuid } from "uuid";
 
 export const createItem = (
   key: string,
-  sex: "male" | "female"
+  sex: "male" | "female" = "male"
 ): InventoryItem => {
-  const itemData = items.get(key);
+  const itemData: Record<string, any> | undefined = items.get(key);
 
   if (!itemData) {
     throw new Error(`No item data found for item: ${key}`);
   }
 
-  const { spriteSheets, ...rest } = itemData;
+  if (itemData.spriteSheets) {
+    return {
+      ...itemData,
+      id: uuid(),
+      spriteSheet: itemData?.spriteSheets[sex],
+    } as InventoryItem;
+  }
 
-  return { ...rest, id: uuid(), spriteSheet: spriteSheets[sex] };
+  return {
+    ...itemData,
+    id: uuid(),
+  } as InventoryItem;
 };

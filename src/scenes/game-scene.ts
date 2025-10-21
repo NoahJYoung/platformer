@@ -9,6 +9,8 @@ import type { EnemyConfig } from "../actors/enemy/types";
 import { GroundTileManager } from "./ground-tile-manager";
 import { BackgroundResources, FloorResources } from "../resources";
 import { createItem } from "../items/item-creator";
+import { Tree } from "../actors/resources/tree";
+import { TreeResources } from "../resources/tree-resources";
 
 export class GameMapScene extends ex.Scene {
   public name: string = "unknown";
@@ -17,8 +19,9 @@ export class GameMapScene extends ex.Scene {
   protected levelWidth: number;
   protected levelHeight: number;
   private groundTileManager = new GroundTileManager(FloorResources.floor1);
+  private spawnIntervalTime = 20000;
 
-  private AUTO_SPAWN_ENEMIES = true;
+  private AUTO_SPAWN_ENEMIES = false;
   private spawnInterval: ex.Timer | null = null;
 
   constructor(config: SceneConfig) {
@@ -112,7 +115,7 @@ export class GameMapScene extends ex.Scene {
     if (!this.AUTO_SPAWN_ENEMIES) return;
 
     this.spawnInterval = new ex.Timer({
-      interval: 20000, // 20 seconds
+      interval: this.spawnIntervalTime,
       repeats: true,
       fcn: () => {
         this.spawnRandomEnemy();
@@ -147,24 +150,11 @@ export class GameMapScene extends ex.Scene {
 
     this.spawnEnemy(enemyConfig);
 
-    // Log all actors in the scene
-    console.log("=== SCENE ACTORS AFTER SPAWN ===");
-    console.log(`Total actors: ${this.actors.length}`);
-
-    // Group actors by type
     const actorsByType: Record<string, number> = {};
     this.actors.forEach((actor) => {
       const type = actor.name?.split("_")[0] || "unnamed";
       actorsByType[type] = (actorsByType[type] || 0) + 1;
     });
-
-    console.log("Actors by type:", actorsByType);
-
-    // Show alive vs killed
-    const aliveActors = this.actors.filter((a) => !a.isKilled()).length;
-    const killedActors = this.actors.filter((a) => a.isKilled()).length;
-    console.log(`Alive: ${aliveActors}, Killed: ${killedActors}`);
-    console.log("================================");
   }
 
   protected createExits(engine: GameEngine): void {
@@ -242,90 +232,126 @@ export class GameMapScene extends ex.Scene {
       season === "winter" ? "winter" : season === "fall" ? "fall" : "normal";
     const backgrounds = BackgroundResources[theme];
 
-    const layers = [
-      { resource: backgrounds.layer5, speed: -0.6 },
-      { resource: backgrounds.layer5Night, speed: -0.6, isNightLayer: true },
-      { resource: backgrounds.layer4, speed: -0.5 },
-      { resource: backgrounds.layer4Night, speed: -0.5, isNightLayer: true },
-      { resource: backgrounds.layer3, speed: -0.4 },
-      { resource: backgrounds.layer2, speed: -0.3 },
-      { resource: backgrounds.layer1, speed: -0.2 },
-    ];
-
     const bgWidth = 1024;
     const bgHeight = 346;
 
-    const viewportHeight = engine.drawHeight;
+    const skyScale = (this.levelHeight / bgHeight) * 1.1;
+    const scaledSkyWidth = bgWidth * skyScale;
+    const scaledSkyHeight = bgHeight * skyScale;
 
-    const zoom = this.camera.zoom;
-    const effectiveViewportHeight = viewportHeight / zoom;
+    const tilesNeeded = Math.ceil(this.levelWidth / bgWidth) + 2;
 
-    const baseScaleY = effectiveViewportHeight / bgHeight;
-    const scaledWidth = bgWidth * baseScaleY;
+    const layers = [
+      {
+        resource: backgrounds.layer5,
+        parallax: ex.vec(1, 1),
+        isSky: true,
+        z: -100,
+      },
+      {
+        resource: backgrounds.layer5Night,
+        parallax: ex.vec(1, 1),
+        isSky: true,
+        isNight: true,
+        z: -99.5,
+      },
 
-    const maxParallaxOffset =
-      (this.levelWidth / 2) * Math.max(...layers.map((l) => l.speed));
-    const tilesNeeded =
-      Math.ceil((this.levelWidth + maxParallaxOffset * 2) / scaledWidth) + 2;
+      {
+        resource: backgrounds.layer4,
+        parallax: ex.vec(0.1, 0.1),
+        z: -98,
+      },
+      {
+        resource: backgrounds.layer4Night,
+        parallax: ex.vec(0.1, 0.1),
+        isNight: true,
+        z: -97.5,
+      },
+      {
+        resource: backgrounds.layer3,
+        parallax: ex.vec(0.175, 0.175),
+        z: -96,
+      },
+      {
+        resource: backgrounds.layer2,
+        parallax: ex.vec(0.35, 0.35),
+        z: -94,
+      },
+      {
+        resource: backgrounds.layer1,
+        parallax: ex.vec(0.7, 0.7),
+        z: -92,
+      },
+    ];
 
-    layers.forEach((layer, index) => {
-      const startOffset = -Math.ceil(maxParallaxOffset / scaledWidth);
+    layers.forEach((layer) => {
+      if (layer.isSky) {
+        const skyTilesNeeded = Math.ceil(this.levelWidth / scaledSkyWidth) + 4;
 
-      const dayLayerIndex = layer.isNightLayer ? index - 1 : index;
-      const visualIndex = dayLayerIndex > 1 ? Math.floor(dayLayerIndex / 2) : 0;
-      const verticalScaleMultiplier = 1 + (4 - visualIndex) * 0.3;
-      const scaleY = baseScaleY * verticalScaleMultiplier;
+        for (let i = -2; i < skyTilesNeeded; i++) {
+          const sprite = layer.resource.toSprite();
+          sprite.scale = ex.vec(skyScale, skyScale);
 
-      const isFurthestLayer = visualIndex === 0;
-      const yOffset = isFurthestLayer ? 0 : this.levelHeight * 0.05;
+          const background = new ex.Actor({
+            pos: ex.vec(
+              i * scaledSkyWidth + scaledSkyWidth / 2,
+              scaledSkyHeight / 2
+            ),
+            anchor: ex.vec(0.5, 0.5),
+            z: layer.z,
+          });
 
-      for (let i = startOffset; i < tilesNeeded + startOffset; i++) {
-        const sprite = layer.resource.toSprite();
+          background.graphics.use(sprite);
+          background.addComponent(new ex.ParallaxComponent(layer.parallax));
 
-        sprite.scale = ex.vec(baseScaleY, scaleY);
-
-        const zIndex = layer.isNightLayer ? -99.5 + index : -100 + index;
-
-        const background = new ex.Actor({
-          pos: ex.vec(i * scaledWidth, this.levelHeight / 2 + yOffset),
-          anchor: ex.vec(0, 0.5),
-          z: zIndex,
-        });
-
-        background.graphics.use(sprite);
-
-        if (layer.isNightLayer) {
-          sprite.opacity = 0;
-        }
-
-        const initialX = i * scaledWidth;
-
-        background.on("preupdate", () => {
-          if (this.player && this.camera) {
-            const cameraPos = this.camera.pos;
-            const parallaxOffset =
-              (cameraPos.x - this.levelWidth / 2) * layer.speed;
-
-            background.pos = ex.vec(
-              initialX - parallaxOffset,
-              cameraPos.y + yOffset
-            );
-
-            if (layer.isNightLayer) {
+          if (layer.isNight) {
+            sprite.opacity = 0;
+            background.on("preupdate", () => {
               const nightData = engine.timeCycle.calculateNightEffect(
                 engine.timeCycle.getTimeOfDay()
               );
               sprite.opacity = nightData.opacity / 0.8;
-            }
+            });
           }
-        });
 
-        this.add(background);
+          this.add(background);
+        }
+      } else {
+        for (let i = -1; i < tilesNeeded; i++) {
+          const sprite = layer.resource.toSprite();
+
+          const parallaxFactor = layer.parallax.y;
+          const yOffset = this.levelHeight * 0.8 * (1 - parallaxFactor) - 50;
+
+          const background = new ex.Actor({
+            pos: ex.vec(
+              i * bgWidth + bgWidth / 2,
+              this.levelHeight - bgHeight / 2 - yOffset
+            ),
+            anchor: ex.vec(0.5, 0.5),
+            z: layer.z,
+          });
+
+          background.graphics.use(sprite);
+          background.addComponent(new ex.ParallaxComponent(layer.parallax));
+
+          if (layer.isNight) {
+            sprite.opacity = 0;
+            background.on("preupdate", () => {
+              const nightData = engine.timeCycle.calculateNightEffect(
+                engine.timeCycle.getTimeOfDay()
+              );
+              sprite.opacity = nightData.opacity / 0.8;
+            });
+          }
+
+          this.add(background);
+        }
       }
-      engine.timeCycle.starField?.createStars(this);
     });
-  }
 
+    engine.timeCycle.starField?.createStars(this);
+  }
   private createPlatform(
     x: number,
     y: number,
@@ -430,12 +456,32 @@ export class GameMapScene extends ex.Scene {
     return ground;
   }
 
+  protected createTrees(numberOfTrees: number) {
+    for (let i = 0; i < numberOfTrees; i++) {
+      const modifier = i === 0 ? 150 : -150;
+      if (i % 7 === 0) {
+        const x = (this.levelWidth / numberOfTrees) * i + modifier;
+        const y = this.levelHeight - 124;
+        const testTree = new Tree(ex.vec(x, y), {
+          normal: TreeResources.normal,
+          apples: TreeResources.apples,
+          fall: TreeResources.fall,
+          winter: TreeResources.winter,
+        });
+
+        this.add(testTree);
+      }
+    }
+  }
+
   protected createLevel(engine: GameEngine): void {
     this.createBackground(engine);
     this.createPlatforms();
 
     const ground = this.getGroundFromSeason(engine);
     this.add(ground);
+
+    this.createTrees(20);
 
     const exitLabel = new ex.Label({
       text: "Forest →",

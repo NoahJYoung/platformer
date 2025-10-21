@@ -47,10 +47,10 @@ export class TimeCycle {
 
     this.createGradientCanvas();
 
-    this.timeOfDay = 20;
+    this.timeOfDay = 6;
     this.cycleSpeed = 0.017;
 
-    this.season = "spring";
+    this.season = "winter";
     this.dayInSeason = 1;
     this.daysPerSeason = 30;
     this.seasonChangeCallbacks = [];
@@ -311,7 +311,7 @@ export class TimeCycle {
     // TODO: Get Scene light sources
     const player = this.game.player;
     let lightStrength = 0;
-    const itemLightStrength = 0.1;
+    const itemLightStrength = 0.15;
 
     if (player) {
       const playerLightSources = player.equipmentManager.equippedLightSources;

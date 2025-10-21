@@ -8,14 +8,14 @@ import { Player } from "../player/player";
 
 export class LootDrop extends ex.Actor {
   public inventory: Inventory;
-  public equipment: Map<string, EquipmentItem | null>;
+  public equipment: Map<string, EquipmentItem | null> | null;
   private interactionIndicator?: ex.Actor;
   private isPlayerNearby: boolean = false;
 
   constructor(
     pos: ex.Vector,
     inventory: Inventory,
-    equipmentManager: EquipmentManager
+    equipmentManager: EquipmentManager | null
   ) {
     super({
       name: "loot-drop",
@@ -27,7 +27,7 @@ export class LootDrop extends ex.Actor {
     });
 
     this.inventory = inventory;
-    this.equipment = equipmentManager.getAllEquipped();
+    this.equipment = equipmentManager?.getAllEquipped() || null;
   }
 
   onInitialize(engine: GameEngine) {
@@ -101,7 +101,7 @@ export class LootDrop extends ex.Actor {
 
   public getAllItems(): {
     inventory: Inventory;
-    equipment: Map<string, EquipmentItem | null>;
+    equipment: Map<string, EquipmentItem | null> | null;
   } {
     return {
       inventory: this.inventory,

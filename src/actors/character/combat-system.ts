@@ -88,11 +88,14 @@ export class CombatSystem {
 
     const attackHitbox = new ex.Actor({
       pos: ex.vec(0, 0),
+      name: `weapon-hitbox-${weapon.subtype}`,
       width: (weapon.reach || 30) * SCALE,
       height: 20 * SCALE,
       collisionType: ex.CollisionType.Passive,
       collisionGroup: CollisionGroups.Weapon,
     });
+
+    (attackHitbox as any).weaponData = weapon;
 
     const collisionHandler = (evt: ex.CollisionStartEvent) => {
       const target = evt.other.owner as ex.Actor;

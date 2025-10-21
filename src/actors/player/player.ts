@@ -9,6 +9,7 @@ import type {
 } from "../character/types";
 import type { GameEngine } from "../../game-engine";
 import type { LootDrop } from "../character/loot-drop";
+import type { MaterialSource } from "../resources/material-source";
 
 export class Player extends Character {
   public isRunMode: boolean = false;
@@ -16,6 +17,7 @@ export class Player extends Character {
   private temperature: number = 20;
   private hunger: number = 100;
   private thirst: number = 100;
+  private nearbyMaterialSource: MaterialSource | null = null;
 
   constructor(
     pos: ex.Vector,
@@ -36,6 +38,14 @@ export class Player extends Character {
   update(engine: GameEngine, elapsed: number): void {
     super.update(engine, elapsed);
     this.updateTemperature(engine);
+  }
+
+  public setNearbyMaterialSource(source: MaterialSource | null) {
+    this.nearbyMaterialSource = source;
+  }
+
+  public getNearbyMaterialSource(): MaterialSource | null {
+    return this.nearbyMaterialSource;
   }
 
   private handleInput(engine: ex.Engine) {

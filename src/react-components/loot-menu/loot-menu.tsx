@@ -4,10 +4,8 @@ import type { LootDrop } from "../../actors/character/loot-drop";
 import type {
   InventoryItem,
   EquipmentItem,
-  EquipmentSlot,
 } from "../../actors/character/types";
 import { InventoryPanel } from "../character-menu/components/inventory-panel";
-import { getPlaceholderImageUrl } from "../character-menu/components/get-placeholder-image-url";
 import { EquipmentPanel } from "../character-menu/components/equipment-panel";
 
 interface LootMenuProps {
@@ -48,24 +46,8 @@ export const LootMenu: React.FC<LootMenuProps> = ({
     return <span style={{ fontSize: "24px" }}>📦</span>;
   };
 
-  const renderEquipmentPlaceholder = (slot: EquipmentSlot) => {
-    return (
-      <img
-        src={getPlaceholderImageUrl(slot)}
-        alt={slot}
-        style={{
-          width: "32px",
-          height: "32px",
-          borderRadius: "8px",
-          opacity: "0.1",
-          imageRendering: "pixelated",
-          filter: "grayscale(100%)",
-        }}
-      />
-    );
-  };
-
   const handleTakeEquipment = (slot: string) => {
+    if (!lootEquipment) return;
     const item = lootEquipment.get(slot);
     if (item) {
       const success = player.inventory.addItem(0, item);
@@ -75,53 +57,6 @@ export const LootMenu: React.FC<LootMenuProps> = ({
       }
     }
   };
-
-  const handleTakeAll = () => {
-    for (let i = 0; i < lootInventory.maxSlots; i++) {
-      const item = lootInventory.getItem(i);
-      if (item) {
-        const success = player.inventory.addItem(0, item);
-        if (success) {
-          lootInventory.removeItem(i);
-        }
-      }
-    }
-
-    lootEquipment.forEach((item, slot) => {
-      if (item) {
-        const success = player.inventory.addItem(0, item);
-        if (success) {
-          lootEquipment.set(slot, null);
-        }
-      }
-    });
-
-    forceUpdate();
-  };
-
-  const hasAnyItems = () => {
-    for (let i = 0; i < lootInventory.maxSlots; i++) {
-      if (lootInventory.getItem(i)) return true;
-    }
-    for (const item of lootEquipment.values()) {
-      if (item) return true;
-    }
-    return false;
-  };
-
-  const equipmentSlots: EquipmentSlot[] = [
-    "weapon",
-    "helmet",
-    "mask",
-    "body",
-    "legs",
-    "gloves",
-    "boots",
-    "ring1",
-    "ring2",
-    "amulet",
-    "back",
-  ];
 
   return (
     <div
@@ -141,14 +76,14 @@ export const LootMenu: React.FC<LootMenuProps> = ({
     >
       <div
         style={{
+          position: "relative",
           background: "#2a2a2a",
           border: "3px solid #444",
           borderRadius: "8px",
-          padding: "20px",
+          padding: "16px",
           maxWidth: "900px",
           maxHeight: "80vh",
           overflowY: "auto",
-          position: "relative",
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -158,31 +93,19 @@ export const LootMenu: React.FC<LootMenuProps> = ({
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            marginBottom: "20px",
           }}
         >
           <button
             style={{
-              padding: "8px 16px",
-              background: hasAnyItems() ? "#4caf50" : "#555",
-              border: "none",
-              borderRadius: "4px",
-              color: "white",
-              cursor: hasAnyItems() ? "pointer" : "not-allowed",
-              fontSize: "14px",
-            }}
-            onClick={handleTakeAll}
-            disabled={!hasAnyItems()}
-          >
-            Take All
-          </button>
-          <button
-            style={{
+              position: "absolute",
+              top: 0,
+              right: 0,
               background: "transparent",
               border: "none",
               color: "#aaa",
-              fontSize: "24px",
+              fontSize: "12px",
               cursor: "pointer",
+              marginLeft: "auto",
             }}
             onClick={onClose}
           >
@@ -194,22 +117,27 @@ export const LootMenu: React.FC<LootMenuProps> = ({
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "220px 220px 220px",
+            gridTemplateColumns:
+              lootEquipment && !!lootEquipment.size
+                ? "220px 220px 220px"
+                : "220px 220px",
             gap: "10px",
           }}
         >
           {/* Loot Equipment */}
-          <EquipmentPanel
-            title="Equipment"
-            equipment={lootEquipment}
-            onEquipmentChange={forceUpdate}
-            renderItemIcon={renderItemIcon}
-            onSelectItem={setSelectedItem}
-            onDeselectItem={() => setSelectedItem(null)}
-            selectedItem={selectedItem}
-            mode="loot"
-            onTakeEquipment={handleTakeEquipment}
-          />
+          {lootEquipment && (
+            <EquipmentPanel
+              title="Equipment"
+              equipment={lootEquipment}
+              onEquipmentChange={forceUpdate}
+              renderItemIcon={renderItemIcon}
+              onSelectItem={setSelectedItem}
+              onDeselectItem={() => setSelectedItem(null)}
+              selectedItem={selectedItem}
+              mode="loot"
+              onTakeEquipment={handleTakeEquipment}
+            />
+          )}
 
           {/* Loot Inventory */}
           <InventoryPanel
@@ -235,19 +163,6 @@ export const LootMenu: React.FC<LootMenuProps> = ({
             mode="player"
           />
         </div>
-
-        {!hasAnyItems() && (
-          <div
-            style={{
-              textAlign: "center",
-              color: "#666",
-              marginTop: "20px",
-              fontSize: "14px",
-            }}
-          >
-            No items remaining in loot
-          </div>
-        )}
       </div>
     </div>
   );

@@ -83,3 +83,38 @@ export const PlayerResources = {
     },
   },
 } as const;
+
+const malePlayerResourcesArray = [
+  // Skin
+  PlayerResources.male.skin.skin_1,
+  PlayerResources.male.skin.skin_2,
+  PlayerResources.male.skin.skin_3,
+  PlayerResources.male.skin.skin_4,
+  PlayerResources.male.skin.skin_5,
+  // Hair
+  PlayerResources.male.hair.hair_1,
+  PlayerResources.male.hair.hair_2,
+  PlayerResources.male.hair.hair_3,
+  PlayerResources.male.hair.hair_4,
+  PlayerResources.male.hair.hair_5,
+];
+
+const femalePlayerResourcesArray = [
+  // Skin
+  PlayerResources.female.skin.skin_1,
+  PlayerResources.female.skin.skin_2,
+  PlayerResources.female.skin.skin_3,
+  PlayerResources.female.skin.skin_4,
+  PlayerResources.female.skin.skin_5,
+  // Hair
+  PlayerResources.female.hair.hair_1,
+  PlayerResources.female.hair.hair_2,
+  PlayerResources.female.hair.hair_3,
+  PlayerResources.female.hair.hair_4,
+  PlayerResources.female.hair.hair_5,
+];
+
+export const playerResourcesArray = [
+  ...malePlayerResourcesArray,
+  ...femalePlayerResourcesArray,
+];

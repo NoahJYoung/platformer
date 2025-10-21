@@ -39,7 +39,7 @@ export class StarField {
     for (let i = 0; i < numStars; i++) {
       this.starData.push({
         x: random() * viewportWidth,
-        y: random() * (viewportHeight * 0.6),
+        y: random() * viewportHeight,
         size: random() * 1.5 + 0.5,
         brightness: 1,
         twinkleOffset: random() * Math.PI * 2,

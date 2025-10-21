@@ -3,8 +3,10 @@ import type { EquipmentItem, InventoryItem } from "./types";
 export class Inventory {
   private items: Map<number, InventoryItem | null> = new Map();
   public maxSlots: number = 20;
+  public onRemoveItem?: () => void;
 
-  constructor() {
+  constructor(onRemoveItem?: () => void) {
+    this.onRemoveItem = onRemoveItem;
     for (let i = 0; i < this.maxSlots; i++) {
       this.items.set(i, null);
     }
@@ -37,6 +39,7 @@ export class Inventory {
   removeItem(slot: number): InventoryItem | null {
     const item = this.items.get(slot) || null;
     this.items.set(slot, null);
+    this.onRemoveItem?.();
     return item;
   }
 
@@ -56,6 +59,10 @@ export class Inventory {
 
   getItem(slot: number): InventoryItem | EquipmentItem | null {
     return this.items.get(slot) || null;
+  }
+
+  getAllItems() {
+    return this.items;
   }
 
   getSlotFromItem(item: InventoryItem): number {

@@ -53,6 +53,9 @@ export abstract class Character extends ex.Actor {
   protected jumpEnergyCost: number = 4;
   protected attackEnergyCost: number = 8;
   protected energyRecoveryRate: number = 4;
+  protected healthRecoveryRate: number = 1;
+  protected manaRecoveryRate: number = 1;
+
   protected dodgeEnergyCost: number = 4;
   protected manaCost: number = 8;
 
@@ -126,6 +129,8 @@ export abstract class Character extends ex.Actor {
     this.jumpEnergyCost = 4;
     this.attackEnergyCost = 8;
     this.energyRecoveryRate = this.statsSystem.getEnergyRecoveryRate();
+    this.healthRecoveryRate = this.statsSystem.getHealthRecoveryRate();
+    this.manaRecoveryRate = this.statsSystem.getHealthRecoveryRate();
 
     this.combatSystem = new CombatSystem(
       this,
@@ -213,8 +218,8 @@ export abstract class Character extends ex.Actor {
 
   protected updateResources(deltaSeconds: number) {
     const energyRecoveryRate = this.statsSystem.getEnergyRecoveryRate();
-    const manaRecoveryRate = 2;
-    const healthRecoveryRate = 0.5;
+    const manaRecoveryRate = this.statsSystem.getManaRecoveryRate();
+    const healthRecoveryRate = this.statsSystem.getHealthRecoveryRate();
 
     if (this.isShieldActive) {
       const manaDrain = this.getShieldManaCost() * deltaSeconds;
@@ -532,6 +537,8 @@ export abstract class Character extends ex.Actor {
     const oldMaxHealth = this.maxHealth;
     this.maxHealth = this.statsSystem.getMaxHealth();
     this.health += this.maxHealth - oldMaxHealth;
+    this.healthRecoveryRate = this.statsSystem.getHealthRecoveryRate();
+
     console.log(`Max health increased to ${this.maxHealth}`);
   }
 
@@ -541,6 +548,19 @@ export abstract class Character extends ex.Actor {
     this.energyRecoveryRate = this.statsSystem.getEnergyRecoveryRate();
     console.log(
       `Agility improved! Speed: ${this.runSpeed}, Energy: ${this.maxEnergy}`
+    );
+  }
+
+  protected onStrengthLevelUp() {
+    console.log(
+      `Strength increased! Damage multiplier: ${this.statsSystem.getStrengthDamageMultiplier()}`
+    );
+  }
+
+  protected onIntelligenceLevelUp() {
+    this.manaRecoveryRate = this.statsSystem.getManaRecoveryRate();
+    console.log(
+      `Intelligence increased! Damage multiplier: ${this.statsSystem.getIntelligenceDamageMultiplier()}`
     );
   }
 
@@ -572,18 +592,6 @@ export abstract class Character extends ex.Actor {
       earthDamage,
       earthDefense: elementalDefense.earth,
     };
-  }
-
-  protected onStrengthLevelUp() {
-    console.log(
-      `Strength increased! Damage multiplier: ${this.statsSystem.getStrengthDamageMultiplier()}`
-    );
-  }
-
-  protected onIntelligenceLevelUp() {
-    console.log(
-      `Intelligence increased! Damage multiplier: ${this.statsSystem.getIntelligenceDamageMultiplier()}`
-    );
   }
 
   public get level() {

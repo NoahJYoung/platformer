@@ -96,3 +96,58 @@ export const ClothingResources = {
     },
   },
 } as const;
+
+const maleClothingResourcesArray = [
+  // Offhand
+  ClothingResources.offhand.male.torch,
+  ClothingResources.offhand.male.small_lantern,
+  // Back
+  ClothingResources.back.male.small_backpack,
+  // Head
+  ClothingResources.head.male.black_hood,
+  ClothingResources.head.male.blue_feather_hat,
+  // Face
+  ClothingResources.face.male.brown_face_scarf,
+  // Body
+  ClothingResources.body.male.black_shirt,
+  ClothingResources.body.male.blue_shirt,
+  // Legs
+  ClothingResources.legs.male.black_pants,
+  ClothingResources.legs.male.blue_pants,
+  // Feet
+  ClothingResources.feet.male.brown_boots,
+  ClothingResources.feet.male.black_boots,
+  // Hands
+  ClothingResources.hands.male.brown_gloves,
+  ClothingResources.hands.male.black_gloves,
+];
+
+const femaleClothingResourcesArray = [
+  // Offhand
+  // ClothingResources.offhand.female.torch,
+  ClothingResources.offhand.female.small_lantern,
+  // // Back
+  // ClothingResources.back.female.small_backpack,
+  // // Head
+  // ClothingResources.head.female.black_hood,
+  // ClothingResources.head.female.blue_feather_hat,
+  // // Face
+  // ClothingResources.face.female.brown_face_scarf,
+  // // Body
+  // ClothingResources.body.female.black_shirt,
+  // ClothingResources.body.female.blue_shirt,
+  // // Legs
+  // ClothingResources.legs.female.black_pants,
+  // ClothingResources.legs.female.blue_pants,
+  // // Feet
+  // ClothingResources.feet.female.brown_boots,
+  // ClothingResources.feet.female.black_boots,
+  // // Hands
+  // ClothingResources.hands.female.brown_gloves,
+  // ClothingResources.hands.female.black_gloves,
+];
+
+export const clothingResourcesArray = [
+  ...maleClothingResourcesArray,
+  ...femaleClothingResourcesArray,
+];

@@ -43,3 +43,32 @@ export const BackgroundResources = {
     ),
   },
 };
+
+export const backgroundResourcesArray: ex.ImageSource[] = [
+  // Fall
+  BackgroundResources.fall.layer1,
+  BackgroundResources.fall.layer2,
+  BackgroundResources.fall.layer3,
+  BackgroundResources.fall.layer4,
+  BackgroundResources.fall.layer4Night,
+  BackgroundResources.fall.layer5,
+  BackgroundResources.fall.layer5Night,
+
+  // Winter
+  BackgroundResources.winter.layer1,
+  BackgroundResources.winter.layer2,
+  BackgroundResources.winter.layer3,
+  BackgroundResources.winter.layer4,
+  BackgroundResources.winter.layer4Night,
+  BackgroundResources.winter.layer5,
+  BackgroundResources.winter.layer5Night,
+
+  // Normal
+  BackgroundResources.normal.layer1,
+  BackgroundResources.normal.layer2,
+  BackgroundResources.normal.layer3,
+  BackgroundResources.normal.layer4,
+  BackgroundResources.normal.layer4Night,
+  BackgroundResources.normal.layer5,
+  BackgroundResources.normal.layer5Night,
+];

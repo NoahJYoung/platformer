@@ -21,3 +21,21 @@ export const WeaponResources = {
     ),
   },
 } as const;
+
+const maleWeaponResourcesArray = [
+  // Swords
+  WeaponResources.male.iron_sword,
+  // Axes
+  WeaponResources.male.iron_axe,
+];
+
+const femaleWeaponResourcesArray = [
+  // Swords
+  WeaponResources.female.iron_sword,
+  // Axes
+  WeaponResources.female.iron_axe,
+];
+export const weaponResourcesArray = [
+  ...maleWeaponResourcesArray,
+  ...femaleWeaponResourcesArray,
+];

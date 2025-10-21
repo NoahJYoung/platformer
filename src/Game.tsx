@@ -5,6 +5,7 @@ import { CharacterMenu } from "./react-components/character-menu/character-menu"
 import "./globals.css";
 import type { LootDrop } from "./actors/character/loot-drop";
 import { LootMenu } from "./react-components/loot-menu/loot-menu";
+import type { MaterialSource } from "./actors/resources/material-source";
 
 export const Game = () => {
   const gameRef = useRef(null);
@@ -12,8 +13,10 @@ export const Game = () => {
   const [characterMenuOpen, setCharacterMenuOpen] = useState(false);
   const [lootMenuOpen, setLootMenuOpen] = useState(false);
   const [currentLootDrop, setCurrentLootDrop] = useState<LootDrop | null>(null);
+  const [materialSourceMenuOpen, setMaterialSourceMenuOpen] = useState(false);
+  const [currentMaterialSource, setCurrentMaterialSource] =
+    useState<MaterialSource | null>(null);
 
-  // Add keyboard handler for 'F' key
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
       if (event.key.toLowerCase() === "f") {
@@ -23,6 +26,15 @@ export const Game = () => {
         if (nearbyLoot && nearbyLoot.getIsPlayerNearby()) {
           setCurrentLootDrop(nearbyLoot);
           setLootMenuOpen(true);
+          return;
+        }
+
+        const nearbySource = player?.getNearbyMaterialSource();
+
+        if (nearbySource && nearbySource.getIsPlayerNearby()) {
+          setCurrentMaterialSource(nearbySource);
+          setMaterialSourceMenuOpen(true);
+          return;
         }
       }
     };
@@ -131,6 +143,28 @@ export const Game = () => {
               onClose={() => {
                 setLootMenuOpen(false);
                 setCurrentLootDrop(null);
+              }}
+            />
+          )}
+
+          {materialSourceMenuOpen && currentMaterialSource && (
+            <LootMenu
+              player={engineRef.current.player}
+              lootDrop={
+                {
+                  inventory: currentMaterialSource.interactInventory,
+                  equipment: null,
+                  isPlayerNearby: currentMaterialSource.getIsPlayerNearby(),
+                  getAllItems: () => ({
+                    inventory: currentMaterialSource.interactInventory,
+                    equipment: null,
+                  }),
+                } as unknown as LootDrop
+              }
+              isOpen={materialSourceMenuOpen}
+              onClose={() => {
+                setMaterialSourceMenuOpen(false);
+                setCurrentMaterialSource(null);
               }}
             />
           )}
