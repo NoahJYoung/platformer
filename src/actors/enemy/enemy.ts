@@ -5,9 +5,9 @@ import { Player } from "../player/player";
 import type { EnemyConfig } from "./types";
 
 export class Enemy extends Character {
-  private detectionRange: number = 300 * SCALE;
-  private attackRange: number = 20 * SCALE;
-  private patrolDistance: number = 100 * SCALE;
+  private detectionRange: number = 300;
+  private attackRange: number = 20;
+  private patrolDistance: number = 100;
   private patrolStartX: number;
   private aiState: "idle" | "patrol" | "chase" | "attack" | "retreat" = "idle";
   private player?: Player;

@@ -47,9 +47,9 @@ export abstract class MaterialSource extends ex.Actor {
 
   onInitialize(engine: ex.Engine) {
     this.interactionIndicator = new ex.Actor({
-      pos: ex.vec(0, -this.height / 2 - 20 * SCALE),
-      width: 32 * SCALE,
-      height: 16 * SCALE,
+      pos: ex.vec(0, -this.height / 2 - 20),
+      width: 32,
+      height: 16,
       collisionType: ex.CollisionType.PreventCollision,
       z: this.z + 1,
     });
@@ -57,7 +57,7 @@ export abstract class MaterialSource extends ex.Actor {
     const keyText = new ex.Text({
       text: "[F]",
       font: new ex.Font({
-        size: 10 * SCALE,
+        size: 10,
         family: "Arial",
         bold: true,
         color: ex.Color.White,
@@ -189,9 +189,8 @@ export abstract class MaterialSource extends ex.Actor {
       this.interactionIndicator.graphics.visible = false;
     }
 
-    this.spawnLootDrop();
-
     this.onDeath();
+    this.spawnLootDrop();
 
     setTimeout(() => {
       this.kill();
@@ -201,10 +200,10 @@ export abstract class MaterialSource extends ex.Actor {
   protected abstract onDeath(): void;
 
   private spawnLootDrop() {
-    if (!this.scene) return;
+    if (!this.scene || !this.dropInventory.getAllItems().size) return;
 
     const lootDrop = new LootDrop(
-      ex.vec(this.pos.x, this.pos.y + 20 * SCALE),
+      ex.vec(this.pos.x, this.pos.y + this.height - 130),
       this.dropInventory,
       null
     );

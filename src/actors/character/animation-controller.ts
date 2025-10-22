@@ -158,8 +158,8 @@ export class AnimationController {
         skinSprite.scale = scale;
         if (hairSprite) hairSprite.scale = scale;
 
-        const xOffset = 24 * SCALE;
-        const yOffset = -8 * SCALE + (SPRITE_BUFFER / 2) * SCALE;
+        const xOffset = 24;
+        const yOffset = -8 + SPRITE_BUFFER / 2;
 
         const members: Array<{ graphic: ex.Graphic; offset: ex.Vector }> = [];
 
@@ -399,9 +399,9 @@ export class AnimationController {
     }
 
     if (this.facingRight) {
-      this.character.offset = ex.vec((SPRITE_WIDTH * SCALE) / 2, 0);
+      this.character.offset = ex.vec(SPRITE_WIDTH / 2, 0);
     } else {
-      this.character.offset = ex.vec(-(SPRITE_WIDTH * SCALE) / 2, 0);
+      this.character.offset = ex.vec(-SPRITE_WIDTH / 2, 0);
     }
 
     this.character.graphics.flipHorizontal = this.facingRight;
@@ -536,7 +536,7 @@ export class AnimationController {
         },
       });
 
-      const yOffset = -(SPRITE_HEIGHT * SCALE) / 2;
+      const yOffset = -SPRITE_HEIGHT / 2;
 
       const frames = ex.range(0, frameCount - 1).map((frameIndex) => {
         const sprite = weaponSheet.getSprite(frameIndex, row);
@@ -648,10 +648,8 @@ export class AnimationController {
 
     this.weaponActor.graphics.flipHorizontal = this.facingRight;
 
-    const xOffset = this.facingRight
-      ? -(SPRITE_WIDTH * SCALE) / 2
-      : (SPRITE_WIDTH * SCALE) / 2;
+    const xOffset = this.facingRight ? -SPRITE_WIDTH / 2 : SPRITE_WIDTH / 2;
     this.weaponActor.pos = ex.vec(xOffset, 0);
-    this.weaponActor.offset = ex.vec(-xOffset, 24 * SCALE);
+    this.weaponActor.offset = ex.vec(-xOffset, 24);
   }
 }

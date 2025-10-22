@@ -9,6 +9,12 @@ export const WeaponResources = {
     iron_axe: new ex.ImageSource("/assets/sprites/weapons/male/iron_axe.png", {
       filtering: ex.ImageFiltering.Pixel,
     }),
+    iron_knife: new ex.ImageSource(
+      "/assets/sprites/weapons/male/iron_knife.png",
+      {
+        filtering: ex.ImageFiltering.Pixel,
+      }
+    ),
   },
   female: {
     iron_sword: new ex.ImageSource(
@@ -27,6 +33,8 @@ const maleWeaponResourcesArray = [
   WeaponResources.male.iron_sword,
   // Axes
   WeaponResources.male.iron_axe,
+  //knives
+  WeaponResources.male.iron_knife,
 ];
 
 const femaleWeaponResourcesArray = [

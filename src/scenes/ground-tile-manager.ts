@@ -11,7 +11,7 @@ export class GroundTileManager {
   private spriteSheet: ex.SpriteSheet;
   private imageSource: ex.ImageSource;
   private tileWidth: number = 32;
-  private tileHeight: number = 32;
+  private tileHeight: number = 64;
 
   private themes: Record<string, GroundThemeConfig> = {
     normal: {
@@ -27,7 +27,7 @@ export class GroundTileManager {
       endCol: 2,
     },
     winter: {
-      row: 2, // Snow tiles on row 2
+      row: 2,
       startCol: 0,
       middleCol: 1,
       endCol: 2,
@@ -67,6 +67,8 @@ export class GroundTileManager {
       return this.createGroundTiles(width, height, "normal");
     }
 
+    console.log({ theme });
+
     const tilesWide = Math.ceil(width / this.tileWidth);
     const tilesHigh = Math.ceil(height / this.tileHeight);
 
@@ -74,17 +76,13 @@ export class GroundTileManager {
 
     for (let row = 0; row < tilesHigh; row++) {
       for (let col = 0; col < tilesWide; col++) {
-        // Determine which tile to use based on position
         let tileCol: number;
 
         if (col === 0) {
-          // First tile - use start
           tileCol = themeConfig.startCol;
         } else if (col === tilesWide - 1) {
-          // Last tile - use end
           tileCol = themeConfig.endCol;
         } else {
-          // Middle tiles - use middle
           tileCol = themeConfig.middleCol;
         }
 

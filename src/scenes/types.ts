@@ -1,5 +1,6 @@
 import type { Inventory } from "../actors/character/inventory";
 import type { EnemyConfig } from "../actors/enemy/types";
+import type { TreeType } from "../actors/resources/tree/tree-types";
 
 export type SceneType = "forest" | "village";
 
@@ -13,6 +14,11 @@ export interface SceneConfig {
   exits?: ExitConfig[];
   enemies?: EnemyConfig[];
   platforms?: PlatformConfig[];
+  materialSources?: MaterialSourceConfig;
+}
+
+export interface MaterialSourceConfig {
+  trees: TreeConfig[];
 }
 
 export interface PlatformConfig {
@@ -29,6 +35,12 @@ export interface ExitConfig {
   height: number;
   targetScene: string;
   targetEntry: string;
+}
+
+export interface TreeConfig {
+  x: number;
+  y: number;
+  type: TreeType;
 }
 
 export interface PlayerState {

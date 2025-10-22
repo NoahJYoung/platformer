@@ -1,6 +1,9 @@
 import type { SceneConfig } from "./types";
 import * as ex from "excalibur";
 
+const TREE_HEIGHT = 208;
+const TREE_WIDTH = 64;
+
 export const scenes: SceneConfig[] = [
   {
     type: "forest",

@@ -89,7 +89,7 @@ export class Ore extends MaterialSource {
     const config = OreConfigs[oreType];
 
     // Ore size - adjust as needed for your graphics
-    super(`ore_${oreType}_${Date.now()}`, pos, 48 * SCALE, 48 * SCALE);
+    super(`ore_${oreType}_${Date.now()}`, pos, 48, 48);
 
     this.oreType = oreType;
     this.config = config;

@@ -89,8 +89,8 @@ export class CombatSystem {
     const attackHitbox = new ex.Actor({
       pos: ex.vec(0, 0),
       name: `weapon-hitbox-${weapon.subtype}`,
-      width: (weapon.reach || 30) * SCALE,
-      height: 20 * SCALE,
+      width: weapon.reach || 30,
+      height: 20,
       collisionType: ex.CollisionType.Passive,
       collisionGroup: CollisionGroups.Weapon,
     });
@@ -135,10 +135,10 @@ export class CombatSystem {
           this.canDealDamage = true;
         }
         const baseReach = weapon.reach || 30;
-        const extensionAmount = 10 * SCALE * (currentFrame - 3);
+        const extensionAmount = 10 * (currentFrame - 3);
         const extendedReach = baseReach + extensionAmount;
 
-        attackHitbox.collider.set(ex.Shape.Box(extendedReach, 20 * SCALE));
+        attackHitbox.collider.set(ex.Shape.Box(extendedReach, 20));
 
         const offsetX = this.animController.facingRight
           ? extensionAmount / 2
@@ -185,8 +185,8 @@ export class CombatSystem {
 
     const punchHitbox = new ex.Actor({
       pos: ex.vec(0, 0),
-      width: 20 * SCALE,
-      height: 20 * SCALE,
+      width: 20,
+      height: 20,
       collisionType: ex.CollisionType.Passive,
       collisionGroup: CollisionGroups.Weapon,
     });
@@ -204,10 +204,10 @@ export class CombatSystem {
           this.canDealDamage = true;
         }
 
-        const extensionAmount = 10 * SCALE * (currentFrame - 2);
-        const extendedReach = 5 * SCALE + extensionAmount;
+        const extensionAmount = 10 * (currentFrame - 2);
+        const extendedReach = 5 + extensionAmount;
 
-        punchHitbox.collider.set(ex.Shape.Box(extendedReach, 20 * SCALE));
+        punchHitbox.collider.set(ex.Shape.Box(extendedReach, 20));
 
         const offsetX = this.animController.facingRight
           ? extensionAmount / 2
@@ -218,7 +218,7 @@ export class CombatSystem {
         );
       } else {
         this.canDealDamage = false;
-        punchHitbox.collider.set(ex.Shape.Box(20 * SCALE, 20 * SCALE));
+        punchHitbox.collider.set(ex.Shape.Box(20, 20));
         punchHitbox.pos = originalPunchPos.clone();
       }
     };

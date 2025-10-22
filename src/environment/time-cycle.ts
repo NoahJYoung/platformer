@@ -7,9 +7,12 @@ import {
   Font,
   TextAlign,
   Canvas,
+  clamp,
 } from "excalibur";
 import type { GameEngine } from "../game-engine";
 import { StarField } from "./star-field";
+import type { WeatherType } from "./types";
+import { WeatherOverlay } from "./weather-overlay";
 
 export type Season = "summer" | "fall" | "winter" | "spring";
 
@@ -34,6 +37,13 @@ export class TimeCycle {
   private ambientTemperature: number = 20;
   private gradientCanvas: Canvas | null = null;
 
+  private weather: WeatherType = "clear";
+  private minRainOvarlayOpacity = 0.3;
+  private minSnowOverlayOpacity = 0.25;
+  private weatherOverlay: WeatherOverlay;
+  private weatherCheckInterval: number = 8;
+  private lastWeatherCheck: number = 0;
+
   constructor(game: GameEngine) {
     this.game = game;
     this.overlay = new Actor({
@@ -47,14 +57,18 @@ export class TimeCycle {
 
     this.createGradientCanvas();
 
-    this.timeOfDay = 6;
+    this.timeOfDay = 24;
     this.cycleSpeed = 0.017;
 
     this.season = "winter";
     this.dayInSeason = 1;
-    this.daysPerSeason = 30;
+    this.daysPerSeason = 31;
     this.seasonChangeCallbacks = [];
     this.starField = new StarField(game);
+    this.weatherOverlay = new WeatherOverlay(game);
+    this.updateWeather();
+
+    this.weatherOverlay.createWeatherEffect(game.currentScene);
   }
 
   private createGradientCanvas() {
@@ -84,6 +98,7 @@ export class TimeCycle {
   }
 
   update(delta: number) {
+    this.weatherOverlay.update(delta);
     this.timeOfDay += this.cycleSpeed * (delta / 1000);
 
     if (this.timeOfDay >= 24) {
@@ -91,7 +106,10 @@ export class TimeCycle {
       this.advanceDay();
     }
 
-    const nightData = this.calculateNightEffect(this.timeOfDay);
+    this.checkWeatherChange();
+
+    const nightData = this.calculateDarkEffect(this.timeOfDay);
+    this.weatherOverlay.update(delta);
 
     this.overlay.graphics.opacity = nightData.opacity;
 
@@ -130,6 +148,18 @@ export class TimeCycle {
         break;
       case "spring":
         baseTemp = 12;
+        break;
+    }
+
+    switch (this.weather) {
+      case "raining":
+        baseTemp -= 4;
+        break;
+      case "snowing":
+        baseTemp -= 5;
+        break;
+      case "clear":
+      default:
         break;
     }
 
@@ -307,8 +337,62 @@ export class TimeCycle {
     this.seasonChangeCallbacks.push(callback);
   }
 
+  getWeather() {
+    return this.weather;
+  }
+
+  private getWeatherProbabilities(season: Season): {
+    rain: number;
+    snow: number;
+    clear: number;
+  } {
+    switch (season) {
+      case "spring":
+        return { rain: 0.2, snow: 0, clear: 0.8 };
+      case "summer":
+        return { rain: 0.1, snow: 0, clear: 0.9 };
+      case "fall":
+        return { rain: 0.35, snow: 0.1, clear: 0.55 };
+      case "winter":
+        return { rain: 0.1, snow: 0.4, clear: 0.5 };
+    }
+  }
+
+  private checkWeatherChange() {
+    const hoursSinceLastCheck = Math.abs(
+      this.timeOfDay - this.lastWeatherCheck
+    );
+
+    if (hoursSinceLastCheck >= this.weatherCheckInterval) {
+      this.lastWeatherCheck = this.timeOfDay;
+      this.updateWeather();
+    }
+  }
+
+  private updateWeather() {
+    const probabilities = this.getWeatherProbabilities(this.season);
+    const random = Math.random();
+
+    let newWeather: WeatherType = "clear";
+
+    if (random < probabilities.snow) {
+      newWeather = "snowing";
+    } else if (random < probabilities.snow + probabilities.rain) {
+      newWeather = "raining";
+    } else {
+      newWeather = "clear";
+    }
+
+    if (newWeather !== this.weather) {
+      this.weather = newWeather;
+
+      if (this.game.currentScene) {
+        this.weatherOverlay.switchScene(this.game.currentScene);
+      }
+    }
+  }
+
   private getSceneLightStrength = () => {
-    // TODO: Get Scene light sources
     const player = this.game.player;
     let lightStrength = 0;
     const itemLightStrength = 0.15;
@@ -321,21 +405,28 @@ export class TimeCycle {
     return lightStrength;
   };
 
-  public calculateNightEffect(hour: number) {
+  public calculateDarkEffect(hour: number) {
     const baseColor = Color.fromHex("#0c0c1aff");
     const sceneLightStrength = this.getSceneLightStrength();
     const maxOpacity = 0.99 - sceneLightStrength;
 
+    const minOpacity =
+      this.weather === "clear"
+        ? 0
+        : this.weather === "raining"
+        ? this.minRainOvarlayOpacity
+        : this.minSnowOverlayOpacity;
+
     let opacity = 0;
 
     if (hour >= 6 && hour < 18) {
-      opacity = 0;
+      opacity = minOpacity;
     } else if (hour >= 18 && hour < 21) {
-      opacity = ((hour - 18) / 3) * maxOpacity;
+      opacity = clamp(((hour - 18) / 3) * maxOpacity, minOpacity, maxOpacity);
     } else if (hour >= 21 || hour < 5) {
       opacity = maxOpacity;
     } else {
-      opacity = ((6 - hour) / 1) * maxOpacity;
+      opacity = clamp(((6 - hour) / 1) * maxOpacity, minOpacity, maxOpacity);
     }
 
     return { color: baseColor, opacity };

@@ -3,8 +3,8 @@ import { SCALE } from "../config";
 import type { Character } from "./character";
 
 export class HealthBar extends ex.Actor {
-  private barWidth: number = 40 * SCALE;
-  private barHeight: number = 4 * SCALE;
+  private barWidth: number = 40;
+  private barHeight: number = 4;
   private parentCharacter: Character;
   private getCurrentHealth: () => number;
   private getMaxHealth: () => number;
@@ -14,12 +14,12 @@ export class HealthBar extends ex.Actor {
     parentCharacter: Character,
     getCurrentHealth: () => number,
     getMaxHealth: () => number,
-    offsetY: number = -30 * SCALE
+    offsetY: number = -30
   ) {
     super({
       pos: ex.vec(0, offsetY),
-      width: 40 * SCALE,
-      height: 6 * SCALE,
+      width: 40,
+      height: 6,
       collisionType: ex.CollisionType.PreventCollision,
       anchor: ex.vec(0.5, 0.5),
     });
@@ -44,8 +44,8 @@ export class HealthBar extends ex.Actor {
 
   private createHealthBarGraphic(): ex.Canvas {
     const canvas = new ex.Canvas({
-      width: this.barWidth + 2 * SCALE,
-      height: this.barHeight + 2 * SCALE,
+      width: this.barWidth + 2,
+      height: this.barHeight + 2,
       draw: (ctx) => {
         const currentHealth = this.getCurrentHealth();
         const maxHealth = this.getMaxHealth();
@@ -55,12 +55,7 @@ export class HealthBar extends ex.Actor {
         );
 
         ctx.fillStyle = "black";
-        ctx.fillRect(
-          0,
-          0,
-          this.barWidth + 2 * SCALE,
-          this.barHeight + 2 * SCALE
-        );
+        ctx.fillRect(0, 0, this.barWidth + 2, this.barHeight + 2);
 
         ctx.fillStyle = "#333333";
         ctx.fillRect(SCALE, SCALE, this.barWidth, this.barHeight);

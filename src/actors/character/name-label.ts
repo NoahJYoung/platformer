@@ -13,7 +13,7 @@ export class NameLabel extends ex.Actor {
 
   constructor(
     parentCharacter: Character,
-    offsetY: number = -40 * SCALE,
+    offsetY: number = -40,
     alwaysVisible: boolean
   ) {
     super({
@@ -37,7 +37,7 @@ export class NameLabel extends ex.Actor {
     const nameText = new ex.Text({
       text: textToDisplay,
       font: new ex.Font({
-        size: 9 * SCALE,
+        size: 9,
         family: "Arial",
         bold: false,
         color: ex.Color.White,
@@ -51,7 +51,7 @@ export class NameLabel extends ex.Actor {
     this.levelText = new ex.Text({
       text: `Lv. ${this.level}`,
       font: new ex.Font({
-        size: 8 * SCALE,
+        size: 8,
         family: "Arial",
         bold: false,
         textAlign: ex.TextAlign.Center,
@@ -73,7 +73,7 @@ export class NameLabel extends ex.Actor {
         },
         {
           graphic: this.levelText,
-          offset: ex.vec(13, isPlayer ? 12 * SCALE : 6 * SCALE),
+          offset: ex.vec(13, isPlayer ? 12 : 6),
         },
       ],
     });

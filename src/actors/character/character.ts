@@ -85,10 +85,10 @@ export abstract class Character extends ex.Actor {
   ) {
     super({
       name: name,
-      offset: ex.vec(12 * SCALE, 0),
+      offset: ex.vec(12, 0),
       pos: pos,
-      width: 16 * SCALE,
-      height: 48 * SCALE,
+      width: 16,
+      height: 48,
       collisionType: ex.CollisionType.Active,
       collisionGroup:
         name === "player" ? CollisionGroups.Player : CollisionGroups.Enemy,
@@ -152,7 +152,7 @@ export abstract class Character extends ex.Actor {
   onInitialize(engine: ex.Engine) {
     this.animController.setupAnimations();
 
-    const nameLabelOffset = this.showHealthBar ? -40 * SCALE : -35 * SCALE;
+    const nameLabelOffset = this.showHealthBar ? -40 : -35;
     this.nameLabel = new NameLabel(
       this,
       nameLabelOffset,
@@ -165,7 +165,7 @@ export abstract class Character extends ex.Actor {
         this,
         () => this.health,
         () => this.maxHealth,
-        -30 * SCALE
+        -30
       );
       this.addChild(this.healthBar);
     }
@@ -343,7 +343,7 @@ export abstract class Character extends ex.Actor {
       width: this.width,
       height: this.height,
       anchor: this.anchor.clone(),
-      offset: ex.vec(-(SPRITE_WIDTH * SCALE) / 2, 0),
+      offset: ex.vec(-SPRITE_WIDTH / 2, 0),
       scale: this.scale.clone(),
       collisionType: ex.CollisionType.PreventCollision,
     });
@@ -446,6 +446,7 @@ export abstract class Character extends ex.Actor {
     this.currentState = "dodging";
     this.body.group = ex.CollisionGroup.collidesWith([
       CollisionGroups.Environment,
+      CollisionGroups.Trigger,
     ]);
     const dodgeSpeed = this.jumpSpeed * 2;
 

@@ -23,7 +23,7 @@ export const offhandItems = new Map<string, ItemFactoryData>([
   [
     "torch",
     {
-      iconUrl: "",
+      iconUrl: "/assets/icons/armor/offhand/torch_icon.png",
       name: "Torch",
       type: "armor",
       slot: "offhand",

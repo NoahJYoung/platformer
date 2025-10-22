@@ -59,7 +59,7 @@ export class StarField {
       height: viewportHeight,
       draw: (ctx) => {
         const timeOfDay = this.game.timeCycle.getTimeOfDay();
-        const nightData = this.game.timeCycle.calculateNightEffect(timeOfDay);
+        const nightData = this.game.timeCycle.calculateDarkEffect(timeOfDay);
         const starVisibility = Math.max(0, (nightData.opacity - 0.3) / 0.65);
 
         if (starVisibility <= 0) return;
@@ -72,7 +72,7 @@ export class StarField {
             Math.sin(now * twinkleSpeed + star.twinkleOffset) * 0.3 + 0.7;
           const opacity = starVisibility * star.brightness * twinkle;
 
-          ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+          ctx.fillStyle = `rgba(255, 255, 175, ${opacity})`;
           ctx.beginPath();
           ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
           ctx.fill();

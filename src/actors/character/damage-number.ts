@@ -18,7 +18,7 @@ export class DamageNumber extends ex.Actor {
     const text = new ex.Text({
       text: damage.toString(),
       font: new ex.Font({
-        size: 16 * SCALE,
+        size: 16,
         family: "Arial",
         bold: true,
         color,

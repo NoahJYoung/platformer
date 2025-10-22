@@ -11,6 +11,7 @@ export class LootDrop extends ex.Actor {
   public equipment: Map<string, EquipmentItem | null> | null;
   private interactionIndicator?: ex.Actor;
   private isPlayerNearby: boolean = false;
+  private deathTimer: ex.Timer;
 
   constructor(
     pos: ex.Vector,
@@ -19,9 +20,9 @@ export class LootDrop extends ex.Actor {
   ) {
     super({
       name: "loot-drop",
-      pos: ex.vec(pos.x, pos.y + 20 * SCALE),
-      width: 16 * SCALE,
-      height: 16 * SCALE,
+      pos: ex.vec(pos.x, pos.y + 20),
+      width: 16,
+      height: 16,
       collisionType: ex.CollisionType.Passive,
       collisionGroup: CollisionGroups.Interactable,
     });
@@ -31,26 +32,34 @@ export class LootDrop extends ex.Actor {
   }
 
   onInitialize(engine: GameEngine) {
+    this.deathTimer = new ex.Timer({
+      repeats: false,
+      interval: 30 * 1000,
+      fcn: () => this.die(),
+    });
+    this.scene?.add(this.deathTimer);
+    this.deathTimer.start();
+
     const bagText = new ex.Text({
       text: "📦",
       font: new ex.Font({
-        size: 16 * SCALE,
+        size: 16,
         family: "Arial",
       }),
     });
     this.graphics.use(bagText);
 
     this.interactionIndicator = new ex.Actor({
-      pos: ex.vec(0, -20 * SCALE),
-      width: 32 * SCALE,
-      height: 16 * SCALE,
+      pos: ex.vec(0, -20),
+      width: 32,
+      height: 16,
       collisionType: ex.CollisionType.PreventCollision,
     });
 
     const keyText = new ex.Text({
       text: "[F]",
       font: new ex.Font({
-        size: 10 * SCALE,
+        size: 10,
         family: "Arial",
         bold: true,
         color: ex.Color.White,
@@ -107,5 +116,10 @@ export class LootDrop extends ex.Actor {
       inventory: this.inventory,
       equipment: this.equipment,
     };
+  }
+
+  private die() {
+    this.scene?.remove(this);
+    this.kill();
   }
 }

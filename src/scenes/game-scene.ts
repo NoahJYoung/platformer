@@ -1,7 +1,7 @@
 import * as ex from "excalibur";
 import { Player } from "../actors/player/player";
 import { GameEngine } from "../game-engine";
-import type { AppearanceOptions, WeaponItem } from "../actors/character/types";
+import type { WeaponItem } from "../actors/character/types";
 import type { SceneConfig } from "./types";
 import { CollisionGroups } from "../actors/config";
 import { Enemy } from "../actors/enemy/enemy";
@@ -9,8 +9,13 @@ import type { EnemyConfig } from "../actors/enemy/types";
 import { GroundTileManager } from "./ground-tile-manager";
 import { BackgroundResources, FloorResources } from "../resources";
 import { createItem } from "../items/item-creator";
-import { Tree } from "../actors/resources/tree";
-import { TreeResources } from "../resources/tree-resources";
+import { Tree } from "../actors/resources/tree/tree";
+import { DecorationManager } from "../sprite-sheets/scenery/decorations/decorations-manager";
+import { DecorationResources } from "../resources/decoration-resources";
+import {
+  createBackgroundTreeCanvas,
+  createDecorationCanvas,
+} from "./canvas-helpers";
 
 export class GameMapScene extends ex.Scene {
   public name: string = "unknown";
@@ -19,6 +24,7 @@ export class GameMapScene extends ex.Scene {
   protected levelWidth: number;
   protected levelHeight: number;
   private groundTileManager = new GroundTileManager(FloorResources.floor1);
+  private decorationManager: DecorationManager | null = null;
   private spawnIntervalTime = 20000;
 
   private AUTO_SPAWN_ENEMIES = false;
@@ -29,13 +35,17 @@ export class GameMapScene extends ex.Scene {
     this.config = config;
     this.levelWidth = config.width;
     this.levelHeight = config.height;
+    this.name = config.name;
+    this.decorationManager = new DecorationManager(
+      DecorationResources.decorations
+    );
   }
 
   onInitialize(engine: GameEngine): void {
     this.player = engine.player;
     this.groundTileManager.setTheme("normal", 0, 0, 1, 2);
-    this.groundTileManager.setTheme("fall", 6, 0, 1, 2);
-    this.groundTileManager.setTheme("winter", 12, 0, 1, 2);
+    this.groundTileManager.setTheme("fall", 3, 0, 1, 2);
+    this.groundTileManager.setTheme("winter", 6, 0, 1, 2);
 
     if (!this.player) {
       console.error("No player found!");
@@ -63,9 +73,15 @@ export class GameMapScene extends ex.Scene {
 
     engine.timeCycle.onSeasonChange(() => {
       this.rebuildBackground(engine);
+      this.createTrees();
     });
 
     this.setupEnemySpawning();
+
+    engine.timeCycle.onSeasonChange(() => {
+      this.rebuildBackground(engine);
+      this.createTrees();
+    });
   }
 
   onActivate(context: ex.SceneActivationContext<unknown>): void {
@@ -82,15 +98,24 @@ export class GameMapScene extends ex.Scene {
     }
 
     if (this.player.scene && this.player.scene !== this) {
+      console.log(
+        `Removing player from previous scene: ${this.player.scene?.name}`
+      );
       this.player.scene.remove(this.player);
     }
 
     const entryPoint = engine._nextSceneEntryPoint || "default";
     delete engine._nextSceneEntryPoint;
 
-    this.player.pos = this.getSpawnPosition(entryPoint);
+    const spawnPos = this.getSpawnPosition(entryPoint);
+    this.player.pos = spawnPos;
+
+    console.log(`Activating scene: ${this.name}`);
+    console.log(`Player spawn position:`, spawnPos);
 
     this.add(this.player);
+
+    engine.forceSingleUpdate();
   }
 
   onDeactivate(): void {
@@ -99,16 +124,6 @@ export class GameMapScene extends ex.Scene {
       this.remove(this.spawnInterval);
       this.spawnInterval = null;
     }
-  }
-
-  protected getSpawnPosition(entryPoint: string): ex.Vector {
-    const spawns = this.config.spawnPoints || {};
-
-    if (spawns[entryPoint]) {
-      return spawns[entryPoint];
-    }
-
-    return ex.vec(this.levelWidth / 2, this.levelHeight / 2);
   }
 
   private setupEnemySpawning(): void {
@@ -165,20 +180,57 @@ export class GameMapScene extends ex.Scene {
         width: exit.width,
         height: exit.height,
         collisionType: ex.CollisionType.Passive,
-        collisionGroup: ex.CollisionGroup.collidesWith([
-          CollisionGroups.Player,
-        ]),
+        collisionGroup: CollisionGroups.Trigger,
         z: 100,
       });
 
+      let isTransitioning = false;
+
       trigger.on("collisionstart", (evt: ex.CollisionStartEvent) => {
-        if (evt.other.owner instanceof ex.Actor && this.player) {
+        const collidingActor = evt.other.owner;
+
+        let isPlayer = false;
+
+        if (collidingActor === this.player) {
+          isPlayer = true;
+        } else if (collidingActor?.name === "player") {
+          isPlayer = true;
+        } else if (
+          collidingActor &&
+          this.isPlayerOrChild(collidingActor as ex.Actor)
+        ) {
+          isPlayer = true;
+        }
+
+        if (isPlayer && !isTransitioning) {
+          isTransitioning = true;
+          console.log(
+            `Transitioning from ${this.name} to ${exit.targetScene} via ${exit.targetEntry}`
+          );
           this.transitionTo(engine, exit.targetScene, exit.targetEntry);
+
+          setTimeout(() => {
+            isTransitioning = false;
+          }, 1000);
         }
       });
 
       this.add(trigger);
     });
+  }
+
+  private isPlayerOrChild(actor: ex.Actor): boolean {
+    if (!this.player) return false;
+
+    let current: ex.Actor | null = actor;
+    while (current) {
+      if (current === this.player) {
+        return true;
+      }
+      current = current.parent as ex.Actor | null;
+    }
+
+    return false;
   }
 
   private createEnemies(enemies: EnemyConfig[]) {
@@ -206,7 +258,25 @@ export class GameMapScene extends ex.Scene {
     entryPoint: string
   ): void {
     engine._nextSceneEntryPoint = entryPoint;
+
+    console.log(`Setting entry point: ${entryPoint} for scene: ${sceneName}`);
+
     engine.goToScene(sceneName);
+  }
+
+  protected getSpawnPosition(entryPoint: string): ex.Vector {
+    const spawns = this.config.spawnPoints || {};
+
+    if (spawns[entryPoint]) {
+      return spawns[entryPoint];
+    }
+
+    if (spawns.default) {
+      return spawns.default;
+    }
+
+    const fallback = ex.vec(this.levelWidth / 2, this.levelHeight - 100);
+    return fallback;
   }
 
   protected rebuildBackground(engine: GameEngine): void {
@@ -225,6 +295,109 @@ export class GameMapScene extends ex.Scene {
     this.createBackground(engine);
     engine.timeCycle.starField?.createStars(this);
   }
+
+  // protected createDecorationCanvas(
+  //   engine: GameEngine,
+  //   seed: number = 12345,
+  //   blur: number = 0
+  // ): ex.Canvas {
+  //   if (!this.decorationManager) {
+  //     return new ex.Canvas();
+  //   }
+  //   const season = engine.timeCycle.getCurrentSeason();
+  //   const seasonalDecos = this.decorationManager.getSeasonDecorations(season);
+  //   // const generalDecos = this.decorationManager.getGeneralDecorations();
+  //   const allDecos = [...seasonalDecos];
+
+  //   if (allDecos.length === 0) {
+  //     console.warn("No decorations available for layer");
+
+  //     return new ex.Canvas({
+  //       width: this.levelWidth,
+  //       height: this.levelHeight,
+  //       draw: () => {},
+  //     });
+  //   }
+
+  //   const seededRandom = this.createSeededRandom(seed);
+  //   const canvasWidth = this.levelWidth;
+  //   const canvasHeight = this.levelHeight;
+  //   const groundY = canvasHeight - 10;
+  //   const decorationCount = Math.floor(this.levelWidth / 50);
+
+  //   const decorationData: Array<{
+  //     deco: { name: string; sprite: ex.Sprite };
+  //     x: number;
+  //     y: number;
+  //   }> = [];
+
+  //   for (let i = 0; i < decorationCount; i++) {
+  //     const decoIndex = Math.floor(seededRandom() * allDecos.length);
+  //     const deco = allDecos[decoIndex];
+  //     const x = seededRandom() * canvasWidth;
+  //     const yOffset = Math.floor(seededRandom() * 3);
+  //     const y = groundY + yOffset;
+
+  //     decorationData.push({ deco, x, y });
+  //   }
+
+  //   const canvas = new ex.Canvas({
+  //     width: canvasWidth,
+  //     height: canvasHeight,
+  //     cache: true,
+  //     draw: (ctx) => {
+  //       ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+  //       // Apply blur filter if specified
+  //       if (blur > 0) {
+  //         ctx.filter = `blur(${blur}px)`;
+  //       }
+
+  //       decorationData.forEach(({ deco, x, y }) => {
+  //         const sprite = deco.sprite;
+  //         const spriteWidth = sprite.width;
+  //         const spriteHeight = sprite.height;
+  //         const drawY = y - spriteHeight;
+
+  //         if (sprite.image?.image) {
+  //           const img = sprite.image.image as HTMLImageElement;
+
+  //           try {
+  //             ctx.drawImage(
+  //               img,
+  //               sprite.sourceView.x,
+  //               sprite.sourceView.y,
+  //               sprite.sourceView.width,
+  //               sprite.sourceView.height,
+  //               x,
+  //               drawY,
+  //               spriteWidth,
+  //               spriteHeight
+  //             );
+  //           } catch (err) {
+  //             console.error("Error drawing sprite:", deco.name, err);
+  //           }
+  //         }
+  //       });
+
+  //       // Reset filter after drawing
+  //       if (blur > 0) {
+  //         ctx.filter = "none";
+  //       }
+  //     },
+  //   });
+
+  //   canvas.flagDirty();
+  //   return canvas;
+  // }
+
+  // private createSeededRandom(seed: number): () => number {
+  //   let state = seed;
+  //   return () => {
+  //     state = (state * 1664525 + 1013904223) % 4294967296;
+  //     return state / 4294967296;
+  //   };
+  // }
 
   protected createBackground(engine: GameEngine): void {
     const season = engine.timeCycle.getCurrentSeason();
@@ -275,16 +448,109 @@ export class GameMapScene extends ex.Scene {
       {
         resource: backgrounds.layer2,
         parallax: ex.vec(0.35, 0.35),
-        z: -94,
+        z: -95,
       },
       {
         resource: backgrounds.layer1,
         parallax: ex.vec(0.7, 0.7),
-        z: -92,
+        z: -94,
       },
+      //
+      ...(this.decorationManager
+        ? [
+            {
+              canvas: createBackgroundTreeCanvas(
+                engine,
+                this.levelWidth,
+                this.levelHeight,
+                this.hashString(`${this.name}-0`),
+                0.04,
+                0.5,
+                0.5
+              ),
+              parallax: ex.vec(0.75, 0.75),
+              z: -93,
+              isDecoration: true,
+            },
+          ]
+        : []),
+      ...(this.decorationManager
+        ? [
+            {
+              canvas: createBackgroundTreeCanvas(
+                engine,
+                this.levelWidth,
+                this.levelHeight,
+                this.hashString(`${this.name}-0`),
+                0.01,
+                0.8,
+                0.8
+              ),
+              parallax: ex.vec(0.8, 0.8),
+              z: -92,
+              isDecoration: true,
+            },
+          ]
+        : []),
+      //
+      ...(this.decorationManager
+        ? [
+            {
+              canvas: createDecorationCanvas(
+                engine,
+                this.decorationManager,
+                this.levelWidth,
+                this.levelHeight,
+                this.hashString(`${this.name}-0`),
+                0.9,
+                0.9
+              ),
+              parallax: ex.vec(0.9, 0.9),
+              z: -91,
+              isDecoration: true,
+            },
+          ]
+        : []),
+
+      // ...(this.decorationManager
+      //   ? [
+      //       {
+      //         canvas: createDecorationCanvas(
+      //           engine,
+      //           this.decorationManager,
+      //           this.levelWidth,
+      //           this.levelHeight,
+      //           this.hashString(`${this.name}-1`)
+      //         ),
+      //         parallax: ex.vec(1, 1),
+      //         z: -89,
+      //         isDecoration: true,
+      //       },
+      //     ]
+      //   : []),
     ];
 
     layers.forEach((layer) => {
+      if ("isDecoration" in layer && layer.isDecoration) {
+        const parallaxFactor = layer.parallax.y;
+        const yOffset = this.levelHeight * 0.8 * (1 - parallaxFactor) - 25;
+
+        const decorationLayer = new ex.Actor({
+          name: "decoration_layer",
+          pos: ex.vec(
+            this.levelWidth / 2,
+            this.levelHeight - this.levelHeight / 2 - yOffset - 41
+          ),
+          anchor: ex.vec(0.5, 0.5),
+          z: layer.z,
+        });
+
+        decorationLayer.graphics.use(layer.canvas);
+        decorationLayer.addComponent(new ex.ParallaxComponent(layer.parallax));
+
+        this.add(decorationLayer);
+        return;
+      }
       if (layer.isSky) {
         const skyTilesNeeded = Math.ceil(this.levelWidth / scaledSkyWidth) + 4;
 
@@ -307,7 +573,7 @@ export class GameMapScene extends ex.Scene {
           if (layer.isNight) {
             sprite.opacity = 0;
             background.on("preupdate", () => {
-              const nightData = engine.timeCycle.calculateNightEffect(
+              const nightData = engine.timeCycle.calculateDarkEffect(
                 engine.timeCycle.getTimeOfDay()
               );
               sprite.opacity = nightData.opacity / 0.8;
@@ -318,10 +584,13 @@ export class GameMapScene extends ex.Scene {
         }
       } else {
         for (let i = -1; i < tilesNeeded; i++) {
-          const sprite = layer.resource.toSprite();
+          const sprite = layer.resource?.toSprite();
+          if (!sprite) {
+            return;
+          }
 
           const parallaxFactor = layer.parallax.y;
-          const yOffset = this.levelHeight * 0.8 * (1 - parallaxFactor) - 50;
+          const yOffset = this.levelHeight * 0.8 * (1 - parallaxFactor) - 25;
 
           const background = new ex.Actor({
             pos: ex.vec(
@@ -338,7 +607,7 @@ export class GameMapScene extends ex.Scene {
           if (layer.isNight) {
             sprite.opacity = 0;
             background.on("preupdate", () => {
-              const nightData = engine.timeCycle.calculateNightEffect(
+              const nightData = engine.timeCycle.calculateDarkEffect(
                 engine.timeCycle.getTimeOfDay()
               );
               sprite.opacity = nightData.opacity / 0.8;
@@ -412,12 +681,16 @@ export class GameMapScene extends ex.Scene {
     });
   }
   getGroundFromSeason(engine: GameEngine): ex.Actor {
+    const groundHeight = 32;
+    const groundPadding = 200;
+    const extendedWidth = this.levelWidth + groundPadding * 2;
+
     if (!this.groundTileManager) {
       return new ex.Actor({
         name: "ground",
-        pos: ex.vec(this.levelWidth / 2, this.levelHeight - 10),
-        width: this.levelWidth,
-        height: 20,
+        pos: ex.vec(this.levelWidth / 2, this.levelHeight - groundHeight / 2),
+        width: extendedWidth,
+        height: groundHeight,
         color: ex.Color.Green,
         collisionType: ex.CollisionType.Fixed,
         collisionGroup: CollisionGroups.Environment,
@@ -430,22 +703,22 @@ export class GameMapScene extends ex.Scene {
 
     const ground = new ex.Actor({
       name: "ground",
-      pos: ex.vec(this.levelWidth / 2, this.levelHeight - 10),
-      width: this.levelWidth,
-      height: 20,
+      pos: ex.vec(this.levelWidth / 2, this.levelHeight - groundHeight / 2),
+      width: extendedWidth,
+      height: groundHeight,
       collisionType: ex.CollisionType.Fixed,
       collisionGroup: CollisionGroups.Environment,
     });
 
     const groundCanvas = this.groundTileManager.createGroundCanvasElement(
-      this.levelWidth,
-      20,
+      extendedWidth,
+      groundHeight,
       theme
     );
 
     const canvasGraphic = new ex.Canvas({
-      width: this.levelWidth,
-      height: 20,
+      width: extendedWidth,
+      height: groundHeight,
       draw: (ctx) => {
         ctx.drawImage(groundCanvas, 0, 0);
       },
@@ -456,22 +729,11 @@ export class GameMapScene extends ex.Scene {
     return ground;
   }
 
-  protected createTrees(numberOfTrees: number) {
-    for (let i = 0; i < numberOfTrees; i++) {
-      const modifier = i === 0 ? 150 : -150;
-      if (i % 7 === 0) {
-        const x = (this.levelWidth / numberOfTrees) * i + modifier;
-        const y = this.levelHeight - 124;
-        const testTree = new Tree(ex.vec(x, y), {
-          normal: TreeResources.normal,
-          apples: TreeResources.apples,
-          fall: TreeResources.fall,
-          winter: TreeResources.winter,
-        });
-
-        this.add(testTree);
-      }
-    }
+  protected createTrees() {
+    this.config.materialSources?.trees.forEach(({ x, y, type }) => {
+      const tree = new Tree(ex.vec(x, y), type);
+      this.add(tree);
+    });
   }
 
   protected createLevel(engine: GameEngine): void {
@@ -481,7 +743,7 @@ export class GameMapScene extends ex.Scene {
     const ground = this.getGroundFromSeason(engine);
     this.add(ground);
 
-    this.createTrees(20);
+    this.createTrees();
 
     const exitLabel = new ex.Label({
       text: "Forest →",
@@ -492,5 +754,15 @@ export class GameMapScene extends ex.Scene {
       }),
     });
     this.add(exitLabel);
+  }
+
+  private hashString(str: string): number {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash = hash & hash;
+    }
+    return Math.abs(hash);
   }
 }

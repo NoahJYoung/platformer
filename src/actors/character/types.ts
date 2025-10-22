@@ -124,7 +124,13 @@ export interface ConsumableItem extends InventoryItem {
 
 export type ConsumableSubType = "potion" | "food";
 
-export type WeaponSubType = "sword" | "axe" | "pickaxe" | "sickle" | "hammer";
+export type WeaponSubType =
+  | "sword"
+  | "axe"
+  | "pickaxe"
+  | "sickle"
+  | "hammer"
+  | "knife";
 
 export interface WeaponItem extends EquipmentItem {
   damage: number;

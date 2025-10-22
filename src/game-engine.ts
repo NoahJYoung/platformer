@@ -2,11 +2,12 @@ import * as ex from "excalibur";
 import { Resources } from "./resources";
 import { Player } from "./actors/player/player";
 import { HUD } from "./hud/hud";
-import { scenes } from "./scenes/scenes";
 import { TimeCycle } from "./environment/time-cycle";
 import type { AppearanceOptions } from "./actors/character/types";
 import { GameMapScene } from "./scenes/game-scene";
 import { createItem } from "./items/item-creator";
+import { ProceduralWorldGenerator } from "./worlds-generator/world-generator";
+import { handcraftedScenes } from "./scenes/handcrafted-scenes/handcrafted-scenes";
 
 export class GameEngine extends ex.Engine {
   public player!: Player;
@@ -77,7 +78,7 @@ export class GameEngine extends ex.Engine {
       displayName: "Player",
     };
 
-    const testSkillLevel = 5;
+    const testSkillLevel = 100;
 
     this.player = new Player(ex.vec(100, 100), playerAppearance, {
       strength: testSkillLevel,
@@ -87,16 +88,24 @@ export class GameEngine extends ex.Engine {
     });
     this.setupNewPlayer();
 
+    const generator = new ProceduralWorldGenerator({
+      seed: Date.now(),
+      numberOfScenes: 8,
+      platformDensity: "low",
+      treeDensity: "low",
+      enemyDensity: "medium",
+      handcraftedScenes,
+    });
+
+    const scenes = generator.generateWorld();
+
     scenes.forEach((sceneConfig) => {
-      if (sceneConfig.type === "forest") {
-        const scene = new GameMapScene(sceneConfig);
-        this.addScene(sceneConfig.name, scene);
-      }
+      const scene = new GameMapScene(sceneConfig);
+      this.addScene(sceneConfig.name, scene);
     });
 
     this.hud = new HUD(this);
-
-    this.goToScene("forest-1");
+    this.goToScene(scenes[0].name);
   }
 
   public forceSingleUpdate() {
@@ -126,9 +135,10 @@ export class GameEngine extends ex.Engine {
     const leatherGloves = createItem("dark_gloves", this.player.sex);
     const smallLantern = createItem("small_lantern", this.player.sex);
     const torch = createItem("torch", this.player.sex);
-
-    this.player.inventory.addItem(1, ironAxe);
+    const knife = createItem("iron_knife", this.player.sex);
 
     this.player.inventory.addItem(0, torch);
+    this.player.inventory.addItem(1, ironAxe);
+    this.player.inventory.addItem(2, knife);
   }
 }
