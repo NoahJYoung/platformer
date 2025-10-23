@@ -44,6 +44,8 @@ export class TimeCycle {
   private weatherCheckInterval: number = 8;
   private lastWeatherCheck: number = 0;
 
+  private seasonOverride: Season | null = null;
+
   constructor(game: GameEngine) {
     this.game = game;
     this.overlay = new Actor({
@@ -57,11 +59,11 @@ export class TimeCycle {
 
     this.createGradientCanvas();
 
-    this.timeOfDay = 24;
+    this.timeOfDay = 6;
     this.cycleSpeed = 0.017;
 
-    this.season = "winter";
-    this.dayInSeason = 1;
+    this.season = "fall";
+    this.dayInSeason = 30;
     this.daysPerSeason = 31;
     this.seasonChangeCallbacks = [];
     this.starField = new StarField(game);
@@ -437,7 +439,11 @@ export class TimeCycle {
   }
 
   getCurrentSeason() {
-    return this.season;
+    return this.seasonOverride ?? this.season;
+  }
+
+  setSeasonOverride(season: Season | null) {
+    this.seasonOverride = season;
   }
 
   getTimeOfDay() {

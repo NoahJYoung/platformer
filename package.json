@@ -13,6 +13,8 @@
     "excalibur": "^0.31.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "tonal": "^6.4.2",
+    "tone": "^15.1.22",
     "uuid": "^13.0.0"
   },
   "devDependencies": {

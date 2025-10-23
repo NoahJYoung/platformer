@@ -2,7 +2,7 @@ import * as ex from "excalibur";
 import { Player } from "../actors/player/player";
 import { GameEngine } from "../game-engine";
 import type { WeaponItem } from "../actors/character/types";
-import type { SceneConfig } from "./types";
+import type { BackgroundLayer, SceneConfig } from "./types";
 import { CollisionGroups } from "../actors/config";
 import { Enemy } from "../actors/enemy/enemy";
 import type { EnemyConfig } from "../actors/enemy/types";
@@ -12,10 +12,8 @@ import { createItem } from "../items/item-creator";
 import { Tree } from "../actors/resources/tree/tree";
 import { DecorationManager } from "../sprite-sheets/scenery/decorations/decorations-manager";
 import { DecorationResources } from "../resources/decoration-resources";
-import {
-  createBackgroundTreeCanvas,
-  createDecorationCanvas,
-} from "./canvas-helpers";
+
+import { createForestDecorationLayer } from "./create-forest-decoration-layer";
 
 export class GameMapScene extends ex.Scene {
   public name: string = "unknown";
@@ -41,7 +39,7 @@ export class GameMapScene extends ex.Scene {
     );
   }
 
-  onInitialize(engine: GameEngine): void {
+  async onInitialize(engine: GameEngine): Promise<void> {
     this.player = engine.player;
     this.groundTileManager.setTheme("normal", 0, 0, 1, 2);
     this.groundTileManager.setTheme("fall", 3, 0, 1, 2);
@@ -65,7 +63,7 @@ export class GameMapScene extends ex.Scene {
       })
     );
 
-    this.createLevel(engine);
+    await this.createLevel(engine);
 
     this.createExits(engine);
 
@@ -109,9 +107,6 @@ export class GameMapScene extends ex.Scene {
 
     const spawnPos = this.getSpawnPosition(entryPoint);
     this.player.pos = spawnPos;
-
-    console.log(`Activating scene: ${this.name}`);
-    console.log(`Player spawn position:`, spawnPos);
 
     this.add(this.player);
 
@@ -279,7 +274,7 @@ export class GameMapScene extends ex.Scene {
     return fallback;
   }
 
-  protected rebuildBackground(engine: GameEngine): void {
+  protected async rebuildBackground(engine: GameEngine): Promise<void> {
     const backgroundActors = this.actors.filter((actor) => actor.z < 0);
     backgroundActors.forEach((actor) => {
       this.remove(actor);
@@ -296,110 +291,7 @@ export class GameMapScene extends ex.Scene {
     engine.timeCycle.starField?.createStars(this);
   }
 
-  // protected createDecorationCanvas(
-  //   engine: GameEngine,
-  //   seed: number = 12345,
-  //   blur: number = 0
-  // ): ex.Canvas {
-  //   if (!this.decorationManager) {
-  //     return new ex.Canvas();
-  //   }
-  //   const season = engine.timeCycle.getCurrentSeason();
-  //   const seasonalDecos = this.decorationManager.getSeasonDecorations(season);
-  //   // const generalDecos = this.decorationManager.getGeneralDecorations();
-  //   const allDecos = [...seasonalDecos];
-
-  //   if (allDecos.length === 0) {
-  //     console.warn("No decorations available for layer");
-
-  //     return new ex.Canvas({
-  //       width: this.levelWidth,
-  //       height: this.levelHeight,
-  //       draw: () => {},
-  //     });
-  //   }
-
-  //   const seededRandom = this.createSeededRandom(seed);
-  //   const canvasWidth = this.levelWidth;
-  //   const canvasHeight = this.levelHeight;
-  //   const groundY = canvasHeight - 10;
-  //   const decorationCount = Math.floor(this.levelWidth / 50);
-
-  //   const decorationData: Array<{
-  //     deco: { name: string; sprite: ex.Sprite };
-  //     x: number;
-  //     y: number;
-  //   }> = [];
-
-  //   for (let i = 0; i < decorationCount; i++) {
-  //     const decoIndex = Math.floor(seededRandom() * allDecos.length);
-  //     const deco = allDecos[decoIndex];
-  //     const x = seededRandom() * canvasWidth;
-  //     const yOffset = Math.floor(seededRandom() * 3);
-  //     const y = groundY + yOffset;
-
-  //     decorationData.push({ deco, x, y });
-  //   }
-
-  //   const canvas = new ex.Canvas({
-  //     width: canvasWidth,
-  //     height: canvasHeight,
-  //     cache: true,
-  //     draw: (ctx) => {
-  //       ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-
-  //       // Apply blur filter if specified
-  //       if (blur > 0) {
-  //         ctx.filter = `blur(${blur}px)`;
-  //       }
-
-  //       decorationData.forEach(({ deco, x, y }) => {
-  //         const sprite = deco.sprite;
-  //         const spriteWidth = sprite.width;
-  //         const spriteHeight = sprite.height;
-  //         const drawY = y - spriteHeight;
-
-  //         if (sprite.image?.image) {
-  //           const img = sprite.image.image as HTMLImageElement;
-
-  //           try {
-  //             ctx.drawImage(
-  //               img,
-  //               sprite.sourceView.x,
-  //               sprite.sourceView.y,
-  //               sprite.sourceView.width,
-  //               sprite.sourceView.height,
-  //               x,
-  //               drawY,
-  //               spriteWidth,
-  //               spriteHeight
-  //             );
-  //           } catch (err) {
-  //             console.error("Error drawing sprite:", deco.name, err);
-  //           }
-  //         }
-  //       });
-
-  //       // Reset filter after drawing
-  //       if (blur > 0) {
-  //         ctx.filter = "none";
-  //       }
-  //     },
-  //   });
-
-  //   canvas.flagDirty();
-  //   return canvas;
-  // }
-
-  // private createSeededRandom(seed: number): () => number {
-  //   let state = seed;
-  //   return () => {
-  //     state = (state * 1664525 + 1013904223) % 4294967296;
-  //     return state / 4294967296;
-  //   };
-  // }
-
-  protected createBackground(engine: GameEngine): void {
+  protected async createBackground(engine: GameEngine): Promise<void> {
     const season = engine.timeCycle.getCurrentSeason();
     const theme =
       season === "winter" ? "winter" : season === "fall" ? "fall" : "normal";
@@ -414,7 +306,7 @@ export class GameMapScene extends ex.Scene {
 
     const tilesNeeded = Math.ceil(this.levelWidth / bgWidth) + 2;
 
-    const layers = [
+    const layers: (BackgroundLayer | Promise<BackgroundLayer>)[] = [
       {
         resource: backgrounds.layer5,
         parallax: ex.vec(1, 1),
@@ -428,7 +320,6 @@ export class GameMapScene extends ex.Scene {
         isNight: true,
         z: -99.5,
       },
-
       {
         resource: backgrounds.layer4,
         parallax: ex.vec(0.1, 0.1),
@@ -455,84 +346,47 @@ export class GameMapScene extends ex.Scene {
         parallax: ex.vec(0.7, 0.7),
         z: -94,
       },
-      //
-      ...(this.decorationManager
-        ? [
-            {
-              canvas: createBackgroundTreeCanvas(
-                engine,
-                this.levelWidth,
-                this.levelHeight,
-                this.hashString(`${this.name}-0`),
-                0.04,
-                0.5,
-                0.5
-              ),
-              parallax: ex.vec(0.75, 0.75),
-              z: -93,
-              isDecoration: true,
-            },
-          ]
-        : []),
-      ...(this.decorationManager
-        ? [
-            {
-              canvas: createBackgroundTreeCanvas(
-                engine,
-                this.levelWidth,
-                this.levelHeight,
-                this.hashString(`${this.name}-0`),
-                0.01,
-                0.8,
-                0.8
-              ),
-              parallax: ex.vec(0.8, 0.8),
-              z: -92,
-              isDecoration: true,
-            },
-          ]
-        : []),
-      //
-      ...(this.decorationManager
-        ? [
-            {
-              canvas: createDecorationCanvas(
-                engine,
-                this.decorationManager,
-                this.levelWidth,
-                this.levelHeight,
-                this.hashString(`${this.name}-0`),
-                0.9,
-                0.9
-              ),
-              parallax: ex.vec(0.9, 0.9),
-              z: -91,
-              isDecoration: true,
-            },
-          ]
-        : []),
 
-      // ...(this.decorationManager
-      //   ? [
-      //       {
-      //         canvas: createDecorationCanvas(
-      //           engine,
-      //           this.decorationManager,
-      //           this.levelWidth,
-      //           this.levelHeight,
-      //           this.hashString(`${this.name}-1`)
-      //         ),
-      //         parallax: ex.vec(1, 1),
-      //         z: -89,
-      //         isDecoration: true,
-      //       },
-      //     ]
-      //   : []),
+      createForestDecorationLayer({
+        engine,
+        levelHeight: this.levelHeight,
+        levelWidth: this.levelWidth,
+        seed: this.hashString(`${this.name}-0`),
+        z: -93.5,
+        parallax: 0.75,
+        decorationManager: this.decorationManager,
+      }),
+
+      createForestDecorationLayer({
+        engine,
+        levelHeight: this.levelHeight,
+        levelWidth: this.levelWidth,
+        seed: this.hashString(`${this.name}-2`),
+        z: -92,
+        parallax: 0.85,
+        decorationManager: this.decorationManager,
+      }),
+
+      createForestDecorationLayer({
+        engine,
+        levelHeight: this.levelHeight,
+        levelWidth: this.levelWidth,
+        seed: this.hashString(`${this.name}-4`),
+        z: -91,
+        parallax: 0.95,
+        decorationManager: this.decorationManager,
+      }),
     ];
 
-    layers.forEach((layer) => {
-      if ("isDecoration" in layer && layer.isDecoration) {
-        const parallaxFactor = layer.parallax.y;
+    // Process layers progressively
+    for (const layer of layers) {
+      const resolvedLayer = await Promise.resolve(layer);
+
+      if ("isDecoration" in resolvedLayer && resolvedLayer.isDecoration) {
+        if (!resolvedLayer.canvas) {
+          continue;
+        }
+        const parallaxFactor = resolvedLayer.parallax.y;
         const yOffset = this.levelHeight * 0.8 * (1 - parallaxFactor) - 25;
 
         const decorationLayer = new ex.Actor({
@@ -542,20 +396,23 @@ export class GameMapScene extends ex.Scene {
             this.levelHeight - this.levelHeight / 2 - yOffset - 41
           ),
           anchor: ex.vec(0.5, 0.5),
-          z: layer.z,
+          z: resolvedLayer.z,
         });
 
-        decorationLayer.graphics.use(layer.canvas);
-        decorationLayer.addComponent(new ex.ParallaxComponent(layer.parallax));
+        decorationLayer.graphics.use(resolvedLayer.canvas);
+        decorationLayer.addComponent(
+          new ex.ParallaxComponent(resolvedLayer.parallax)
+        );
 
         this.add(decorationLayer);
-        return;
-      }
-      if (layer.isSky) {
+      } else if (resolvedLayer.isSky) {
+        if (!resolvedLayer.resource) {
+          continue;
+        }
         const skyTilesNeeded = Math.ceil(this.levelWidth / scaledSkyWidth) + 4;
 
         for (let i = -2; i < skyTilesNeeded; i++) {
-          const sprite = layer.resource.toSprite();
+          const sprite = resolvedLayer.resource.toSprite();
           sprite.scale = ex.vec(skyScale, skyScale);
 
           const background = new ex.Actor({
@@ -564,13 +421,15 @@ export class GameMapScene extends ex.Scene {
               scaledSkyHeight / 2
             ),
             anchor: ex.vec(0.5, 0.5),
-            z: layer.z,
+            z: resolvedLayer.z,
           });
 
           background.graphics.use(sprite);
-          background.addComponent(new ex.ParallaxComponent(layer.parallax));
+          background.addComponent(
+            new ex.ParallaxComponent(resolvedLayer.parallax)
+          );
 
-          if (layer.isNight) {
+          if (resolvedLayer.isNight) {
             sprite.opacity = 0;
             background.on("preupdate", () => {
               const nightData = engine.timeCycle.calculateDarkEffect(
@@ -584,12 +443,12 @@ export class GameMapScene extends ex.Scene {
         }
       } else {
         for (let i = -1; i < tilesNeeded; i++) {
-          const sprite = layer.resource?.toSprite();
+          const sprite = resolvedLayer.resource?.toSprite();
           if (!sprite) {
-            return;
+            continue;
           }
 
-          const parallaxFactor = layer.parallax.y;
+          const parallaxFactor = resolvedLayer.parallax.y;
           const yOffset = this.levelHeight * 0.8 * (1 - parallaxFactor) - 25;
 
           const background = new ex.Actor({
@@ -598,13 +457,15 @@ export class GameMapScene extends ex.Scene {
               this.levelHeight - bgHeight / 2 - yOffset
             ),
             anchor: ex.vec(0.5, 0.5),
-            z: layer.z,
+            z: resolvedLayer.z,
           });
 
           background.graphics.use(sprite);
-          background.addComponent(new ex.ParallaxComponent(layer.parallax));
+          background.addComponent(
+            new ex.ParallaxComponent(resolvedLayer.parallax)
+          );
 
-          if (layer.isNight) {
+          if (resolvedLayer.isNight) {
             sprite.opacity = 0;
             background.on("preupdate", () => {
               const nightData = engine.timeCycle.calculateDarkEffect(
@@ -617,7 +478,10 @@ export class GameMapScene extends ex.Scene {
           this.add(background);
         }
       }
-    });
+
+      // Yield control after processing each layer
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    }
 
     engine.timeCycle.starField?.createStars(this);
   }
@@ -736,8 +600,8 @@ export class GameMapScene extends ex.Scene {
     });
   }
 
-  protected createLevel(engine: GameEngine): void {
-    this.createBackground(engine);
+  protected async createLevel(engine: GameEngine): Promise<void> {
+    await this.createBackground(engine);
     this.createPlatforms();
 
     const ground = this.getGroundFromSeason(engine);

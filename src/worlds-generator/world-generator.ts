@@ -288,13 +288,13 @@ export class ProceduralWorldGenerator {
     const roll = this.rng.next();
 
     if (roll < 0.35) {
-      return "pine-tree"; // 35% - Most common
+      return "pine-tree";
     } else if (roll < 0.65) {
-      return "birch-tree"; // 30% - Second most common
+      return "birch-tree";
     } else if (roll < 0.82) {
-      return "willow-tree"; // 17% - Less common
+      return "willow-tree";
     } else {
-      return "apple-tree"; // 18% - Less common
+      return "apple-tree";
     }
   }
 

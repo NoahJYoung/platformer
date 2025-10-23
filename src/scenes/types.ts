@@ -1,3 +1,4 @@
+import type { Canvas, ImageSource, Vector } from "excalibur";
 import type { Inventory } from "../actors/character/inventory";
 import type { EnemyConfig } from "../actors/enemy/types";
 import type { TreeType } from "../actors/resources/tree/tree-types";
@@ -54,4 +55,14 @@ export interface PlayerState {
   maxEnergy: number;
   isRunMode: boolean;
   entryPoint?: string;
+}
+
+export interface BackgroundLayer {
+  parallax: Vector;
+  z: number;
+  isDecoration?: boolean;
+  isSky?: boolean;
+  isNight?: boolean;
+  resource?: ImageSource;
+  canvas?: Canvas;
 }

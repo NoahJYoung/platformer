@@ -20,10 +20,10 @@ function createSeededRandom(seed: number): () => number {
  */
 function getRandomTreeType(seededRandom: () => number): TreeType {
   const roll = seededRandom();
-  if (roll < 0.5) return "pine-tree"; // 50% - Most common
-  else if (roll < 0.7) return "birch-tree"; // 20%
-  else if (roll < 0.85) return "willow-tree"; // 15%
-  else return "apple-tree"; // 15%
+  if (roll < 0.5) return "pine-tree";
+  else if (roll < 0.7) return "birch-tree";
+  else if (roll < 0.85) return "willow-tree";
+  else return "apple-tree";
 }
 
 /**
@@ -88,7 +88,6 @@ export function createDecorationCanvas(
   const allDecos = [...seasonalDecos];
 
   if (allDecos.length === 0) {
-    console.warn("No decorations available for layer");
     return new ex.Canvas({
       width: levelWidth,
       height: levelHeight,
@@ -102,7 +101,6 @@ export function createDecorationCanvas(
   const groundY = canvasHeight - 10;
   const decorationCount = Math.floor(levelWidth / 50);
 
-  // Calculate blur based on average scale: blur = (1 - avgScale) * maxBlur
   const avgScale = (minScale + maxScale) / 2;
   const blur = (1 - avgScale) * maxBlur;
 
@@ -139,7 +137,7 @@ export function createDecorationCanvas(
         const sprite = deco.sprite;
         const spriteWidth = sprite.width * scale;
         const spriteHeight = sprite.height * scale;
-        const drawY = y - spriteHeight;
+        const drawY = y - (spriteHeight * scale - 2);
 
         if (sprite.image?.image) {
           const img = sprite.image.image as HTMLImageElement;
@@ -188,17 +186,15 @@ export function createBackgroundTreeCanvas(
   const season = engine.timeCycle.getCurrentSeason();
   const seededRandom = createSeededRandom(seed);
 
-  // Add padding to account for parallax scrolling
-  const padding = 500; // Extra space on both sides
+  const padding = 500;
   const canvasWidth = levelWidth + padding * 2;
   const canvasHeight = levelHeight;
-  const treeGroundY = levelHeight; // Trees sit at the bottom of the level
+  const treeGroundY = levelHeight;
 
-  // Calculate blur based on average scale: blur = (1 - avgScale) * maxBlur
   const avgScale = (minScale + maxScale) / 2;
   const blur = (1 - avgScale) * maxBlur;
 
-  const treeCount = Math.floor(canvasWidth * density); // Use full canvas width including padding
+  const treeCount = Math.floor(canvasWidth * density);
 
   const treeData: Array<{
     graphic: ex.ImageSource;
@@ -207,7 +203,7 @@ export function createBackgroundTreeCanvas(
     scale: number;
   }> = [];
 
-  const minSpacing = 80; // Minimum pixels between tree centers
+  const minSpacing = 80;
 
   for (let i = 0; i < treeCount; i++) {
     const treeType = getRandomTreeType(seededRandom);
@@ -215,7 +211,6 @@ export function createBackgroundTreeCanvas(
     const scale = minScale + seededRandom() * (maxScale - minScale);
     const y = treeGroundY;
 
-    // Try to place tree with minimum spacing
     let placed = false;
     let attempts = 0;
     const maxAttempts = 10;
@@ -223,7 +218,6 @@ export function createBackgroundTreeCanvas(
     while (!placed && attempts < maxAttempts) {
       const x = seededRandom() * canvasWidth;
 
-      // Check if this position is too close to existing trees
       const tooClose = treeData.some(
         (tree) => Math.abs(tree.x - x) < minSpacing
       );
@@ -236,7 +230,6 @@ export function createBackgroundTreeCanvas(
       attempts++;
     }
 
-    // If we couldn't place with spacing after max attempts, place anyway (allows rare clumps)
     if (!placed) {
       const x = seededRandom() * canvasWidth;
       treeData.push({ graphic, x, y, scale });
@@ -261,7 +254,6 @@ export function createBackgroundTreeCanvas(
         const spriteWidth = sprite.width * scale;
         const spriteHeight = sprite.height * scale;
 
-        // Draw tree (x already accounts for padding)
         const drawX = x - spriteWidth / 2;
         const drawY = y - spriteHeight;
 
