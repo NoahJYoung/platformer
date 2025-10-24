@@ -1,6 +1,5 @@
 import * as ex from "excalibur";
 import { Character } from "../character/character";
-import { SCALE } from "../config";
 import { Player } from "../player/player";
 import type { EnemyConfig } from "./types";
 
@@ -12,7 +11,6 @@ export class Enemy extends Character {
   private aiState: "idle" | "patrol" | "chase" | "attack" | "retreat" = "idle";
   private player?: Player;
   private attackCooldown: number = 0;
-  private attackCooldownTime: number = 1.5;
   private wasHit: boolean = false;
   private consecutiveHits: number = 0;
 
@@ -110,12 +108,15 @@ export class Enemy extends Character {
   }
 
   public dodge(direction: "left" | "right") {
-    super.dodge(direction);
+    const currentTime = Date.now();
+    super.dodge(direction, currentTime);
     this.consecutiveHits = 0;
     this.wasHit = false;
   }
 
   private attackPlayer() {
+    const currentTime = Date.now();
+
     if (
       !this.player ||
       this.currentState === "dead" ||
@@ -133,15 +134,13 @@ export class Enemy extends Character {
     if (shouldDodge) {
       const direction = this.player.pos.x <= this.pos.x ? "left" : "right";
       this.dodge(direction);
-      // this.attackCooldown = this.attackCooldownTime; // Set cooldown after dodging too!
       return;
     }
 
     this.vel.x = 0;
 
     if (this.energy >= this.attackEnergyCost) {
-      this.attack();
-      this.attackCooldown = this.attackCooldownTime;
+      this.attack(currentTime);
     } else {
       this.currentState = "idle";
     }

@@ -189,10 +189,34 @@ export class StatsSystem {
     return Math.round(value);
   }
 
-  public getAttackSpeed(): number {
-    const baseSpeed = 1000;
-    const reduction = (this.stats.agility.baseValue - 10) * 20;
-    return Math.max(200, baseSpeed - reduction);
+  public getDodgeCooldown(): number {
+    const baseCooldown = 2700;
+    const agility = this.stats.agility.baseValue;
+    const reduction = (agility - 10) * 30;
+    return Math.max(0, baseCooldown - reduction);
+  }
+
+  public getSpellCooldown(): number {
+    const baseCooldown = 2000;
+    const intelligence = this.stats.intelligence.baseValue;
+    const reduction = (intelligence - 10) * 40;
+    return Math.max(500, baseCooldown - reduction);
+  }
+
+  public getAttackCooldown(): number {
+    const baseCooldown = 1800;
+    const agility = this.stats.agility.baseValue;
+    const reduction = (agility - 10) * 20;
+    return Math.max(0, baseCooldown - reduction);
+  }
+
+  public getJumpSpeed(): number {
+    const baseJumpSpeed = -300;
+    const agility = this.stats.agility.baseValue;
+
+    const multiplier = 1 + (agility - 1) * (0.667 / 99);
+
+    return Math.floor(baseJumpSpeed * multiplier);
   }
 
   public setXPGainRate(

@@ -62,7 +62,7 @@ export class TimeCycle {
     this.timeOfDay = 6;
     this.cycleSpeed = 0.017;
 
-    this.season = "fall";
+    this.season = "spring";
     this.dayInSeason = 30;
     this.daysPerSeason = 31;
     this.seasonChangeCallbacks = [];

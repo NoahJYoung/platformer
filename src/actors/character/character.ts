@@ -29,7 +29,6 @@ export abstract class Character extends ex.Actor {
   public maxMana: number = 100;
   public runSpeed: number = 100;
   public walkSpeed: number = 100;
-  public jumpSpeed: number = -400;
   public canJump: boolean = false;
   public hasTakenDamage = false;
 
@@ -37,6 +36,10 @@ export abstract class Character extends ex.Actor {
   private baseWindDamage = 10;
   private baseWaterDamage = 10;
   private baseEarthDamage = 10;
+
+  private lastDodgeTime: number = 0;
+  private lastSpellCastTime: number = 0;
+  private lastAttackTime: number = 0;
 
   public inventory: Inventory;
   public equipmentManager: EquipmentManager;
@@ -74,6 +77,8 @@ export abstract class Character extends ex.Actor {
   public protectionShield?: ProtectionShield;
   public isShieldActive: boolean = false;
   protected baseShieldManaCost: number = 5;
+
+  public isRunMode: boolean = false;
 
   constructor(
     name: string,
@@ -243,6 +248,10 @@ export abstract class Character extends ex.Actor {
       if (leveledUp) {
         this.onAgilityLevelUp();
       }
+      if (this.energy <= 0) {
+        this.isRunMode = false;
+        this.currentState = "walking";
+      }
     } else if (
       this.animController.currentState === "idle" ||
       this.animController.currentState === "walking"
@@ -284,6 +293,39 @@ export abstract class Character extends ex.Actor {
         this.canJump = true;
       }
     }
+  }
+
+  protected isDodgeReady(currentTime: number): boolean {
+    const cooldown = this.statsSystem.getDodgeCooldown();
+    return currentTime - this.lastDodgeTime >= cooldown;
+  }
+
+  protected isSpellReady(currentTime: number): boolean {
+    const cooldown = this.statsSystem.getSpellCooldown();
+    return currentTime - this.lastSpellCastTime >= cooldown;
+  }
+
+  protected isAttackReady(currentTime: number): boolean {
+    const cooldown = this.statsSystem.getAttackCooldown();
+    return currentTime - this.lastAttackTime >= cooldown;
+  }
+
+  public getDodgeCooldownRemaining(currentTime: number): number {
+    const cooldown = this.statsSystem.getDodgeCooldown();
+    const elapsed = currentTime - this.lastDodgeTime;
+    return Math.max(0, cooldown - elapsed);
+  }
+
+  public getSpellCooldownRemaining(currentTime: number): number {
+    const cooldown = this.statsSystem.getSpellCooldown();
+    const elapsed = currentTime - this.lastSpellCastTime;
+    return Math.max(0, cooldown - elapsed);
+  }
+
+  public getAttackCooldownRemaining(currentTime: number): number {
+    const cooldown = this.statsSystem.getAttackCooldown();
+    const elapsed = currentTime - this.lastAttackTime;
+    return Math.max(0, cooldown - elapsed);
   }
 
   public activateShield() {
@@ -379,7 +421,10 @@ export abstract class Character extends ex.Actor {
     return displayActor;
   }
 
-  public attack() {
+  public attack(time: number) {
+    if (!this.isAttackReady(time)) {
+      return;
+    }
     const equippedWeapon = this.equipmentManager.getEquippedWeapon();
     const oldEnergy = this.energy;
 
@@ -392,6 +437,7 @@ export abstract class Character extends ex.Actor {
         this.onAgilityLevelUp();
       }
     }
+    this.lastAttackTime = Date.now();
   }
 
   public getStrengthDamageMultiplier(baseDamage: number): number {
@@ -403,7 +449,10 @@ export abstract class Character extends ex.Actor {
     const multiplier = this.statsSystem.getIntelligenceDamageMultiplier();
     return Math.round(baseDamage * multiplier);
   }
-  public magicAttack(spellType: Element) {
+  public magicAttack(spellType: Element, time: number) {
+    if (!this.isSpellReady(time)) {
+      return;
+    }
     if (!this.animController.attackAnim) {
       return;
     }
@@ -414,6 +463,7 @@ export abstract class Character extends ex.Actor {
       this.createMagicProjectile(spellType);
 
       this.mana -= this.manaCost;
+      this.lastSpellCastTime = Date.now();
     }
   }
 
@@ -439,7 +489,10 @@ export abstract class Character extends ex.Actor {
     this.scene?.add(projectile);
   }
 
-  public dodge(direction: "left" | "right") {
+  public dodge(direction: "left" | "right", time: number) {
+    if (!this.isDodgeReady(time)) {
+      return;
+    }
     if (this.animController.dodgeAnim) {
       this.animController.dodgeAnim.reset();
     }
@@ -453,6 +506,8 @@ export abstract class Character extends ex.Actor {
     this.vel.x =
       direction === "right" ? Math.abs(dodgeSpeed) : -Math.abs(dodgeSpeed);
     this.energy = Math.max(0, this.energy - this.dodgeEnergyCost);
+
+    this.lastDodgeTime = Date.now();
   }
 
   public endDodge() {
@@ -609,6 +664,12 @@ export abstract class Character extends ex.Actor {
 
   public get currentState() {
     return this.animController.currentState;
+  }
+
+  public get jumpSpeed(): number {
+    const jumpSpeed = this.statsSystem.getJumpSpeed();
+
+    return jumpSpeed;
   }
 
   protected set currentState(state: typeof this.animController.currentState) {

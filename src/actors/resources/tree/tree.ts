@@ -37,7 +37,7 @@ export class Tree extends MaterialSource {
   constructor(
     pos: ex.Vector,
     treeType: TreeType = "apple-tree",
-    z: number = 0
+    z: number = Tree.generateRandomZIndex()
   ) {
     super(
       `tree_${treeType}_${Date.now()}`,
@@ -224,7 +224,8 @@ export class Tree extends MaterialSource {
   }
 
   private static generateRandomZIndex(): number {
-    return Math.floor(Math.random() * 3);
+    const random = Math.random();
+    return random < 0.6667 ? 0 : 2;
   }
 
   /**

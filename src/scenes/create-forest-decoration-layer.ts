@@ -5,11 +5,13 @@ import type { DecorationManager } from "../sprite-sheets/scenery/decorations/dec
 import * as ex from "excalibur";
 import type { BackgroundLayer } from "./types";
 
+const BACKGROUND_HEIGHT = 346;
+const BACKGROUND_WIDTH = 1024;
+
 interface ForestDecorationLayerConfig {
   engine: GameEngine;
   decorationManager: DecorationManager | null;
-  levelWidth: number;
-  levelHeight: number;
+
   seed: number;
   z: number;
   parallax: number;
@@ -19,28 +21,27 @@ interface ForestDecorationLayerConfig {
 export const createForestDecorationLayer = async ({
   engine,
   decorationManager,
-  levelWidth,
-  levelHeight,
   seed,
   z,
   parallax,
-  density = 0.0125,
+  density = 0.005,
 }: ForestDecorationLayerConfig): Promise<BackgroundLayer> => {
   const season = engine.timeCycle.getCurrentSeason();
   const seededRandom = createSeededRandom(seed);
   const scale = parallax * 0.9;
-  const blur = (1 - scale) * 5;
+  const blur = (1 - scale) * 3;
 
   const decorations = decorationManager?.getSeasonDecorations(season) || [];
 
-  const decorationCount = Math.floor(levelWidth / (30 * (density * 100)));
+  const decorationCount = Math.floor(BACKGROUND_WIDTH / (30 * (density * 100)));
 
   const padding = 500;
-  const canvasWidth = levelWidth + padding * 2;
-  const canvasHeight = levelHeight;
-  const treeGroundY = levelHeight;
-  const decorationGroundY = canvasHeight - 10;
-
+  const canvasWidth = BACKGROUND_WIDTH + padding * 2;
+  const canvasHeight = BACKGROUND_HEIGHT;
+  const groundHeight = 32 * parallax;
+  const groundY = BACKGROUND_HEIGHT - groundHeight * parallax;
+  const treeGroundY = groundY;
+  const decorationGroundY = groundY;
   const treeCount = Math.floor(canvasWidth * density);
 
   const treeData: Array<{
@@ -59,25 +60,25 @@ export const createForestDecorationLayer = async ({
     scale: number;
   }> = [];
 
-  // Generate decoration data
   const decorationsLength = decorations.length;
   for (let i = 0; i < decorationCount; i++) {
     const decoIndex = Math.floor(seededRandom() * decorationsLength);
     const deco = decorations[decoIndex];
-    const x = seededRandom() * canvasWidth;
-    const yOffset = Math.floor(seededRandom() * 3);
-    const y = decorationGroundY + yOffset;
+
+    const x = Math.min(
+      Math.max(seededRandom() * canvasWidth, deco.sprite.width / 2),
+      canvasWidth - deco.sprite.width / 2
+    );
+    const y = decorationGroundY;
 
     decorationData.push({ deco, x, y, scale });
   }
 
-  // Yield control after decoration generation
   await new Promise((resolve) => setTimeout(resolve, 0));
 
-  // Generate tree data
   const gridSize = minSpacing;
   const occupiedCells = new Set<string>();
-  const maxAttempts = 2;
+  const maxAttempts = 10;
 
   for (let i = 0; i < treeCount; i++) {
     const treeType = getRandomTreeType(seededRandom);
@@ -88,7 +89,11 @@ export const createForestDecorationLayer = async ({
     let attempts = 0;
 
     while (!placed && attempts < maxAttempts) {
-      const x = seededRandom() * canvasWidth;
+      const x = Math.min(
+        Math.max(seededRandom() * canvasWidth, graphic.width / 2),
+        canvasWidth - graphic.width / 2
+      );
+
       const cellKey = `${Math.floor(x / gridSize)}`;
 
       if (!occupiedCells.has(cellKey)) {
@@ -104,13 +109,11 @@ export const createForestDecorationLayer = async ({
       treeData.push({ graphic, x, y, scale });
     }
 
-    // Yield control periodically during tree generation
     if (i % 10 === 0) {
       await new Promise((resolve) => setTimeout(resolve, 0));
     }
   }
 
-  // Yield control before canvas creation
   await new Promise((resolve) => setTimeout(resolve, 0));
 
   const canvas = new ex.Canvas({
@@ -206,10 +209,10 @@ function createSeededRandom(seed: number): () => number {
 
 function getRandomTreeType(seededRandom: () => number): TreeType {
   const roll = seededRandom();
-  if (roll < 0.6) return "pine-tree"; // 60%
-  else if (roll < 0.9) return "birch-tree"; // 20% (0.6 to 0.9)
-  else if (roll < 0.95) return "willow-tree"; // 5% (0.9 to 0.95)
-  else return "apple-tree"; // 5% (0.95 to 1.0)
+  if (roll < 0.6) return "pine-tree";
+  else if (roll < 0.9) return "birch-tree";
+  else if (roll < 0.95) return "willow-tree";
+  else return "apple-tree";
 }
 
 function getTreeGraphic(

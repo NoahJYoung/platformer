@@ -12,7 +12,7 @@ import type { LootDrop } from "../character/loot-drop";
 import type { MaterialSource } from "../resources/material-source";
 
 export class Player extends Character {
-  public isRunMode: boolean = false;
+  // public isRunMode: boolean = false;
   private lastToggleFrame: number = -1;
   private temperature: number = 20;
   private hunger: number = 100;
@@ -50,6 +50,7 @@ export class Player extends Character {
 
   private handleInput(engine: ex.Engine) {
     const kb = engine.input.keyboard;
+    const currentTime = Date.now();
     if (this.currentState === "dead") {
       return;
     }
@@ -62,7 +63,7 @@ export class Player extends Character {
 
         if (this.isRunMode) {
           this.isRunMode = false;
-        } else if (this.energy > 0) {
+        } else if (this.energy > 10) {
           this.isRunMode = true;
         }
       }
@@ -135,25 +136,25 @@ export class Player extends Character {
     }
 
     if (kb.wasPressed(ex.Keys.E) && this.currentState !== "hurt") {
-      this.dodge("right");
+      this.dodge("right", currentTime);
     }
 
     if (kb.wasPressed(ex.Keys.Q) && this.currentState !== "hurt") {
-      this.dodge("left");
+      this.dodge("left", currentTime);
     }
 
     if (kb.wasPressed(ex.Keys.U) && this.currentState !== "hurt") {
-      this.magicAttack("fire");
+      this.magicAttack("fire", currentTime);
     }
 
     if (kb.wasPressed(ex.Keys.I) && this.currentState !== "hurt") {
-      this.magicAttack("wind");
+      this.magicAttack("wind", currentTime);
     }
     if (kb.wasPressed(ex.Keys.N) && this.currentState !== "hurt") {
-      this.magicAttack("earth");
+      this.magicAttack("earth", currentTime);
     }
     if (kb.wasPressed(ex.Keys.M) && this.currentState !== "hurt") {
-      this.magicAttack("water");
+      this.magicAttack("water", currentTime);
     }
 
     if (
@@ -173,7 +174,7 @@ export class Player extends Character {
 
     if (kb.wasPressed(ex.Keys.J) && this.currentState !== "hurt") {
       if (this.energy >= this.attackEnergyCost) {
-        this.attack();
+        this.attack(currentTime);
       }
     }
   }
@@ -236,26 +237,27 @@ export class Player extends Character {
     return true;
   }
 
-  protected updateEnergy(deltaSeconds: number) {
-    if (this.currentState === "running") {
-      this.energy = Math.max(
-        0,
-        this.energy - this.runEnergyDrain * deltaSeconds
-      );
+  // protected updateEnergy(deltaSeconds: number) {
+  //   console.log(this.currentState, this.isRunMode);
+  //   if (this.currentState === "running") {
+  //     this.energy = Math.max(
+  //       0,
+  //       this.energy - this.runEnergyDrain * deltaSeconds
+  //     );
 
-      if (this.energy <= 0) {
-        this.isRunMode = false;
-      }
-    } else if (
-      this.currentState === "idle" ||
-      this.currentState === "walking"
-    ) {
-      this.energy = Math.min(
-        this.maxEnergy,
-        this.energy + this.energyRecoveryRate * deltaSeconds
-      );
-    }
-  }
+  //     if (this.energy <= 0) {
+  //       this.isRunMode = false;
+  //     }
+  //   } else if (
+  //     this.currentState === "idle" ||
+  //     this.currentState === "walking"
+  //   ) {
+  //     this.energy = Math.min(
+  //       this.maxEnergy,
+  //       this.energy + this.energyRecoveryRate * deltaSeconds
+  //     );
+  //   }
+  // }
 
   private nearbyLootDrop: LootDrop | null = null;
 

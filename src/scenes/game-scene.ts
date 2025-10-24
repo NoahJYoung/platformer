@@ -349,8 +349,7 @@ export class GameMapScene extends ex.Scene {
 
       createForestDecorationLayer({
         engine,
-        levelHeight: this.levelHeight,
-        levelWidth: this.levelWidth,
+
         seed: this.hashString(`${this.name}-0`),
         z: -93.5,
         parallax: 0.75,
@@ -359,9 +358,17 @@ export class GameMapScene extends ex.Scene {
 
       createForestDecorationLayer({
         engine,
-        levelHeight: this.levelHeight,
-        levelWidth: this.levelWidth,
-        seed: this.hashString(`${this.name}-2`),
+
+        seed: this.hashString(`${this.name}-92.5`),
+        z: -92.5,
+        parallax: 0.8,
+        decorationManager: this.decorationManager,
+      }),
+
+      createForestDecorationLayer({
+        engine,
+
+        seed: this.hashString(`${this.name}-92`),
         z: -92,
         parallax: 0.85,
         decorationManager: this.decorationManager,
@@ -369,16 +376,23 @@ export class GameMapScene extends ex.Scene {
 
       createForestDecorationLayer({
         engine,
-        levelHeight: this.levelHeight,
-        levelWidth: this.levelWidth,
-        seed: this.hashString(`${this.name}-4`),
+
+        seed: this.hashString(`${this.name}-91.5`),
+        z: -91.5,
+        parallax: 0.9,
+        decorationManager: this.decorationManager,
+      }),
+
+      createForestDecorationLayer({
+        engine,
+
+        seed: this.hashString(`${this.name}-91`),
         z: -91,
         parallax: 0.95,
         decorationManager: this.decorationManager,
       }),
     ];
 
-    // Process layers progressively
     for (const layer of layers) {
       const resolvedLayer = await Promise.resolve(layer);
 
@@ -387,24 +401,32 @@ export class GameMapScene extends ex.Scene {
           continue;
         }
         const parallaxFactor = resolvedLayer.parallax.y;
-        const yOffset = this.levelHeight * 0.8 * (1 - parallaxFactor) - 25;
+        const decorationWidth = resolvedLayer.canvas.width;
+        const decorationHeight = resolvedLayer.canvas.height;
 
-        const decorationLayer = new ex.Actor({
-          name: "decoration_layer",
-          pos: ex.vec(
-            this.levelWidth / 2,
-            this.levelHeight - this.levelHeight / 2 - yOffset - 41
-          ),
-          anchor: ex.vec(0.5, 0.5),
-          z: resolvedLayer.z,
-        });
+        const decorationTilesNeeded =
+          Math.ceil(this.levelWidth / decorationWidth) + 2;
 
-        decorationLayer.graphics.use(resolvedLayer.canvas);
-        decorationLayer.addComponent(
-          new ex.ParallaxComponent(resolvedLayer.parallax)
-        );
+        for (let i = -1; i < decorationTilesNeeded; i++) {
+          const y =
+            ((this.levelHeight || 0) - decorationHeight / 2) * parallaxFactor;
+          const x =
+            ((i * decorationWidth + decorationWidth) * parallaxFactor) / 2;
 
-        this.add(decorationLayer);
+          const decorationLayer = new ex.Actor({
+            name: `decoration_layer_${i}`,
+            pos: ex.vec(x, y),
+            anchor: ex.vec(0.5, 0.5),
+            z: resolvedLayer.z,
+          });
+
+          decorationLayer.graphics.use(resolvedLayer.canvas);
+          decorationLayer.addComponent(
+            new ex.ParallaxComponent(resolvedLayer.parallax)
+          );
+
+          this.add(decorationLayer);
+        }
       } else if (resolvedLayer.isSky) {
         if (!resolvedLayer.resource) {
           continue;
@@ -449,13 +471,13 @@ export class GameMapScene extends ex.Scene {
           }
 
           const parallaxFactor = resolvedLayer.parallax.y;
-          const yOffset = this.levelHeight * 0.8 * (1 - parallaxFactor) - 25;
+
+          const y =
+            ((this.levelHeight || 0) - sprite.height / 2) * parallaxFactor;
+          const x = i * bgWidth + bgWidth / 2;
 
           const background = new ex.Actor({
-            pos: ex.vec(
-              i * bgWidth + bgWidth / 2,
-              this.levelHeight - bgHeight / 2 - yOffset
-            ),
+            pos: ex.vec(x, y),
             anchor: ex.vec(0.5, 0.5),
             z: resolvedLayer.z,
           });
@@ -479,7 +501,6 @@ export class GameMapScene extends ex.Scene {
         }
       }
 
-      // Yield control after processing each layer
       await new Promise((resolve) => setTimeout(resolve, 0));
     }
 

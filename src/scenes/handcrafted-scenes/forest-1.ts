@@ -6,10 +6,10 @@ export const forest_1: SceneConfig = {
   type: "forest",
   name: "forest-1",
   backgroundTheme: "normal",
-  width: 2400,
+  width: 3200,
   height: 800,
   spawnPoints: {
-    default: ex.vec(200, 730),
+    default: ex.vec(0, 600),
   },
   exits: [],
   platforms: [],
