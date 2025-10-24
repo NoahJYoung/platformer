@@ -64,7 +64,8 @@ export class GameEngine extends ex.Engine {
   }
 
   async initialize() {
-    const loader = new ex.Loader();
+    const options: ex.LoaderOptions = {};
+    const loader = new ex.Loader({});
 
     Resources.forEach((resource) => loader.addResource(resource));
     loader.backgroundColor = "#1a1a1a";
@@ -90,7 +91,7 @@ export class GameEngine extends ex.Engine {
 
     const generator = new ProceduralWorldGenerator({
       seed: Date.now(),
-      numberOfScenes: 50,
+      numberOfScenes: 8,
       platformDensity: "low",
       treeDensity: "low",
       enemyDensity: "medium",

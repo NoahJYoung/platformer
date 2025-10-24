@@ -160,7 +160,7 @@ export class StatsSystem {
   }
 
   public getRunSpeed(): number {
-    return Math.floor(125 + (this.stats.agility.baseValue - 10) * 2);
+    return Math.floor(150 + (this.stats.agility.baseValue - 10) * 2);
   }
 
   public getStrengthDamageMultiplier(): number {
@@ -190,23 +190,23 @@ export class StatsSystem {
   }
 
   public getDodgeCooldown(): number {
-    const baseCooldown = 2700;
+    const baseCooldown = 1000;
     const agility = this.stats.agility.baseValue;
-    const reduction = (agility - 10) * 30;
+    const reduction = (agility - 1) * 10.101;
     return Math.max(0, baseCooldown - reduction);
   }
 
   public getSpellCooldown(): number {
     const baseCooldown = 2000;
     const intelligence = this.stats.intelligence.baseValue;
-    const reduction = (intelligence - 10) * 40;
-    return Math.max(500, baseCooldown - reduction);
+    const reduction = (intelligence - 1) * 20.202;
+    return Math.max(0, baseCooldown - reduction);
   }
 
   public getAttackCooldown(): number {
-    const baseCooldown = 1800;
+    const baseCooldown = 1000;
     const agility = this.stats.agility.baseValue;
-    const reduction = (agility - 10) * 20;
+    const reduction = (agility - 1) * 10.101;
     return Math.max(0, baseCooldown - reduction);
   }
 
@@ -214,9 +214,7 @@ export class StatsSystem {
     const baseJumpSpeed = -300;
     const agility = this.stats.agility.baseValue;
 
-    const multiplier = 1 + (agility - 1) * (0.667 / 99);
-
-    return Math.floor(baseJumpSpeed * multiplier);
+    return Math.floor(baseJumpSpeed - agility * 1);
   }
 
   public setXPGainRate(

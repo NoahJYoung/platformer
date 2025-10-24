@@ -85,6 +85,7 @@ export class GameMapScene extends ex.Scene {
   onActivate(context: ex.SceneActivationContext<unknown>): void {
     const engine = this.engine as GameEngine;
     this.player = engine.player;
+    console.log("PLAYER: ", this.player);
 
     if (engine.hud) {
       this.add(engine.hud);
@@ -108,7 +109,9 @@ export class GameMapScene extends ex.Scene {
     const spawnPos = this.getSpawnPosition(entryPoint);
     this.player.pos = spawnPos;
 
-    this.add(this.player);
+    setTimeout(() => {
+      if (this.player) this.add(this.player);
+    }, 100);
 
     engine.forceSingleUpdate();
   }
@@ -293,9 +296,11 @@ export class GameMapScene extends ex.Scene {
 
   protected async createBackground(engine: GameEngine): Promise<void> {
     const season = engine.timeCycle.getCurrentSeason();
+    const biome = this.config.type;
     const theme =
       season === "winter" ? "winter" : season === "fall" ? "fall" : "normal";
-    const backgrounds = BackgroundResources[theme];
+    const backgrounds =
+      BackgroundResources[biome as keyof typeof BackgroundResources][theme];
 
     const bgWidth = 1024;
     const bgHeight = 346;
@@ -349,49 +354,59 @@ export class GameMapScene extends ex.Scene {
 
       createForestDecorationLayer({
         engine,
-
+        sceneType: this.config.type,
         seed: this.hashString(`${this.name}-0`),
         z: -93.5,
         parallax: 0.75,
         decorationManager: this.decorationManager,
+        density: this.config.type === "forest" ? 0.005 : 0.002,
       }),
+
+      this.config.type === "forest"
+        ? createForestDecorationLayer({
+            engine,
+            sceneType: this.config.type,
+
+            seed: this.hashString(`${this.name}-92.5`),
+            z: -92.5,
+            parallax: 0.8,
+            decorationManager: this.decorationManager,
+          })
+        : null,
 
       createForestDecorationLayer({
         engine,
-
-        seed: this.hashString(`${this.name}-92.5`),
-        z: -92.5,
-        parallax: 0.8,
-        decorationManager: this.decorationManager,
-      }),
-
-      createForestDecorationLayer({
-        engine,
+        sceneType: this.config.type,
 
         seed: this.hashString(`${this.name}-92`),
         z: -92,
         parallax: 0.85,
         decorationManager: this.decorationManager,
+        density: this.config.type === "forest" ? 0.005 : 0.002,
       }),
+
+      this.config.type === "forest"
+        ? createForestDecorationLayer({
+            engine,
+            sceneType: this.config.type,
+
+            seed: this.hashString(`${this.name}-91.5`),
+            z: -91.5,
+            parallax: 0.9,
+            decorationManager: this.decorationManager,
+          })
+        : null,
 
       createForestDecorationLayer({
         engine,
-
-        seed: this.hashString(`${this.name}-91.5`),
-        z: -91.5,
-        parallax: 0.9,
-        decorationManager: this.decorationManager,
-      }),
-
-      createForestDecorationLayer({
-        engine,
-
+        sceneType: this.config.type,
         seed: this.hashString(`${this.name}-91`),
         z: -91,
         parallax: 0.95,
         decorationManager: this.decorationManager,
+        density: this.config.type === "forest" ? 0.005 : 0.002,
       }),
-    ];
+    ].filter((layer) => !!layer);
 
     for (const layer of layers) {
       const resolvedLayer = await Promise.resolve(layer);

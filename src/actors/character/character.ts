@@ -52,10 +52,10 @@ export abstract class Character extends ex.Actor {
   protected combatSystem: CombatSystem;
   public statsSystem: StatsSystem;
 
-  protected runEnergyDrain: number = 4;
+  protected runEnergyDrain: number = 2;
   protected jumpEnergyCost: number = 4;
   protected attackEnergyCost: number = 8;
-  protected energyRecoveryRate: number = 4;
+  protected energyRecoveryRate: number = 8;
   protected healthRecoveryRate: number = 1;
   protected manaRecoveryRate: number = 1;
 

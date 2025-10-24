@@ -1,6 +1,11 @@
 import * as ex from "excalibur";
 import type { EnemyConfig } from "../actors/enemy/types";
-import type { SceneConfig, PlatformConfig, TreeConfig } from "../scenes/types";
+import type {
+  SceneConfig,
+  PlatformConfig,
+  TreeConfig,
+  SceneType,
+} from "../scenes/types";
 import {
   getHeightByTreeType,
   type TreeType,
@@ -93,19 +98,25 @@ export class ProceduralWorldGenerator {
       height = this.rng.nextInt(this.config.minHeight, 1000);
     }
 
-    const sceneName = `forest-${index + 1}`;
+    const halfwayPoint = Math.floor(this.config.numberOfScenes / 2);
+    const isMountain = index >= halfwayPoint;
+    const biomeType = isMountain ? "mountain" : "forest";
+    const sceneName = `${biomeType}-${index + 1}`;
 
     const themeRoll = this.rng.next();
     const backgroundTheme =
       themeRoll < 0.6 ? "normal" : themeRoll < 0.8 ? "fall" : "winter";
 
-    const platforms = this.generatePlatforms(width, height);
+    const platforms = isMountain
+      ? this.generateMountainPlatforms(width, height)
+      : this.generatePlatforms(width, height);
+
     const surfacePoints = this.getAllSurfacePoints(platforms, width, height);
-    const trees = this.generateTrees(surfacePoints, platforms);
+    const trees = this.generateTrees(surfacePoints, biomeType, platforms);
     const enemies = this.generateEnemies(surfacePoints, trees, index);
 
     const scene: SceneConfig = {
-      type: "forest",
+      type: biomeType,
       name: sceneName,
       backgroundTheme,
       width,
@@ -123,7 +134,7 @@ export class ProceduralWorldGenerator {
   }
 
   /**
-   * Generate platforms for a scene
+   * Generate platforms for a forest scene
    */
   private generatePlatforms(
     sceneWidth: number,
@@ -194,6 +205,85 @@ export class ProceduralWorldGenerator {
   }
 
   /**
+   * Generate platforms for a mountain scene - more vertical, steeper climbs
+   */
+  private generateMountainPlatforms(
+    sceneWidth: number,
+    sceneHeight: number
+  ): PlatformConfig[] {
+    const platforms: PlatformConfig[] = [];
+
+    const densityMultiplier = {
+      low: 0.8,
+      medium: 1.2,
+      high: 1.6,
+    }[this.config.platformDensity];
+
+    const basePlatformCount = Math.floor(
+      (sceneWidth / 150) * densityMultiplier
+    );
+    const platformCount = this.rng.nextInt(
+      Math.max(5, basePlatformCount - 2),
+      basePlatformCount + 5
+    );
+
+    const numberOfPaths = this.rng.nextInt(2, 4);
+    const platformsPerPath = Math.floor(platformCount / numberOfPaths);
+
+    for (let pathIdx = 0; pathIdx < numberOfPaths; pathIdx++) {
+      const startX =
+        (sceneWidth / numberOfPaths) * pathIdx + this.rng.nextInt(100, 300);
+
+      const startHeight = sceneHeight - this.rng.nextInt(200, 400);
+      const isAscending = this.rng.next() > 0.3;
+
+      let currentX = startX;
+      let currentY = startHeight;
+
+      for (let i = 0; i < platformsPerPath; i++) {
+        const platformWidth = this.rng.nextInt(60, 140);
+        const platformHeight = 20;
+
+        platforms.push({
+          x: currentX,
+          y: currentY,
+          width: platformWidth,
+          height: platformHeight,
+        });
+
+        const horizontalGap = this.rng.nextInt(60, 120);
+
+        let verticalChange;
+        if (isAscending) {
+          verticalChange = this.rng.nextInt(-120, -40);
+        } else {
+          verticalChange = this.rng.nextInt(-60, 60);
+        }
+
+        currentX += platformWidth + horizontalGap;
+        currentY = Math.max(
+          150,
+          Math.min(sceneHeight - 150, currentY + verticalChange)
+        );
+
+        if (currentX > sceneWidth - 200) break;
+      }
+    }
+
+    const randomPlatforms = this.rng.nextInt(3, 8);
+    for (let i = 0; i < randomPlatforms; i++) {
+      platforms.push({
+        x: this.rng.nextInt(200, sceneWidth - 200),
+        y: this.rng.nextInt(150, sceneHeight - 150),
+        width: this.rng.nextInt(50, 120),
+        height: 20,
+      });
+    }
+
+    return platforms;
+  }
+
+  /**
    * Get all surface points where trees can be placed (ground and platforms)
    */
   private getAllSurfacePoints(
@@ -227,6 +317,7 @@ export class ProceduralWorldGenerator {
    */
   private generateTrees(
     surfaces: Rectangle[],
+    sceneType: SceneType,
     platforms: PlatformConfig[]
   ): TreeConfig[] {
     const trees: TreeConfig[] = [];
@@ -243,10 +334,14 @@ export class ProceduralWorldGenerator {
         this.rng.nextInt(1, Math.max(2, maxTrees)) * densityMultiplier
       );
 
-      for (let i = 0; i < numberOfTrees; i++) {
+      const biomeAdjustedTreeNumber =
+        sceneType === "forest" ? numberOfTrees : numberOfTrees / 4;
+
+      for (let i = 0; i < biomeAdjustedTreeNumber; i++) {
         let attempts = 0;
         let placed = false;
-        const treeType = this.getRandomTreeType();
+        const treeType =
+          sceneType === "forest" ? this.getRandomTreeType() : "pine-tree";
 
         while (attempts < 10 && !placed) {
           const treeX =

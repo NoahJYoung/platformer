@@ -3,7 +3,7 @@ import type { GameEngine } from "../game-engine";
 import { TreeResources } from "../resources/tree-resources";
 import type { DecorationManager } from "../sprite-sheets/scenery/decorations/decorations-manager";
 import * as ex from "excalibur";
-import type { BackgroundLayer } from "./types";
+import type { BackgroundLayer, SceneType } from "./types";
 
 const BACKGROUND_HEIGHT = 346;
 const BACKGROUND_WIDTH = 1024;
@@ -11,7 +11,7 @@ const BACKGROUND_WIDTH = 1024;
 interface ForestDecorationLayerConfig {
   engine: GameEngine;
   decorationManager: DecorationManager | null;
-
+  sceneType: SceneType;
   seed: number;
   z: number;
   parallax: number;
@@ -20,6 +20,7 @@ interface ForestDecorationLayerConfig {
 
 export const createForestDecorationLayer = async ({
   engine,
+  sceneType,
   decorationManager,
   seed,
   z,
@@ -32,17 +33,16 @@ export const createForestDecorationLayer = async ({
   const blur = (1 - scale) * 3;
 
   const decorations = decorationManager?.getSeasonDecorations(season) || [];
-
-  const decorationCount = Math.floor(BACKGROUND_WIDTH / (30 * (density * 100)));
-
   const padding = 500;
   const canvasWidth = BACKGROUND_WIDTH + padding * 2;
+
   const canvasHeight = BACKGROUND_HEIGHT;
   const groundHeight = 32 * parallax;
   const groundY = BACKGROUND_HEIGHT - groundHeight * parallax;
   const treeGroundY = groundY;
   const decorationGroundY = groundY;
   const treeCount = Math.floor(canvasWidth * density);
+  const decorationCount = Math.floor(canvasWidth * density);
 
   const treeData: Array<{
     graphic: ex.ImageSource;
@@ -81,7 +81,8 @@ export const createForestDecorationLayer = async ({
   const maxAttempts = 10;
 
   for (let i = 0; i < treeCount; i++) {
-    const treeType = getRandomTreeType(seededRandom);
+    const treeType =
+      sceneType === "forest" ? getRandomTreeType(seededRandom) : "pine-tree";
     const graphic = getTreeGraphic(treeType, season, seededRandom);
     const y = treeGroundY;
 

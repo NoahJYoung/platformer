@@ -97,3 +97,12 @@ export const DECORATIONS_MAP = {
   winter_bush_md: { row: 15, col: 2, width: 1, height: 1 },
   winter_bush_sm: { row: 16, col: 3, width: 1, height: 1 },
 };
+
+export const mountainDecorations = [
+  "normal_grass_rocks",
+  "normal_grass_rocks_2",
+  "normal_rocks_small",
+  "normal_rock_2",
+  "normal_rock_3",
+  "normal_rock_4",
+];

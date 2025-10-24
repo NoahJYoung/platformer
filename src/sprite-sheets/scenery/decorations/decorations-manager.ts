@@ -1,5 +1,5 @@
 import { ImageSource, SpriteSheet, type Sprite } from "excalibur";
-import { DECORATIONS_MAP } from "./decorations-config.ts";
+import { DECORATIONS_MAP, mountainDecorations } from "./decorations-config.ts";
 
 type DecorationName = keyof typeof DECORATIONS_MAP;
 
@@ -63,6 +63,15 @@ export class DecorationManager {
   getWinterDecorations(): DecorationItem[] {
     return Object.keys(this.sprites)
       .filter((key) => key.startsWith("winter_"))
+      .map((key) => ({ name: key, sprite: this.sprites[key] }));
+  }
+
+  getMountainDecorations(): DecorationItem[] {
+    return Object.keys(this.sprites)
+      .filter((key) => {
+        console.log(key, mountainDecorations.includes(key));
+        return mountainDecorations.includes(key);
+      })
       .map((key) => ({ name: key, sprite: this.sprites[key] }));
   }
 

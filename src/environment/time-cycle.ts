@@ -60,10 +60,10 @@ export class TimeCycle {
     this.createGradientCanvas();
 
     this.timeOfDay = 6;
-    this.cycleSpeed = 0.017;
+    this.cycleSpeed = 0.034;
 
     this.season = "spring";
-    this.dayInSeason = 30;
+    this.dayInSeason = 1;
     this.daysPerSeason = 31;
     this.seasonChangeCallbacks = [];
     this.starField = new StarField(game);

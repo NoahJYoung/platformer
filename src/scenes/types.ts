@@ -3,7 +3,7 @@ import type { Inventory } from "../actors/character/inventory";
 import type { EnemyConfig } from "../actors/enemy/types";
 import type { TreeType } from "../actors/resources/tree/tree-types";
 
-export type SceneType = "forest" | "village";
+export type SceneType = "forest" | "mountain" | "village";
 
 export interface SceneConfig {
   type: SceneType;
