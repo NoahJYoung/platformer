@@ -4,19 +4,22 @@ import type {
   AppearanceOptions,
   Attribute,
   AttributesConfig,
+  ConsumableItem,
   EquipmentItem,
   EquipmentSlot,
+  InventoryItem,
 } from "../character/types";
-import type { GameEngine } from "../../game-engine";
+import { GameEngine } from "../../game-engine";
 import type { LootDrop } from "../character/loot-drop";
 import type { MaterialSource } from "../resources/material-source";
 
 export class Player extends Character {
-  // public isRunMode: boolean = false;
   private lastToggleFrame: number = -1;
+  private lastJumpFrame: number = -1;
   private temperature: number = 20;
   private hunger: number = 100;
   private thirst: number = 100;
+  private engine: GameEngine | null = null;
   private nearbyMaterialSource: MaterialSource | null = null;
 
   constructor(
@@ -31,13 +34,15 @@ export class Player extends Character {
     return ["enemy"];
   }
 
-  onPreUpdate(engine: ex.Engine) {
+  onPreUpdate(engine: GameEngine) {
+    this.engine = engine;
     this.handleInput(engine);
   }
 
   update(engine: GameEngine, elapsed: number): void {
     super.update(engine, elapsed);
     this.updateTemperature(engine);
+    this.updateHungerAndThirst(elapsed);
   }
 
   public setNearbyMaterialSource(source: MaterialSource | null) {
@@ -72,8 +77,6 @@ export class Player extends Character {
     const canRun = this.isRunMode && this.energy > 0;
 
     const adjustedMoveSpeed = canRun ? this.runSpeed : this.walkSpeed;
-
-    const isInAir = this.vel.y !== 0;
 
     let xVel = 0;
 
@@ -164,11 +167,18 @@ export class Player extends Character {
       this.canJump &&
       this.currentState !== "hurt"
     ) {
-      if (this.energy >= this.jumpEnergyCost) {
-        this.vel.y = this.jumpSpeed;
-        this.canJump = false;
-        this.currentState = "jumping";
-        this.energy = Math.max(0, this.energy - this.jumpEnergyCost);
+      const currentFrame = engine.stats.currFrame.id;
+      if (this.lastJumpFrame !== currentFrame) {
+        this.lastJumpFrame = currentFrame;
+        if (
+          this.energy >= this.jumpEnergyCost &&
+          this.numberOfJumps < this.maxJumps
+        ) {
+          this.vel.y = this.jumpSpeed;
+          this.currentState = "jumping";
+          this.energy = Math.max(0, this.energy - this.jumpEnergyCost);
+          this.numberOfJumps += 1;
+        }
       }
     }
 
@@ -190,6 +200,45 @@ export class Player extends Character {
 
   getHunger(): number {
     return this.hunger;
+  }
+
+  consumeItem(item: ConsumableItem, slot: number) {
+    if (item.type === "consumable") {
+      item.onConsume(this);
+      this.inventory.removeItem(slot);
+    }
+  }
+
+  private updateHungerAndThirst(elapsed: number): void {
+    const deltaSeconds = elapsed / 1000;
+    const maxHealth = this.statsSystem.getMaxHealth();
+
+    const hungerDepletion =
+      this.statsSystem.getHungerDepletionRate() * deltaSeconds;
+    const thirstDepletion =
+      this.statsSystem.getThirstDepletionRate() * deltaSeconds;
+
+    if (this.hunger > 0) {
+      this.hunger = Math.max(0, this.hunger - hungerDepletion);
+    } else {
+      const healthDamage = (hungerDepletion / 100) * maxHealth;
+      this.health = Math.max(0, this.health - healthDamage);
+    }
+
+    if (this.thirst > 0) {
+      this.thirst = Math.max(0, this.thirst - thirstDepletion);
+    } else {
+      const healthDamage = (thirstDepletion / 100) * maxHealth;
+      this.health = Math.max(0, this.health - healthDamage);
+    }
+
+    if (this.health <= 0) {
+      this.die();
+    }
+  }
+
+  public shouldPreventHealthRecovery(): boolean {
+    return this.hunger === 0 || this.thirst === 0;
   }
 
   updateHunger(amount: number) {
@@ -236,28 +285,6 @@ export class Player extends Character {
     }
     return true;
   }
-
-  // protected updateEnergy(deltaSeconds: number) {
-  //   console.log(this.currentState, this.isRunMode);
-  //   if (this.currentState === "running") {
-  //     this.energy = Math.max(
-  //       0,
-  //       this.energy - this.runEnergyDrain * deltaSeconds
-  //     );
-
-  //     if (this.energy <= 0) {
-  //       this.isRunMode = false;
-  //     }
-  //   } else if (
-  //     this.currentState === "idle" ||
-  //     this.currentState === "walking"
-  //   ) {
-  //     this.energy = Math.min(
-  //       this.maxEnergy,
-  //       this.energy + this.energyRecoveryRate * deltaSeconds
-  //     );
-  //   }
-  // }
 
   private nearbyLootDrop: LootDrop | null = null;
 

@@ -146,6 +146,10 @@ export class Enemy extends Character {
     }
   }
 
+  public shouldPreventHealthRecovery(): boolean {
+    return false;
+  }
+
   private calculateDodgeChance(wasHit: boolean = false): boolean {
     if (this.energy < 16) {
       return false;

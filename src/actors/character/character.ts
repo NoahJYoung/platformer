@@ -1,6 +1,6 @@
 import * as ex from "excalibur";
 import { Inventory } from "./inventory";
-import { CollisionGroups, SCALE, SPRITE_WIDTH } from "../config";
+import { CollisionGroups, SPRITE_WIDTH } from "../config";
 import { AnimationController } from "./animation-controller";
 import { CombatSystem } from "./combat-system";
 import { StatsSystem } from "./stats-system";
@@ -30,6 +30,8 @@ export abstract class Character extends ex.Actor {
   public runSpeed: number = 100;
   public walkSpeed: number = 100;
   public canJump: boolean = false;
+  public numberOfJumps = 0;
+
   public hasTakenDamage = false;
 
   private baseFireDamage = 10;
@@ -270,12 +272,16 @@ export abstract class Character extends ex.Actor {
     }
 
     if (this.health < this.maxHealth) {
+      if (this.shouldPreventHealthRecovery()) return;
       this.health = Math.min(
         this.maxHealth,
         this.health + healthRecoveryRate * deltaSeconds
       );
     }
   }
+
+  public abstract shouldPreventHealthRecovery(): boolean;
+
   protected handleCollisionStart(evt: ex.CollisionStartEvent) {
     const otherActor = evt.other.owner as ex.Actor;
 
@@ -291,8 +297,13 @@ export abstract class Character extends ex.Actor {
           }
         }
         this.canJump = true;
+        this.numberOfJumps = 0;
       }
     }
+  }
+
+  public canPerformDoubleJump(): boolean {
+    return this.statsSystem.getStat("agility").baseValue >= 40;
   }
 
   protected isDodgeReady(currentTime: number): boolean {
@@ -362,13 +373,12 @@ export abstract class Character extends ex.Actor {
   }
 
   protected handleCollisionEnd(evt: ex.CollisionEndEvent) {
-    const otherActor = evt.other.owner as ex.Actor;
-
-    if (otherActor?.name?.startsWith("platform")) {
-      if (this.pos.y < otherActor.pos.y) {
-        this.canJump = false;
-      }
-    }
+    // const otherActor = evt.other.owner as ex.Actor;
+    // if (otherActor?.name?.startsWith("platform")) {
+    //   if (this.pos.y < otherActor.pos.y) {
+    //     this.canJump = false;
+    //   }
+    // }
   }
 
   public createDisplayClone(): ex.Actor {
@@ -686,6 +696,10 @@ export abstract class Character extends ex.Actor {
 
   public get stats() {
     return this.statsSystem.getStats();
+  }
+
+  public get maxJumps() {
+    return this.statsSystem.getMaxNumberOfJumps();
   }
 
   public die() {

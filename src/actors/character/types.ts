@@ -1,4 +1,5 @@
 import { Color } from "excalibur";
+import type { Player } from "../player/player";
 
 export interface AppearanceOptions {
   sex: "male" | "female";
@@ -119,7 +120,7 @@ export interface EquipmentItem extends InventoryItem {
 export interface ConsumableItem extends InventoryItem {
   type: "consumable";
   subtype: ConsumableSubType;
-  effect: ConsumableEffect;
+  onConsume: (player: Player) => void;
 }
 
 export type ConsumableSubType = "potion" | "food";

@@ -4,6 +4,9 @@ export class StatsSystem {
   private stats: Stats;
   private level: number;
 
+  private baseHungerDepletionRate: number = 0.2;
+  private baseThirstDepletionRate: number = 0.3;
+
   private xpGainRates = {
     damageReceived: 0.5,
     damageDealt: 1.0,
@@ -211,10 +214,51 @@ export class StatsSystem {
   }
 
   public getJumpSpeed(): number {
-    const baseJumpSpeed = -300;
+    const baseJumpSpeed = -275;
     const agility = this.stats.agility.baseValue;
 
-    return Math.floor(baseJumpSpeed - agility * 1);
+    return Math.floor(baseJumpSpeed - agility * 1.25);
+  }
+
+  public getMaxNumberOfJumps(): number {
+    const agility = this.stats.agility.baseValue;
+
+    if (agility < 30) {
+      return 1;
+    } else if (agility < 90) {
+      return 2;
+    }
+
+    return 3;
+  }
+
+  /**
+   * Calculate vitality multiplier for hunger/thirst depletion
+   * Higher vitality reduces depletion rate
+   */
+  private getVitalityMultiplier(): number {
+    const vitality = this.stats.vitality.baseValue;
+    // Formula: 1 - (vitality - 5) * 0.005
+    // At vitality 5: 1.0 (100% depletion)
+    // At vitality 50: 0.775 (77.5% depletion)
+    // At vitality 100: 0.5 (50% depletion - minimum)
+    return Math.max(0.5, 1 - (vitality - 5) * 0.005);
+  }
+
+  public getHungerDepletionRate(): number {
+    return this.baseHungerDepletionRate * this.getVitalityMultiplier();
+  }
+
+  public getThirstDepletionRate(): number {
+    return this.baseThirstDepletionRate * this.getVitalityMultiplier();
+  }
+
+  public setBaseHungerDepletionRate(rate: number): void {
+    this.baseHungerDepletionRate = rate;
+  }
+
+  public setBaseThirstDepletionRate(rate: number): void {
+    this.baseThirstDepletionRate = rate;
   }
 
   public setXPGainRate(

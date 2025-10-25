@@ -1,4 +1,4 @@
-import { WeaponResources } from "../../resources";
+import type { Player } from "../../actors/player/player";
 import type { ItemFactoryData } from "../types";
 
 export const foodItems = new Map<string, ItemFactoryData>([
@@ -10,11 +10,12 @@ export const foodItems = new Map<string, ItemFactoryData>([
       type: "consumable",
       subtype: "food",
       description: "A delicious red apple",
-      spriteSheets: {
-        male: WeaponResources.male.iron_sword,
-        female: WeaponResources.female.iron_sword,
+      onConsume: (player: Player) => {
+        const healthRecovery = 25;
+        const hungerRecovery = 15;
+        player.heal(healthRecovery);
+        player.updateHunger(hungerRecovery);
       },
-      effect: { health: 25, hunger: 1 },
     } satisfies ItemFactoryData,
   ],
 ]);

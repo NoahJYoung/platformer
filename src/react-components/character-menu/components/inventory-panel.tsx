@@ -1,4 +1,5 @@
 import type {
+  ConsumableItem,
   EquipmentItem,
   InventoryItem,
 } from "../../../actors/character/types";
@@ -64,6 +65,28 @@ export const InventoryPanel = ({
     }
   };
 
+  const handleDoubleClick = (
+    item: InventoryItem | EquipmentItem | null,
+    slot: number,
+    canEquip: boolean
+  ) => {
+    switch (item?.type) {
+      case "weapon":
+      case "armor":
+        if (canEquip) handleEquipFromInventory(slot);
+        break;
+      case "consumable":
+        player?.consumeItem(item as ConsumableItem, slot);
+        onInventoryChange();
+
+        break;
+      case "material":
+      case "quest":
+      default:
+        break;
+    }
+  };
+
   const handleEquipFromInventory = (slot: number) => {
     if (mode === "loot" || !player) return;
 
@@ -112,7 +135,7 @@ export const InventoryPanel = ({
           const item = inventory.getItem(i);
           const equipmentItem = item;
           const canEquip =
-            mode === "player" && (equipmentItem as EquipmentItem)?.slot;
+            mode === "player" && !!(equipmentItem as EquipmentItem)?.slot;
 
           return (
             <div
@@ -136,7 +159,7 @@ export const InventoryPanel = ({
                 gap: "4px",
               }}
               onClick={() => handleClick(item, i)}
-              onDoubleClick={() => canEquip && handleEquipFromInventory(i)}
+              onDoubleClick={() => handleDoubleClick(item, i, canEquip)}
               title={
                 mode === "loot"
                   ? item

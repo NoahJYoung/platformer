@@ -5,9 +5,9 @@ import type {
   EquipmentSlot,
   ItemTag,
   ConsumableSubType,
-  ConsumableEffect,
 } from "../actors/character/types";
 import type * as ex from "excalibur";
+import type { Player } from "../actors/player/player";
 
 interface BaseItemFactoryData {
   iconUrl: string;
@@ -41,7 +41,7 @@ export interface ArmorFactoryData extends BaseItemFactoryData {
 export interface ConsumableFactoryData extends BaseItemFactoryData {
   type: "consumable";
   subtype: ConsumableSubType;
-  effect: ConsumableEffect;
+  onConsume: (player: Player) => void;
 }
 
 export interface MaterialFactoryData extends BaseItemFactoryData {

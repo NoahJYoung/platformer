@@ -1,17 +1,18 @@
 import * as ex from "excalibur";
 import { SCALE } from "../config";
 import type { Character } from "./character";
+import type { MaterialSource } from "../resources/material-source";
 
 export class HealthBar extends ex.Actor {
   private barWidth: number = 40;
   private barHeight: number = 4;
-  private parentCharacter: Character;
+  private parentCharacter: Character | MaterialSource;
   private getCurrentHealth: () => number;
   private getMaxHealth: () => number;
   private offsetY: number;
 
   constructor(
-    parentCharacter: Character,
+    parentCharacter: Character | MaterialSource,
     getCurrentHealth: () => number,
     getMaxHealth: () => number,
     offsetY: number = -30

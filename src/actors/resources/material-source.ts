@@ -1,15 +1,18 @@
 import * as ex from "excalibur";
 import { Inventory } from "../character/inventory";
-import { CollisionGroups, SCALE } from "../config";
+import { CollisionGroups } from "../config";
 import { DamageNumber } from "../character/damage-number";
 import { LootDrop } from "../character/loot-drop";
 import type { WeaponSubType, WeaponItem } from "../character/types";
 import type { GameEngine } from "../../game-engine";
 import type { Player } from "../player/player";
+import { HealthBar } from "../character/health-bar";
 
 export abstract class MaterialSource extends ex.Actor {
+  public level = 10;
   public health: number = 100;
   public maxHealth: number = 100;
+  public hasTakenDamage = false;
 
   public interactInventory: Inventory;
   public dropInventory: Inventory;
@@ -17,16 +20,20 @@ export abstract class MaterialSource extends ex.Actor {
   protected abstract acceptedWeaponTypes: WeaponSubType[];
 
   protected isDepleted: boolean = false;
+  protected healthBar?: HealthBar;
 
   private interactionIndicator?: ex.Actor;
   private isPlayerNearby: boolean = false;
+  private lastDamageTime: number = 0;
+  private damageCooldown: number = 500;
 
   constructor(
     name: string,
     pos: ex.Vector,
     width: number,
     height: number,
-    z: number
+    z: number,
+    level = 10
   ) {
     super({
       name: name,
@@ -43,9 +50,19 @@ export abstract class MaterialSource extends ex.Actor {
 
     this.interactInventory = new Inventory();
     this.dropInventory = new Inventory();
+    this.level = level;
+    this.health = level * 10;
   }
 
   onInitialize(engine: ex.Engine) {
+    this.healthBar = new HealthBar(
+      this,
+      () => this.health,
+      () => this.maxHealth,
+      -30
+    );
+    this.addChild(this.healthBar);
+
     this.interactionIndicator = new ex.Actor({
       pos: ex.vec(0, -this.height / 2 - 20),
       width: 32,
@@ -144,6 +161,13 @@ export abstract class MaterialSource extends ex.Actor {
 
   public takeDamage(amount: number) {
     if (this.isDepleted) return;
+    this.hasTakenDamage = true;
+    const currentTime = Date.now();
+    if (currentTime - this.lastDamageTime < this.damageCooldown) {
+      return;
+    }
+
+    this.lastDamageTime = currentTime;
 
     const oldHealth = this.health;
     this.health = Math.max(0, this.health - amount);
