@@ -137,9 +137,11 @@ export class GameEngine extends ex.Engine {
     const smallLantern = createItem("small_lantern", this.player.sex);
     const torch = createItem("torch", this.player.sex);
     const knife = createItem("iron_knife", this.player.sex);
+    const waterSkin = createItem("leather_water_skin");
 
     this.player.inventory.addItem(0, torch);
     this.player.inventory.addItem(1, ironAxe);
     this.player.inventory.addItem(2, knife);
+    this.player.inventory.addItem(3, waterSkin);
   }
 }

@@ -167,7 +167,7 @@ export const InventoryPanel = ({
                 height: "42px",
                 width: "42px",
                 gap: "4px",
-                position: "relative", // For quantity badge positioning
+                position: "relative",
               }}
               onClick={() => handleClick(slotData, i)}
               onDoubleClick={() => handleDoubleClick(slotData, i, canEquip)}
@@ -203,7 +203,6 @@ export const InventoryPanel = ({
             >
               {item && renderItemIcon(item)}
 
-              {/* Quantity badge for stackable items */}
               {item?.stackSize && quantity >= 1 && (
                 <div
                   style={{
@@ -218,7 +217,7 @@ export const InventoryPanel = ({
                     borderRadius: "3px",
                     lineHeight: "1",
                     border: "1px solid rgba(255, 255, 255, 0.3)",
-                    pointerEvents: "none", // Don't interfere with clicks
+                    pointerEvents: "none",
                   }}
                 >
                   {quantity}

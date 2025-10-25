@@ -4,8 +4,8 @@ export class StatsSystem {
   private stats: Stats;
   private level: number;
 
-  private baseHungerDepletionRate: number = 0.2;
-  private baseThirstDepletionRate: number = 0.3;
+  private baseHungerDepletionRate: number = 2;
+  private baseThirstDepletionRate: number = 3;
 
   private xpGainRates = {
     damageReceived: 0.5,

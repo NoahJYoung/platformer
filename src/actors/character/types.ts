@@ -94,12 +94,6 @@ export type BuffableAttribute = Attribute | Resource | "temperature";
 
 export type EquipmentBuff = Partial<Record<BuffableAttribute, number>>;
 
-export type ConsumableEffectTargets = BuffableAttribute | "hunger" | "thirst";
-
-export type ConsumableEffect = Partial<
-  Record<ConsumableEffectTargets, number>
-> | null;
-
 export type AttributeRequirement = Partial<Record<Attribute, number>>;
 
 export type EquipmentSlot =
@@ -126,10 +120,13 @@ export interface EquipmentItem extends InventoryItem {
 export interface ConsumableItem extends InventoryItem {
   type: "consumable";
   subtype: ConsumableSubType;
+  refillable?: boolean;
   onConsume: (player: Player) => void;
+  charges?: number;
+  maxCharges?: number;
 }
 
-export type ConsumableSubType = "potion" | "food";
+export type ConsumableSubType = "potion" | "food" | "water";
 
 export type WeaponSubType =
   | "sword"

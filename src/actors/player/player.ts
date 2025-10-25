@@ -204,8 +204,16 @@ export class Player extends Character {
 
   consumeItem(item: ConsumableItem, slot: number) {
     if (item.type === "consumable") {
-      item.onConsume(this);
-      this.inventory.removeItem(slot, 1);
+      if (item.refillable) {
+        if (item.charges !== 0) {
+          if (!item.charges) return;
+          item.onConsume(this);
+          item.charges -= 1;
+        }
+      } else {
+        item.onConsume(this);
+        this.inventory.removeItem(slot, 1);
+      }
     }
   }
 

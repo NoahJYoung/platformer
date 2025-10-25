@@ -703,6 +703,7 @@ export abstract class Character extends ex.Actor {
   }
 
   public die() {
+    this.combatSystem.onDeath();
     this.currentState = "dead";
     this.body.collisionType = ex.CollisionType.PreventCollision;
 

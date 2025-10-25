@@ -43,6 +43,9 @@ export interface ConsumableFactoryData extends BaseItemFactoryData {
   type: "consumable";
   subtype: ConsumableSubType;
   onConsume: (player: Player) => void;
+  refillable?: boolean;
+  charges?: number;
+  maxCharges?: number;
 }
 
 export interface MaterialFactoryData extends BaseItemFactoryData {

@@ -1,4 +1,5 @@
 import type {
+  ConsumableItem,
   EquipmentItem,
   InventoryItem,
 } from "../../../actors/character/types";
@@ -23,6 +24,18 @@ export const ItemDetails = ({
         )
       : null;
 
+  const getItemName = (
+    item: InventoryItem | ConsumableItem | EquipmentItem
+  ) => {
+    if ((item as ConsumableItem)?.refillable) {
+      return `${item.name} ${(item as ConsumableItem).charges}/${
+        (item as ConsumableItem).maxCharges
+      }`;
+    } else {
+      return item.name;
+    }
+  };
+
   return selectedItem ? (
     <div
       style={{
@@ -45,7 +58,7 @@ export const ItemDetails = ({
           paddingBottom: "10px",
         }}
       >
-        {selectedItem.name}
+        {getItemName(selectedItem)}
       </h2>
       <button
         onClick={onDeselectItem}
@@ -64,7 +77,21 @@ export const ItemDetails = ({
         ✕
       </button>
 
-      <div style={{ maxHeight: "100%", overflow: "auto" }}>
+      <div
+        style={{
+          maxHeight: "100%",
+          overflow: "auto",
+          display: "flex",
+          flexDirection: "column",
+          gap: "0.5rem",
+        }}
+      >
+        {selectedItem.type === "consumable" &&
+          (selectedItem as ConsumableItem).refillable && (
+            <p style={{ fontSize: "12px", marginTop: 0 }}>{`Charges: ${
+              (selectedItem as ConsumableItem).charges
+            }/${(selectedItem as ConsumableItem).maxCharges}`}</p>
+          )}
         <p style={{ fontSize: "12px", marginTop: 0 }}>
           {selectedItem.description}
         </p>

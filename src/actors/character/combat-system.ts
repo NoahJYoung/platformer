@@ -286,8 +286,7 @@ export class CombatSystem {
     return newHealth;
   }
 
-  private onDeath() {
-    this.character.die();
+  public onDeath() {
     this.character.vel.x = 0;
     this.animController.currentState = "dead";
     this.character.body.group = ex.CollisionGroup.collidesWith([

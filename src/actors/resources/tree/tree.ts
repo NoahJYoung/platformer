@@ -62,10 +62,6 @@ export class Tree extends MaterialSource {
     }
   }
 
-  /**
-   * Initialize graphics based on tree type
-   * This will need to be updated when TreeResources is ready with all graphics
-   */
   private initializeGraphics(treeType: TreeType): TreeGraphics {
     switch (treeType) {
       case "apple-tree":
@@ -174,9 +170,6 @@ export class Tree extends MaterialSource {
     this.graphics.use(sprite);
   }
 
-  /**
-   * Callback when apples are removed (only for apple trees)
-   */
   public onApplesRemoved = () => {
     if (this.treeType !== "apple-tree") return;
 
