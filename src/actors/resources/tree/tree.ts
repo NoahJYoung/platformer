@@ -185,8 +185,10 @@ export class Tree extends MaterialSource {
       this.graphicState === "with_apples"
     ) {
       const hasApples = [...this.interactInventory.getAllItems()]
-        .map(([, item]) => item)
-        .some((item) => item?.name.toLowerCase().includes("apple"));
+        .map(([, itemSlot]) => itemSlot)
+        .some((itemSlot) =>
+          itemSlot?.item?.name.toLowerCase().includes("apple")
+        );
 
       if (!hasApples) {
         this.graphicState = "without_apples";

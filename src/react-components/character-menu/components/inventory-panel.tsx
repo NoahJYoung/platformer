@@ -2,6 +2,7 @@ import type {
   ConsumableItem,
   EquipmentItem,
   InventoryItem,
+  InventorySlot,
 } from "../../../actors/character/types";
 import type { Player } from "../../../actors/player/player";
 import type { Inventory } from "../../../actors/character/inventory";
@@ -30,10 +31,12 @@ export const InventoryPanel = ({
   const isSelected = (item: InventoryItem | null) =>
     !!item && selectedItem === item;
 
-  const handleClick = (item: InventoryItem | null, slot: number) => {
+  const handleClick = (slotData: InventorySlot | null, slot: number) => {
+    const item = slotData?.item || null;
+
     if (mode === "loot") {
-      if (item && player) {
-        const success = player.inventory.addItem(0, item);
+      if (item && player && slotData) {
+        const success = player.inventory.addItem(0, item, slotData.quantity);
         if (success) {
           inventory.removeItem(slot);
           onInventoryChange();
@@ -66,19 +69,22 @@ export const InventoryPanel = ({
   };
 
   const handleDoubleClick = (
-    item: InventoryItem | EquipmentItem | null,
+    slotData: InventorySlot | null,
     slot: number,
     canEquip: boolean
   ) => {
+    const item = slotData?.item;
+
     switch (item?.type) {
       case "weapon":
       case "armor":
         if (canEquip) handleEquipFromInventory(slot);
         break;
       case "consumable":
-        player?.consumeItem(item as ConsumableItem, slot);
-        onInventoryChange();
-
+        if (player && slotData) {
+          player.consumeItem(item as ConsumableItem, slot);
+          onInventoryChange();
+        }
         break;
       case "material":
       case "quest":
@@ -90,10 +96,12 @@ export const InventoryPanel = ({
   const handleEquipFromInventory = (slot: number) => {
     if (mode === "loot" || !player) return;
 
-    const item = inventory.getItem(slot);
-    if (!item) return;
-    const equipmentItem = item;
+    const slotData = inventory.getItem(slot);
+    if (!slotData) return;
+
+    const equipmentItem = slotData.item;
     if (!(equipmentItem as EquipmentItem)?.slot) return;
+
     player.equipItem(equipmentItem as EquipmentItem);
     onInventoryChange();
   };
@@ -132,18 +140,20 @@ export const InventoryPanel = ({
         }}
       >
         {Array.from({ length: inventory.maxSlots }).map((_, i) => {
-          const item = inventory.getItem(i);
-          const equipmentItem = item;
-          const canEquip =
-            mode === "player" && !!(equipmentItem as EquipmentItem)?.slot;
+          const slotData = inventory.getItem(i);
+          const item = slotData?.item;
+          const quantity = slotData?.quantity || 0;
+          const canEquip = mode === "player" && !!(item as EquipmentItem)?.slot;
 
           return (
             <div
               key={i}
               style={{
                 aspectRatio: "1",
-                background: isSelected(item) ? "#2a4a2a" : "#333",
-                border: `1px solid ${isSelected(item) ? "#4caf50" : "#555"}`,
+                background: isSelected(item || null) ? "#2a4a2a" : "#333",
+                border: `1px solid ${
+                  isSelected(item || null) ? "#4caf50" : "#555"
+                }`,
                 borderRadius: "4px",
                 display: "flex",
                 flexDirection: "column",
@@ -157,36 +167,63 @@ export const InventoryPanel = ({
                 height: "42px",
                 width: "42px",
                 gap: "4px",
+                position: "relative", // For quantity badge positioning
               }}
-              onClick={() => handleClick(item, i)}
-              onDoubleClick={() => handleDoubleClick(item, i, canEquip)}
+              onClick={() => handleClick(slotData, i)}
+              onDoubleClick={() => handleDoubleClick(slotData, i, canEquip)}
               title={
                 mode === "loot"
                   ? item
-                    ? `${item.name} (Click to take)`
+                    ? `${item.name}${
+                        quantity > 1 ? ` (x${quantity})` : ""
+                      } (Click to take)`
                     : "Empty slot"
                   : item
-                  ? `${item.name}${canEquip ? " (Double-click to equip)" : ""}`
+                  ? `${item.name}${quantity > 1 ? ` (x${quantity})` : ""}${
+                      canEquip ? " (Double-click to equip)" : ""
+                    }`
                   : "Empty slot"
               }
               onMouseOver={(e) => {
                 if (item || mode === "player") {
-                  e.currentTarget.style.background = isSelected(item)
+                  e.currentTarget.style.background = isSelected(item || null)
                     ? "#345a34"
                     : "#3a3a3a";
                   e.currentTarget.style.borderColor = "#777";
                 }
               }}
               onMouseOut={(e) => {
-                e.currentTarget.style.background = isSelected(item)
+                e.currentTarget.style.background = isSelected(item || null)
                   ? "#2a4a2a"
                   : "#333";
-                e.currentTarget.style.borderColor = isSelected(item)
+                e.currentTarget.style.borderColor = isSelected(item || null)
                   ? "#4caf50"
                   : "#555";
               }}
             >
               {item && renderItemIcon(item)}
+
+              {/* Quantity badge for stackable items */}
+              {item?.stackSize && quantity >= 1 && (
+                <div
+                  style={{
+                    position: "absolute",
+                    bottom: "2px",
+                    right: "2px",
+                    background: "rgba(0, 0, 0, 0.8)",
+                    color: "#fff",
+                    fontSize: "9px",
+                    fontWeight: "bold",
+                    padding: "1px 4px",
+                    borderRadius: "3px",
+                    lineHeight: "1",
+                    border: "1px solid rgba(255, 255, 255, 0.3)",
+                    pointerEvents: "none", // Don't interfere with clicks
+                  }}
+                >
+                  {quantity}
+                </div>
+              )}
             </div>
           );
         })}

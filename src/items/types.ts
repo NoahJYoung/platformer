@@ -14,6 +14,7 @@ interface BaseItemFactoryData {
   name: string;
   description: string;
   tags?: ItemTag[];
+  stackSize?: number | null;
 }
 
 export interface WeaponFactoryData extends BaseItemFactoryData {

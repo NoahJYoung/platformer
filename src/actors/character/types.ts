@@ -82,6 +82,12 @@ export interface InventoryItem {
   description: string;
   spriteSheet?: ex.ImageSource;
   tags?: ItemTag[];
+  stackSize?: number | null;
+}
+
+export interface InventorySlot {
+  item: InventoryItem;
+  quantity: number;
 }
 
 export type BuffableAttribute = Attribute | Resource | "temperature";
@@ -139,10 +145,12 @@ export interface WeaponItem extends EquipmentItem {
   type: "weapon";
   subtype: WeaponSubType;
   slot: "weapon";
+  stackSize: null;
 }
 
 export interface ArmorItem extends EquipmentItem {
   defense: number;
   type: "armor";
   slot: Exclude<EquipmentSlot, "weapon">;
+  stackSize: null;
 }

@@ -14,14 +14,14 @@ export const createItem = (
 
   if (itemData.spriteSheets) {
     return {
-      ...itemData,
-      id: uuid(),
+      id: itemData?.stackSize ? key : uuid(),
       spriteSheet: itemData?.spriteSheets[sex],
+      ...itemData,
     } as InventoryItem;
   }
 
   return {
+    id: itemData?.stackSize ? key : uuid(),
     ...itemData,
-    id: uuid(),
   } as InventoryItem;
 };

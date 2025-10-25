@@ -10,6 +10,7 @@ export const foodItems = new Map<string, ItemFactoryData>([
       type: "consumable",
       subtype: "food",
       description: "A delicious red apple",
+      stackSize: 10,
       onConsume: (player: Player) => {
         const healthRecovery = 25;
         const hungerRecovery = 15;

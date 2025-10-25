@@ -8,6 +8,7 @@ export const woodItems = new Map<string, ItemFactoryData>([
       name: "Log",
       type: "material",
       description: "A log cut from a tree",
+      stackSize: 10,
     } satisfies ItemFactoryData,
   ],
   [
@@ -17,6 +18,7 @@ export const woodItems = new Map<string, ItemFactoryData>([
       name: "Branch",
       type: "material",
       description: "A sturdy tree branch",
+      stackSize: 10,
     } satisfies ItemFactoryData,
   ],
   [
@@ -26,6 +28,7 @@ export const woodItems = new Map<string, ItemFactoryData>([
       name: "Bark",
       type: "material",
       description: "A piece of tree bark",
+      stackSize: 10,
     } satisfies ItemFactoryData,
   ],
   [
@@ -35,6 +38,7 @@ export const woodItems = new Map<string, ItemFactoryData>([
       name: "Plank",
       type: "material",
       description: "A wooden plank",
+      stackSize: 10,
     } satisfies ItemFactoryData,
   ],
   [
@@ -44,6 +48,7 @@ export const woodItems = new Map<string, ItemFactoryData>([
       name: "Shaped Wood",
       type: "material",
       description: "Masterfully Shaped Wood",
+      stackSize: 10,
     } satisfies ItemFactoryData,
   ],
 ]);
