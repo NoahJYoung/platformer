@@ -7,9 +7,8 @@ import type {
   ConsumableItem,
   EquipmentItem,
   EquipmentSlot,
-  InventoryItem,
 } from "../character/types";
-import { GameEngine } from "../../game-engine";
+import { GameEngine } from "../../engine/game-engine";
 import type { LootDrop } from "../character/loot-drop";
 import type { MaterialSource } from "../resources/material-source";
 
@@ -19,8 +18,12 @@ export class Player extends Character {
   private temperature: number = 20;
   private hunger: number = 100;
   private thirst: number = 100;
-  private engine: GameEngine | null = null;
   private nearbyMaterialSource: MaterialSource | null = null;
+
+  private hasShownHungerWarning: boolean = false;
+  private hasShownThirstWarning: boolean = false;
+  private hasShownStarvationWarning: boolean = false;
+  private hasShownDehydrationWarning: boolean = false;
 
   constructor(
     pos: ex.Vector,
@@ -35,7 +38,6 @@ export class Player extends Character {
   }
 
   onPreUpdate(engine: GameEngine) {
-    this.engine = engine;
     this.handleInput(engine);
   }
 
@@ -53,7 +55,7 @@ export class Player extends Character {
     return this.nearbyMaterialSource;
   }
 
-  private handleInput(engine: ex.Engine) {
+  private handleInput(engine: GameEngine) {
     const kb = engine.input.keyboard;
     const currentTime = Date.now();
     if (this.currentState === "dead") {
@@ -221,26 +223,66 @@ export class Player extends Character {
     const deltaSeconds = elapsed / 1000;
     const maxHealth = this.statsSystem.getMaxHealth();
 
+    const raining = this.engine?.timeCycle.getWeather() === "raining";
+
+    if (raining) {
+      this.refillWater();
+    }
+
     const hungerDepletion =
       this.statsSystem.getHungerDepletionRate() * deltaSeconds;
     const thirstDepletion =
       this.statsSystem.getThirstDepletionRate() * deltaSeconds;
 
+    if (this.hunger < 50 && this.hunger > 0) {
+      if (!this.hasShownHungerWarning) {
+        (this.engine as GameEngine).showMessage("You are getting hungry");
+        this.hasShownHungerWarning = true;
+      }
+    } else if (this.hunger >= 50) {
+      this.hasShownHungerWarning = false;
+    }
+
+    if (this.thirst < 50 && this.thirst > 0) {
+      if (!this.hasShownThirstWarning) {
+        (this.engine as GameEngine).showMessage("You are getting thirsty");
+        this.hasShownThirstWarning = true;
+      }
+    } else if (this.thirst >= 50) {
+      this.hasShownThirstWarning = false;
+    }
+
     if (this.hunger > 0) {
       this.hunger = Math.max(0, this.hunger - hungerDepletion);
+      this.hasShownStarvationWarning = false;
     } else {
+      if (!this.hasShownStarvationWarning) {
+        (this.engine as GameEngine).showMessage(
+          "You desperately need to eat!",
+          "danger"
+        );
+        this.hasShownStarvationWarning = true;
+      }
       const healthDamage = (hungerDepletion / 100) * maxHealth;
       this.health = Math.max(0, this.health - healthDamage);
     }
 
     if (this.thirst > 0) {
       this.thirst = Math.max(0, this.thirst - thirstDepletion);
+      this.hasShownDehydrationWarning = false;
     } else {
+      if (!this.hasShownDehydrationWarning) {
+        (this.engine as GameEngine).showMessage(
+          "You desperately need water!",
+          "danger"
+        );
+        this.hasShownDehydrationWarning = true;
+      }
       const healthDamage = (thirstDepletion / 100) * maxHealth;
       this.health = Math.max(0, this.health - healthDamage);
     }
 
-    if (this.health <= 0) {
+    if (this.health <= 0 && !this.hasDied) {
       this.die();
     }
   }
@@ -259,6 +301,19 @@ export class Player extends Character {
 
   updateThirst(amount: number) {
     this.thirst = Math.max(0, Math.min(100, this.thirst + amount));
+  }
+
+  refillWater() {
+    if (this.inventory.hasUnfilledWaterContainers) {
+      console.log({ unfilled: this.inventory.hasUnfilledWaterContainers });
+      const weather = this.engine?.timeCycle.getWeather();
+      const isRaining = weather === "raining";
+      const message = isRaining
+        ? "You take advantage of the rain to refill your water"
+        : "You refill your water";
+      this.engine?.showMessage(message);
+      this.inventory.refillWater();
+    }
   }
 
   public unEquipItem(slot: EquipmentSlot): void {
@@ -302,5 +357,10 @@ export class Player extends Character {
 
   public getNearbyLootDrop(): LootDrop | null {
     return this.nearbyLootDrop;
+  }
+
+  public die() {
+    this.engine?.showMessage("You died!", "danger");
+    super.die();
   }
 }

@@ -4,7 +4,7 @@ import { CollisionGroups } from "../config";
 import { DamageNumber } from "../character/damage-number";
 import { LootDrop } from "../character/loot-drop";
 import type { WeaponSubType, WeaponItem } from "../character/types";
-import type { GameEngine } from "../../game-engine";
+import type { GameEngine } from "../../engine/game-engine";
 import type { Player } from "../player/player";
 import { HealthBar } from "../character/health-bar";
 

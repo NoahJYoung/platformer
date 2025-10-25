@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import type { Player } from "../../actors/player/player";
 import type {
   EquipmentItem,
@@ -8,93 +8,25 @@ import { EquipmentPanel } from "./components/equipment-panel";
 import { InventoryPanel } from "./components/inventory-panel";
 import { StatsPanel } from "./components/stats-panel";
 import { ItemDetails } from "./components/item-details";
-import { InventoryEngine } from "./components/inventory-engine";
-import type { GameEngine } from "../../game-engine";
 
 interface CharacterMenuProps {
   player: Player;
   isOpen: boolean;
   onClose: () => void;
-  engineRef: React.RefObject<GameEngine | null>;
 }
 
 export const CharacterMenu: React.FC<CharacterMenuProps> = ({
   player,
   isOpen,
   onClose,
-  engineRef,
 }) => {
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
   const [, forceUpdate] = React.useReducer((x) => x + 1, 0);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [characterDisplayEngine, setCharacterDisplayEngine] =
-    useState<InventoryEngine | null>(null);
-
-  useEffect(() => {
-    let mounted = true;
-    let engine: InventoryEngine | null = null;
-
-    const setupEngine = async () => {
-      if (!isOpen || selectedItem || !canvasRef.current) return;
-
-      const canvasId = `inventory-canvas-${Date.now()}`;
-      canvasRef.current.id = canvasId;
-
-      if (engineRef.current) {
-        engineRef.current.forceSingleUpdate();
-      }
-
-      engine = new InventoryEngine(canvasId);
-      if (player && mounted) {
-        engine.setPlayer(player);
-        setCharacterDisplayEngine(engine);
-      }
-    };
-
-    // Cleanup previous engine before creating new one
-    if (characterDisplayEngine) {
-      characterDisplayEngine.destroy().then(() => {
-        setCharacterDisplayEngine(null);
-        if (mounted) {
-          setupEngine();
-        }
-      });
-    } else {
-      setupEngine();
-    }
-
-    return () => {
-      mounted = false;
-      if (engine) {
-        engine.destroy();
-      }
-    };
-  }, [isOpen, selectedItem]);
-
-  useEffect(() => {
-    setSelectedItem(null);
-  }, [isOpen]);
 
   const handleForceUpdate = () => {
-    if (characterDisplayEngine) {
-      characterDisplayEngine.destroy();
-      setCharacterDisplayEngine(null);
-    }
-
-    if (canvasRef.current && isOpen && !selectedItem) {
-      const canvasId = `inventory-canvas-${Date.now()}`;
-      canvasRef.current.id = canvasId;
-
-      const engine = new InventoryEngine(canvasId);
-      if (player) {
-        engine.setPlayer(player);
-      }
-
-      setCharacterDisplayEngine(engine);
-    }
-
     forceUpdate();
   };
+
   if (!isOpen) return null;
 
   const renderItemIcon = (item: InventoryItem | EquipmentItem) => {
@@ -204,7 +136,7 @@ export const CharacterMenu: React.FC<CharacterMenuProps> = ({
               selectedItem={selectedItem}
             />
           ) : (
-            <StatsPanel canvasRef={canvasRef} player={player} />
+            <StatsPanel player={player} />
           )}
 
           <InventoryPanel

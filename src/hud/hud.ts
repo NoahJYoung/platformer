@@ -1,5 +1,5 @@
 import * as ex from "excalibur";
-import type { GameEngine } from "../game-engine";
+import type { GameEngine } from "../engine/game-engine";
 
 export class HUD extends ex.ScreenElement {
   private engine: GameEngine;

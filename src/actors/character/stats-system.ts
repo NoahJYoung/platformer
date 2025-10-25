@@ -4,8 +4,8 @@ export class StatsSystem {
   private stats: Stats;
   private level: number;
 
-  private baseHungerDepletionRate: number = 2;
-  private baseThirstDepletionRate: number = 3;
+  private baseHungerDepletionRate: number = 0.2;
+  private baseThirstDepletionRate: number = 0.3;
 
   private xpGainRates = {
     damageReceived: 0.5,
@@ -232,16 +232,9 @@ export class StatsSystem {
     return 3;
   }
 
-  /**
-   * Calculate vitality multiplier for hunger/thirst depletion
-   * Higher vitality reduces depletion rate
-   */
   private getVitalityMultiplier(): number {
     const vitality = this.stats.vitality.baseValue;
-    // Formula: 1 - (vitality - 5) * 0.005
-    // At vitality 5: 1.0 (100% depletion)
-    // At vitality 50: 0.775 (77.5% depletion)
-    // At vitality 100: 0.5 (50% depletion - minimum)
+
     return Math.max(0.5, 1 - (vitality - 5) * 0.005);
   }
 

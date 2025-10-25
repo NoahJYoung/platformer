@@ -3,7 +3,7 @@ import { CollisionGroups, SCALE } from "../config";
 import type { Inventory } from "./inventory";
 import type { EquipmentManager } from "./equipment-manager";
 import type { EquipmentItem } from "./types";
-import type { GameEngine } from "../../game-engine";
+import type { GameEngine } from "../../engine/game-engine";
 import { Player } from "../player/player";
 
 export class LootDrop extends ex.Actor {

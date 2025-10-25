@@ -13,7 +13,7 @@ import {
   getHeightByTreeType,
   getPositionOffsetByTreeType,
 } from "./tree-types";
-import type { GameEngine } from "../../../game-engine";
+import type { GameEngine } from "../../../engine/game-engine";
 import { createItem } from "../../../items/item-creator";
 import { TreeResources } from "../../../resources/tree-resources";
 import type { WeaponSubType, InventoryItem } from "../../character/types";

@@ -9,7 +9,7 @@ import {
   Canvas,
   clamp,
 } from "excalibur";
-import type { GameEngine } from "../game-engine";
+import type { GameEngine } from "../engine/game-engine";
 import { StarField } from "./star-field";
 import type { WeatherType } from "./types";
 import { WeatherOverlay } from "./weather-overlay";
@@ -46,6 +46,9 @@ export class TimeCycle {
 
   private seasonOverride: Season | null = null;
 
+  private darkMessageShown = false;
+  private lightMessageShown = false;
+
   constructor(game: GameEngine) {
     this.game = game;
     this.overlay = new Actor({
@@ -59,7 +62,7 @@ export class TimeCycle {
 
     this.createGradientCanvas();
 
-    this.timeOfDay = 6;
+    this.timeOfDay = 17;
     this.cycleSpeed = 0.034;
 
     this.season = "spring";
@@ -317,6 +320,15 @@ export class TimeCycle {
 
     this.startTransition(newSeason);
 
+    const messages: Record<Season, string> = {
+      fall: "It is a crisp fall night",
+      winter: "It is a cold winter night",
+      spring: "It is a mild spring night",
+      summer: "It is a hot summer night",
+    };
+
+    this.game.showMessage(messages[newSeason]);
+
     setTimeout(() => {
       this.season = newSeason;
       this.seasonChangeCallbacks.forEach((callback) => callback(this.season));
@@ -391,6 +403,13 @@ export class TimeCycle {
       if (this.game.currentScene) {
         this.weatherOverlay.switchScene(this.game.currentScene);
       }
+      const messages: Record<WeatherType, string> = {
+        raining: "It has started to rain",
+        clear: "The weather cleared up",
+        snowing: "It has started to snow",
+      };
+
+      this.game.showMessage(messages[newWeather]);
     }
   }
 
@@ -424,10 +443,20 @@ export class TimeCycle {
     if (hour >= 6 && hour < 18) {
       opacity = minOpacity;
     } else if (hour >= 18 && hour < 21) {
+      if (!this.darkMessageShown) {
+        this.game.showMessage("It's getting dark...");
+        this.darkMessageShown = true;
+        this.lightMessageShown = false;
+      }
       opacity = clamp(((hour - 18) / 3) * maxOpacity, minOpacity, maxOpacity);
     } else if (hour >= 21 || hour < 5) {
       opacity = maxOpacity;
     } else {
+      if (!this.lightMessageShown) {
+        this.game.showMessage("The sun is rising");
+        this.lightMessageShown = true;
+        this.darkMessageShown = false;
+      }
       opacity = clamp(((6 - hour) / 1) * maxOpacity, minOpacity, maxOpacity);
     }
 

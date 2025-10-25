@@ -1,5 +1,5 @@
 import { Actor, Canvas, Color, vec } from "excalibur";
-import type { GameEngine } from "../game-engine";
+import type { GameEngine } from "../engine/game-engine";
 
 export class StarField {
   private starCanvas: Actor | null = null;

@@ -1,6 +1,6 @@
 import * as ex from "excalibur";
 import { Player } from "../actors/player/player";
-import { GameEngine } from "../game-engine";
+import { GameEngine } from "../engine/game-engine";
 import type { WeaponItem } from "../actors/character/types";
 import type { BackgroundLayer, SceneConfig } from "./types";
 import { CollisionGroups } from "../actors/config";

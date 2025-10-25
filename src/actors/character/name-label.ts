@@ -1,7 +1,7 @@
 import * as ex from "excalibur";
 import { SCALE } from "../config";
 import type { Character } from "./character";
-import type { GameEngine } from "../../game-engine";
+import type { GameEngine } from "../../engine/game-engine";
 
 export class NameLabel extends ex.Actor {
   private parentCharacter: Character;

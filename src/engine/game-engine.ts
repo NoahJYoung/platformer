@@ -1,19 +1,22 @@
 import * as ex from "excalibur";
-import { Resources } from "./resources";
-import { Player } from "./actors/player/player";
-import { HUD } from "./hud/hud";
-import { TimeCycle } from "./environment/time-cycle";
-import type { AppearanceOptions } from "./actors/character/types";
-import { GameMapScene } from "./scenes/game-scene";
-import { createItem } from "./items/item-creator";
-import { ProceduralWorldGenerator } from "./worlds-generator/world-generator";
-import { handcraftedScenes } from "./scenes/handcrafted-scenes/handcrafted-scenes";
+import { Resources } from "../resources";
+import { Player } from "../actors/player/player";
+import { HUD } from "../hud/hud";
+import { TimeCycle } from "../environment/time-cycle";
+import type { AppearanceOptions } from "../actors/character/types";
+import { GameMapScene } from "../scenes/game-scene";
+import { createItem } from "../items/item-creator";
+import { ProceduralWorldGenerator } from "../worlds-generator/world-generator";
+import { handcraftedScenes } from "../scenes/handcrafted-scenes/handcrafted-scenes";
+import { MessageManager, type MessageType } from "./message-manager";
 
 export class GameEngine extends ex.Engine {
   public player!: Player;
   public hud: HUD | null = null;
   public _nextSceneEntryPoint?: string;
   public timeCycle: TimeCycle = new TimeCycle(this);
+  public messageManager: MessageManager = new MessageManager();
+  private isPaused = false;
 
   constructor() {
     const dimensions = GameEngine.calculateGameDimensions();
@@ -64,7 +67,6 @@ export class GameEngine extends ex.Engine {
   }
 
   async initialize() {
-    const options: ex.LoaderOptions = {};
     const loader = new ex.Loader({});
 
     Resources.forEach((resource) => loader.addResource(resource));
@@ -79,7 +81,7 @@ export class GameEngine extends ex.Engine {
       displayName: "Player",
     };
 
-    const testSkillLevel = 10;
+    const testSkillLevel = 5;
 
     this.player = new Player(ex.vec(100, 100), playerAppearance, {
       strength: testSkillLevel,
@@ -107,6 +109,7 @@ export class GameEngine extends ex.Engine {
 
     this.hud = new HUD(this);
     this.goToScene(scenes[0].name);
+    this.showMessage("Game engine started", "success");
   }
 
   public forceSingleUpdate() {
@@ -119,6 +122,10 @@ export class GameEngine extends ex.Engine {
   onPreUpdate(engine: ex.Engine, delta: number) {
     super.onPreUpdate(engine, delta);
     this.timeCycle.update(delta);
+  }
+
+  showMessage(text: string, type: MessageType = "info") {
+    return this.messageManager?.post(text, type);
   }
 
   protected setupNewPlayer(): void {
@@ -143,5 +150,24 @@ export class GameEngine extends ex.Engine {
     this.player.inventory.addItem(1, ironAxe);
     this.player.inventory.addItem(2, knife);
     this.player.inventory.addItem(3, waterSkin);
+    this.player.inventory.addItem(4, darkPants);
+  }
+
+  public pause() {
+    if (!this.isPaused) {
+      this.stop();
+      this.isPaused = true;
+    }
+  }
+
+  public resume() {
+    if (this.isPaused) {
+      this.start();
+      this.isPaused = false;
+    }
+  }
+
+  public getIsPaused(): boolean {
+    return this.isPaused;
   }
 }

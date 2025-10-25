@@ -19,6 +19,7 @@ import { HealthBar } from "./health-bar";
 import { NameLabel } from "./name-label";
 import { LootDrop } from "./loot-drop";
 import { ProtectionShield } from "./protection-shield";
+import type { GameEngine } from "../../engine/game-engine";
 
 export abstract class Character extends ex.Actor {
   public health: number = 100;
@@ -32,7 +33,10 @@ export abstract class Character extends ex.Actor {
   public canJump: boolean = false;
   public numberOfJumps = 0;
 
+  public engine: GameEngine | null = null;
+
   public hasTakenDamage = false;
+  public hasDied = false;
 
   private baseFireDamage = 10;
   private baseWindDamage = 10;
@@ -42,6 +46,8 @@ export abstract class Character extends ex.Actor {
   private lastDodgeTime: number = 0;
   private lastSpellCastTime: number = 0;
   private lastAttackTime: number = 0;
+
+  private previousLevel: number = 0;
 
   public inventory: Inventory;
   public equipmentManager: EquipmentManager;
@@ -116,7 +122,7 @@ export abstract class Character extends ex.Actor {
       facingRight
     );
 
-    this.inventory = new Inventory();
+    this.inventory = new Inventory(this);
     this.equipmentManager = new EquipmentManager(this.animController);
 
     this.statsSystem = new StatsSystem(
@@ -139,6 +145,8 @@ export abstract class Character extends ex.Actor {
     this.healthRecoveryRate = this.statsSystem.getHealthRecoveryRate();
     this.manaRecoveryRate = this.statsSystem.getHealthRecoveryRate();
 
+    this.previousLevel = this.statsSystem.getLevel();
+
     this.combatSystem = new CombatSystem(
       this,
       this.animController,
@@ -156,8 +164,9 @@ export abstract class Character extends ex.Actor {
     this.showHealthBar = showHealthBar;
   }
 
-  onInitialize(engine: ex.Engine) {
+  onInitialize(engine: GameEngine) {
     this.animController.setupAnimations();
+    this.engine = engine;
 
     const nameLabelOffset = this.showHealthBar ? -40 : -35;
     this.nameLabel = new NameLabel(
@@ -221,6 +230,16 @@ export abstract class Character extends ex.Actor {
 
   protected trackFallVelocity() {
     this.lastYVelocity = this.vel.y;
+  }
+
+  private checkLevelUp() {
+    if (this.level > this.previousLevel) {
+      this.previousLevel = this.level;
+      this.engine?.showMessage(
+        `Your level has increased to: ${this.level}`,
+        "success"
+      );
+    }
   }
 
   protected updateResources(deltaSeconds: number) {
@@ -605,29 +624,39 @@ export abstract class Character extends ex.Actor {
     this.health += this.maxHealth - oldMaxHealth;
     this.healthRecoveryRate = this.statsSystem.getHealthRecoveryRate();
 
-    console.log(`Max health increased to ${this.maxHealth}`);
+    this.engine?.showMessage(
+      `Your vitality has increased to: ${this.stats.vitality.baseValue}`,
+      "success"
+    );
+    this.checkLevelUp();
   }
 
   protected onAgilityLevelUp() {
     this.maxEnergy = this.statsSystem.getMaxEnergy();
     this.runSpeed = this.statsSystem.getRunSpeed();
     this.energyRecoveryRate = this.statsSystem.getEnergyRecoveryRate();
-    console.log(
-      `Agility improved! Speed: ${this.runSpeed}, Energy: ${this.maxEnergy}`
+    this.engine?.showMessage(
+      `Your agility has increased to: ${this.stats.agility.baseValue}`,
+      "success"
     );
+    this.checkLevelUp();
   }
 
   protected onStrengthLevelUp() {
-    console.log(
-      `Strength increased! Damage multiplier: ${this.statsSystem.getStrengthDamageMultiplier()}`
+    this.engine?.showMessage(
+      `Your strength has increased to: ${this.stats.strength.baseValue}`,
+      "success"
     );
+    this.checkLevelUp();
   }
 
   protected onIntelligenceLevelUp() {
     this.manaRecoveryRate = this.statsSystem.getManaRecoveryRate();
-    console.log(
-      `Intelligence increased! Damage multiplier: ${this.statsSystem.getIntelligenceDamageMultiplier()}`
+    this.engine?.showMessage(
+      `Your intelligence has increased to: ${this.stats.intelligence.baseValue}`,
+      "success"
     );
+    this.checkLevelUp();
   }
 
   public getEquipmentStats() {
@@ -703,11 +732,14 @@ export abstract class Character extends ex.Actor {
   }
 
   public die() {
-    this.combatSystem.onDeath();
-    this.currentState = "dead";
-    this.body.collisionType = ex.CollisionType.PreventCollision;
+    if (!this.hasDied) {
+      this.combatSystem.onDeath();
+      this.currentState = "dead";
+      this.hasDied = true;
+      this.body.collisionType = ex.CollisionType.PreventCollision;
 
-    this.spawnLootDrop();
+      this.spawnLootDrop();
+    }
   }
 
   private spawnLootDrop() {

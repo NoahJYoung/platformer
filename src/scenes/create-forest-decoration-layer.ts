@@ -1,5 +1,5 @@
 import type { TreeType } from "../actors/resources/tree/tree-types";
-import type { GameEngine } from "../game-engine";
+import type { GameEngine } from "../engine/game-engine";
 import { TreeResources } from "../resources/tree-resources";
 import type { DecorationManager } from "../sprite-sheets/scenery/decorations/decorations-manager";
 import * as ex from "excalibur";

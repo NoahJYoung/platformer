@@ -1,16 +1,37 @@
-import type { InventoryItem, InventorySlot } from "./types";
+import { Character } from "./character";
+import type { ConsumableItem, InventoryItem, InventorySlot } from "./types";
 
 export class Inventory {
   private items: Map<number, InventorySlot | null> = new Map();
   public maxSlots: number = 20;
   public onRemoveItem?: () => void;
+  private character: Character;
 
-  constructor(onRemoveItem?: () => void) {
+  constructor(character: Character, onRemoveItem?: () => void) {
     this.onRemoveItem = onRemoveItem;
+    this.character = character;
     for (let i = 0; i < this.maxSlots; i++) {
       this.items.set(i, null);
     }
   }
+
+  refillWater() {
+    if (!this.hasUnfilledWaterContainers) {
+      return;
+    }
+    const waterContainers = this.getWaterContainers();
+    if (waterContainers.length) {
+      waterContainers.forEach((item) => {
+        item.charges = item.maxCharges;
+      });
+    }
+  }
+
+  private getWaterContainers = () => {
+    return Array.from(this.items)
+      .filter(([, slot]) => (slot?.item as ConsumableItem)?.subtype === "water")
+      .map(([, slot]) => slot?.item as ConsumableItem);
+  };
 
   addItem(slot: number, item: InventoryItem, quantity: number = 1): boolean {
     if (slot >= this.maxSlots || quantity <= 0) return false;
@@ -220,5 +241,14 @@ export class Inventory {
     }
 
     return true;
+  }
+
+  get hasUnfilledWaterContainers() {
+    const containers = this.getWaterContainers();
+
+    return (
+      containers.length > 0 &&
+      containers.some((item) => item?.charges !== item?.maxCharges)
+    );
   }
 }

@@ -2,7 +2,7 @@
 
 import * as ex from "excalibur";
 
-import type { GameEngine } from "../game-engine";
+import type { GameEngine } from "../engine/game-engine";
 
 import { GameMapScene } from "../scenes/game-scene";
 import type { SceneConfig } from "../scenes/types";

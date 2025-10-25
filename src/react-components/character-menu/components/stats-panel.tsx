@@ -4,10 +4,9 @@ import { InventorySprite } from "./inventory-sprite";
 
 interface StatsPanelProps {
   player: Player;
-  canvasRef: React.RefObject<HTMLCanvasElement | null>;
 }
 
-export const StatsPanel = ({ player, canvasRef }: StatsPanelProps) => {
+export const StatsPanel = ({ player }: StatsPanelProps) => {
   const stats = player.stats;
 
   const healthPercent = (player.health / player.maxHealth) * 100;
@@ -93,7 +92,7 @@ export const StatsPanel = ({ player, canvasRef }: StatsPanelProps) => {
           alignItems: "center",
         }}
       >
-        <InventorySprite canvasRef={canvasRef} player={player} />
+        <InventorySprite player={player} />
         <EquipmentStats player={player} />
       </div>
 

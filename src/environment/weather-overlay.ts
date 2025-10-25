@@ -1,5 +1,5 @@
 import { Actor, Canvas, vec } from "excalibur";
-import type { GameEngine } from "../game-engine";
+import type { GameEngine } from "../engine/game-engine";
 
 export class WeatherOverlay {
   private weatherCanvas: Actor | null = null;

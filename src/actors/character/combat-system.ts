@@ -277,7 +277,7 @@ export class CombatSystem {
 
     setTimeout(() => {
       if (newHealth <= 0) {
-        this.onDeath();
+        this.character.die();
       } else {
         this.animController.currentState = "idle";
       }
