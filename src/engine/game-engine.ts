@@ -77,7 +77,7 @@ export class GameEngine extends ex.Engine {
     const playerAppearance: AppearanceOptions = {
       sex: "male",
       skinTone: 1,
-      hairStyle: 4,
+      hairStyle: 20,
       displayName: "Player",
     };
 
@@ -150,7 +150,7 @@ export class GameEngine extends ex.Engine {
     this.player.inventory.addItem(1, ironAxe);
     this.player.inventory.addItem(2, knife);
     this.player.inventory.addItem(3, waterSkin);
-    this.player.inventory.addItem(4, darkPants);
+    // this.player.inventory.addItem(4, darkPants);
   }
 
   public pause() {

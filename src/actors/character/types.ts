@@ -1,12 +1,59 @@
 import { Color } from "excalibur";
 import type { Player } from "../player/player";
 
-export interface AppearanceOptions {
-  sex: "male" | "female";
-  skinTone: 1 | 2 | 3 | 4 | 5;
-  hairStyle: 1 | 2 | 3 | 4 | 5;
+export type OneToThirtyThree =
+  | 1
+  | 2
+  | 3
+  | 4
+  | 5
+  | 6
+  | 7
+  | 8
+  | 9
+  | 10
+  | 11
+  | 12
+  | 13
+  | 14
+  | 15
+  | 16
+  | 17
+  | 18
+  | 19
+  | 20
+  | 21
+  | 22
+  | 23
+  | 24
+  | 25
+  | 26
+  | 27
+  | 28
+  | 29
+  | 30
+  | 31
+  | 32
+  | 33;
+export type OneToThirtyFive = OneToThirtyThree | 34 | 35;
+
+export type SkinToneOptions = 1 | 2 | 3 | 4 | 5;
+
+type MaleAppearance = {
+  sex: "male";
+  hairStyle: OneToThirtyThree;
+  skinTone: SkinToneOptions;
   displayName: string;
-}
+};
+
+type FemaleAppearance = {
+  sex: "female";
+  hairStyle: OneToThirtyFive;
+  skinTone: SkinToneOptions;
+  displayName: string;
+};
+
+export type AppearanceOptions = MaleAppearance | FemaleAppearance;
 
 export const Resources = {
   Health: "health",

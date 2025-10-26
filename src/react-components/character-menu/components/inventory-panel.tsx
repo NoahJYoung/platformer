@@ -209,14 +209,13 @@ export const InventoryPanel = ({
                     position: "absolute",
                     bottom: "2px",
                     right: "2px",
-                    background: "rgba(0, 0, 0, 0.8)",
+                    background: "transparent",
                     color: "#fff",
                     fontSize: "9px",
                     fontWeight: "bold",
                     padding: "1px 4px",
                     borderRadius: "3px",
                     lineHeight: "1",
-                    border: "1px solid rgba(255, 255, 255, 0.3)",
                     pointerEvents: "none",
                   }}
                 >

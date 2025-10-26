@@ -12,6 +12,7 @@ import type {
   Element,
   EquipmentItem,
   InventoryItem,
+  SkinToneOptions,
 } from "./types";
 import { EquipmentManager } from "./equipment-manager";
 import { DamageNumber } from "./damage-number";
@@ -53,8 +54,8 @@ export abstract class Character extends ex.Actor {
   public equipmentManager: EquipmentManager;
 
   public sex: "male" | "female";
-  public skinTone: 1 | 2 | 3 | 4 | 5;
-  public hairStyle: 1 | 2 | 3 | 4 | 5;
+  public skinTone: SkinToneOptions;
+  public hairStyle: number;
 
   public animController: AnimationController;
   protected combatSystem: CombatSystem;

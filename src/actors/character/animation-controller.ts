@@ -1,7 +1,6 @@
 import * as ex from "excalibur";
 import { PlayerResources } from "../../resources";
 import {
-  SCALE,
   STANDARD_SPRITE_WIDTH,
   SPRITE_HEIGHT,
   LEFT_MARGIN,
@@ -11,7 +10,7 @@ import {
   SPRITE_BUFFER,
 } from "../config";
 import type { Character } from "./character";
-import type { WeaponItem, ArmorItem } from "./types";
+import type { WeaponItem, ArmorItem, SkinToneOptions } from "./types";
 
 export type AnimationState =
   | "idle"
@@ -58,16 +57,16 @@ export class AnimationController {
 
   private character: Character;
   private sex: "male" | "female";
-  private skinTone: 1 | 2 | 3 | 4 | 5;
-  private hairStyle: 1 | 2 | 3 | 4 | 5;
+  private skinTone: SkinToneOptions;
+  private hairStyle: number;
 
   private afterimageTimer: number = 0;
 
   constructor(
     character: Character,
     sex: "male" | "female",
-    skinTone: 1 | 2 | 3 | 4 | 5,
-    hairStyle: 1 | 2 | 3 | 4 | 5,
+    skinTone: SkinToneOptions,
+    hairStyle: number,
     facingRight: boolean
   ) {
     this.character = character;
@@ -105,7 +104,10 @@ export class AnimationController {
       });
 
       const hairSheet = ex.SpriteSheet.fromImageSource({
-        image: PlayerResources[this.sex].hair[`hair_${this.hairStyle}`],
+        image:
+          PlayerResources[this.sex].hair[
+            `hair_${this.hairStyle}` as keyof (typeof PlayerResources)[typeof this.sex]["hair"]
+          ],
         grid: {
           rows: 7,
           columns: frameCount,
