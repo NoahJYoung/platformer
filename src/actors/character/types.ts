@@ -1,7 +1,7 @@
 import { Color } from "excalibur";
 import type { Player } from "../player/player";
 
-export type OneToThirtyThree =
+export type HairOptions =
   | 1
   | 2
   | 3
@@ -34,21 +34,22 @@ export type OneToThirtyThree =
   | 30
   | 31
   | 32
-  | 33;
-export type OneToThirtyFive = OneToThirtyThree | 34 | 35;
+  | 33
+  | 34
+  | 35;
 
 export type SkinToneOptions = 1 | 2 | 3 | 4 | 5;
 
 type MaleAppearance = {
   sex: "male";
-  hairStyle: OneToThirtyThree;
+  hairStyle: HairOptions;
   skinTone: SkinToneOptions;
   displayName: string;
 };
 
 type FemaleAppearance = {
   sex: "female";
-  hairStyle: OneToThirtyFive;
+  hairStyle: HairOptions;
   skinTone: SkinToneOptions;
   displayName: string;
 };

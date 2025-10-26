@@ -77,11 +77,11 @@ export class GameEngine extends ex.Engine {
     const playerAppearance: AppearanceOptions = {
       sex: "male",
       skinTone: 1,
-      hairStyle: 20,
+      hairStyle: 35,
       displayName: "Player",
     };
 
-    const testSkillLevel = 5;
+    const testSkillLevel = 40;
 
     this.player = new Player(ex.vec(100, 100), playerAppearance, {
       strength: testSkillLevel,

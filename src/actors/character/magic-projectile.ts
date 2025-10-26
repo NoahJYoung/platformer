@@ -156,7 +156,7 @@ export class MagicProjectile extends ex.Actor {
 
     this.body.collisionType = ex.CollisionType.Active;
 
-    this.vel = ex.vec(300 * this.launchDirection, 0);
+    this.vel = ex.vec(1000 * this.launchDirection, 0);
 
     this.emitter.radius = this.radius;
     this.emitter.emitRate = 50;

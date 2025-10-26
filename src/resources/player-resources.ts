@@ -190,6 +190,18 @@ export const PlayerResources = {
           filtering: ex.ImageFiltering.Pixel,
         }
       ),
+      hair_34: new ex.ImageSource(
+        "/assets/sprites/player/male/hair/Hair34.png",
+        {
+          filtering: ex.ImageFiltering.Pixel,
+        }
+      ),
+      hair_35: new ex.ImageSource(
+        "/assets/sprites/player/male/hair/Hair35.png",
+        {
+          filtering: ex.ImageFiltering.Pixel,
+        }
+      ),
     },
   },
   female: {
