@@ -176,6 +176,7 @@ export class Player extends Character {
           this.energy >= this.jumpEnergyCost &&
           this.numberOfJumps < this.maxJumps
         ) {
+          super.jump();
           this.vel.y = this.jumpSpeed;
           this.currentState = "jumping";
           this.energy = Math.max(0, this.energy - this.jumpEnergyCost);

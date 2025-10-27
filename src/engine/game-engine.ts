@@ -8,6 +8,12 @@ import { GameMapScene } from "../scenes/game-scene";
 import { createItem } from "../items/item-creator";
 import { ProceduralWorldGenerator } from "../worlds-generator/world-generator";
 import { handcraftedScenes } from "../scenes/handcrafted-scenes/handcrafted-scenes";
+import {
+  getAllSoundsForLoader,
+  loadSounds,
+} from "../audio/sound-manager/load-sounds";
+import { registerSounds } from "../audio/sound-manager/register-sounds";
+import { GameSoundManager } from "../audio/sound-manager/sound-manager";
 import { MessageManager, type MessageType } from "./message-manager";
 
 export class GameEngine extends ex.Engine {
@@ -16,6 +22,7 @@ export class GameEngine extends ex.Engine {
   public _nextSceneEntryPoint?: string;
   public timeCycle: TimeCycle = new TimeCycle(this);
   public messageManager: MessageManager = new MessageManager();
+  public soundManager: GameSoundManager;
   private isPaused = false;
 
   constructor() {
@@ -30,6 +37,8 @@ export class GameEngine extends ex.Engine {
         gravity: ex.vec(0, 800),
       },
     });
+
+    this.soundManager = new GameSoundManager();
   }
 
   private static calculateGameDimensions(): { width: number; height: number } {
@@ -70,14 +79,21 @@ export class GameEngine extends ex.Engine {
     const loader = new ex.Loader({});
 
     Resources.forEach((resource) => loader.addResource(resource));
+
+    const loadedSounds = loadSounds();
+    const soundsForLoader = getAllSoundsForLoader(loadedSounds);
+    soundsForLoader.forEach((sound) => loader.addResource(sound));
+
     loader.backgroundColor = "#1a1a1a";
 
     await this.start(loader);
 
+    registerSounds(this.soundManager, loadedSounds);
+
     const playerAppearance: AppearanceOptions = {
       sex: "male",
       skinTone: 1,
-      hairStyle: 35,
+      hairStyle: 10,
       displayName: "Player",
     };
 
@@ -150,7 +166,6 @@ export class GameEngine extends ex.Engine {
     this.player.inventory.addItem(1, ironAxe);
     this.player.inventory.addItem(2, knife);
     this.player.inventory.addItem(3, waterSkin);
-    // this.player.inventory.addItem(4, darkPants);
   }
 
   public pause() {

@@ -11,6 +11,7 @@ import {
 } from "../config";
 import type { Character } from "./character";
 import type { WeaponItem, ArmorItem, SkinToneOptions } from "./types";
+import { AudioKeys } from "../../audio/sound-manager/audio-keys";
 
 export type AnimationState =
   | "idle"
@@ -74,6 +75,47 @@ export class AnimationController {
     this.skinTone = skinTone;
     this.hairStyle = hairStyle;
     this.facingRight = facingRight;
+  }
+
+  private setupSounds() {
+    this.setupFootstepSounds();
+  }
+
+  private setupFootstepSounds() {
+    if (this.walkAnim) {
+      this.walkAnim.events.on("frame", (evt) => {
+        if (evt.frameIndex === 1 || evt.frameIndex === 5) {
+          this.playFootstep(0.3);
+        }
+      });
+    }
+
+    if (this.runAnim) {
+      this.runAnim.events.on("frame", (evt) => {
+        if (evt.frameIndex === 1 || evt.frameIndex === 5) {
+          this.playFootstep(0.4);
+        }
+      });
+    }
+  }
+
+  private playFootstep(baseVolume: number) {
+    if (!this.character.engine?.soundManager) return;
+
+    const volumeVariation = Math.random() * 0.1 - 0.05;
+    const isPlayer = this.character.name === "player";
+
+    const finalVolume = Math.max(
+      0.1,
+      Math.min(1, baseVolume + volumeVariation)
+    );
+
+    const footstepKey = AudioKeys.SFX.PLAYER.FOOTSTEP;
+
+    this.character.engine.soundManager.play(
+      footstepKey,
+      isPlayer ? finalVolume : finalVolume / 4
+    );
   }
 
   public setupAnimations() {
@@ -295,6 +337,8 @@ export class AnimationController {
       ex.AnimationStrategy.Freeze,
       0
     );
+
+    this.setupSounds();
   }
 
   public equipArmor(armor: ArmorItem) {

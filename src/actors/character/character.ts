@@ -21,6 +21,7 @@ import { NameLabel } from "./name-label";
 import { LootDrop } from "./loot-drop";
 import { ProtectionShield } from "./protection-shield";
 import type { GameEngine } from "../../engine/game-engine";
+import { AudioKeys } from "../../audio/sound-manager/audio-keys";
 
 export abstract class Character extends ex.Actor {
   public health: number = 100;
@@ -318,6 +319,10 @@ export abstract class Character extends ex.Actor {
         }
         this.canJump = true;
         this.numberOfJumps = 0;
+
+        const isPlayer = this.name === "player";
+        const landKey = AudioKeys.SFX.PLAYER.LAND;
+        this.engine?.soundManager.play(landKey, isPlayer ? 0.3 : 0.15);
       }
     }
   }
@@ -519,6 +524,15 @@ export abstract class Character extends ex.Actor {
     this.scene?.add(projectile);
   }
 
+  jump() {
+    if (!this.engine?.soundManager) return;
+    const baseVolume = 0.3;
+
+    const jumpKey = AudioKeys.SFX.PLAYER.JUMP;
+
+    this.engine.soundManager.play(jumpKey, baseVolume);
+  }
+
   public dodge(direction: "left" | "right", time: number) {
     if (!this.isDodgeReady(time)) {
       return;
@@ -527,6 +541,12 @@ export abstract class Character extends ex.Actor {
       this.animController.dodgeAnim.reset();
     }
     this.currentState = "dodging";
+    if (!this.engine?.soundManager) return;
+    const baseVolume = 0.3;
+
+    const jumpKey = AudioKeys.SFX.PLAYER.JUMP;
+
+    this.engine.soundManager.play(jumpKey, baseVolume);
     this.body.group = ex.CollisionGroup.collidesWith([
       CollisionGroups.Environment,
       CollisionGroups.Trigger,
