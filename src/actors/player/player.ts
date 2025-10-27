@@ -11,6 +11,7 @@ import type {
 import { GameEngine } from "../../engine/game-engine";
 import type { LootDrop } from "../character/loot-drop";
 import type { MaterialSource } from "../resources/material-source";
+import { AudioKeys } from "../../audio/sound-manager/audio-keys";
 
 export class Player extends Character {
   private lastToggleFrame: number = -1;
@@ -306,7 +307,6 @@ export class Player extends Character {
 
   refillWater() {
     if (this.inventory.hasUnfilledWaterContainers) {
-      console.log({ unfilled: this.inventory.hasUnfilledWaterContainers });
       const weather = this.engine?.timeCycle.getWeather();
       const isRaining = weather === "raining";
       const message = isRaining
@@ -317,7 +317,10 @@ export class Player extends Character {
     }
   }
 
-  public unEquipItem(slot: EquipmentSlot): void {
+  public unequipItem(slot: EquipmentSlot): void {
+    const unequipSoundKey = AudioKeys.SFX.PLAYER.ITEMS.EQUIPMENT.UNEQUIP;
+    this.engine?.soundManager.playWhilePaused(unequipSoundKey, 0.3);
+
     const previousItem = this.equipmentManager.unequip(slot);
     if (previousItem) {
       this.inventory.addItem(0, previousItem);
@@ -328,6 +331,8 @@ export class Player extends Character {
     if (!this.canEquip(item)) {
       return;
     }
+    const equipSoundKey = AudioKeys.SFX.PLAYER.ITEMS.EQUIPMENT.EQUIP;
+    this.engine?.soundManager.playWhilePaused(equipSoundKey, 0.3);
     const previousItem = this.equipmentManager.equip(item);
     this.inventory.removeItemByReference(item);
     if (previousItem) {

@@ -1,17 +1,8 @@
 import * as ex from "excalibur";
-
-export interface LoadedSounds {
-  footsteps: ex.Sound[];
-  jump: ex.Sound;
-  dodge: ex.Sound;
-  land: ex.Sound;
-  hurt: ex.Sound;
-  death: ex.Sound;
-  attack: ex.Sound;
-  spellCast?: ex.Sound;
-}
+import type { LoadedSounds } from "./types";
 
 export function loadSounds(): LoadedSounds {
+  // Movement
   const footsteps: ex.Sound[] = [];
   const footstepVariations = [
     "./assets/audio/sfx/movement/footsteps/footstep1.wav",
@@ -28,39 +19,72 @@ export function loadSounds(): LoadedSounds {
 
   const jump = new ex.Sound("./assets/audio/sfx/movement/jump.wav");
   const dodge = new ex.Sound("./assets/audio/sfx/movement/dodge.wav");
-
   const land = new ex.Sound("./assets/audio/sfx/movement/land.wav");
   const hurt = new ex.Sound("./assets/audio/sfx/player/hurt.wav");
   const death = new ex.Sound("./assets/audio/sfx/player/death.wav");
   const attack = new ex.Sound("./assets/audio/sfx/combat/attack.wav");
 
+  // Spells
+  const charge = new ex.Sound("./assets/audio/sfx/combat/spells/charge.mp3");
+  const launch = new ex.Sound("./assets/audio/sfx/combat/spells/launch.wav");
+  const impact = new ex.Sound("./assets/audio/sfx/combat/spells/impact.wav");
+
+  // Weapon
+
+  const swing = new ex.Sound("./assets/audio/sfx/combat/weapon/impact.wav");
+  const hit = new ex.Sound("./assets/audio/sfx/combat/weapon/impact.wav");
+
+  // Items
+  const equip = new ex.Sound("./assets/audio/sfx/items/equipment/equip.wav");
+  const unequip = new ex.Sound(
+    "./assets/audio/sfx/items/equipment/unequip.wav"
+  );
+
   return {
-    footsteps,
-    jump,
-    dodge,
-    land,
-    hurt,
-    death,
-    attack,
+    movement: {
+      jump,
+      dodge,
+      land,
+      footsteps,
+    },
+    combat: {
+      spells: {
+        charge,
+        launch,
+        impact,
+      },
+      weapon: {
+        swing,
+        hit,
+      },
+    },
+    items: {
+      equipment: { equip, unequip },
+    },
   };
 }
 
 export function getAllSoundsForLoader(loadedSounds: LoadedSounds): ex.Sound[] {
   const allSounds: ex.Sound[] = [];
 
-  allSounds.push(...loadedSounds.footsteps);
+  allSounds.push(...loadedSounds.movement.footsteps);
 
   allSounds.push(
-    loadedSounds.jump,
-    loadedSounds.land,
-    loadedSounds.hurt,
-    loadedSounds.death,
-    loadedSounds.attack
+    loadedSounds.movement.jump,
+    loadedSounds.movement.land,
+    loadedSounds.movement.dodge
   );
 
-  if (loadedSounds.spellCast) {
-    allSounds.push(loadedSounds.spellCast);
-  }
+  allSounds.push(
+    loadedSounds.combat.spells.charge,
+    loadedSounds.combat.spells.launch,
+    loadedSounds.combat.spells.impact
+  );
+
+  allSounds.push(
+    loadedSounds.items.equipment.equip,
+    loadedSounds.items.equipment.unequip
+  );
 
   return allSounds;
 }

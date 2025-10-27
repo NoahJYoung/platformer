@@ -110,7 +110,7 @@ export class AnimationController {
       Math.min(1, baseVolume + volumeVariation)
     );
 
-    const footstepKey = AudioKeys.SFX.PLAYER.FOOTSTEP;
+    const footstepKey = AudioKeys.SFX.PLAYER.MOVEMENT.FOOTSTEP;
 
     this.character.engine.soundManager.play(
       footstepKey,

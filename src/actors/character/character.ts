@@ -321,7 +321,7 @@ export abstract class Character extends ex.Actor {
         this.numberOfJumps = 0;
 
         const isPlayer = this.name === "player";
-        const landKey = AudioKeys.SFX.PLAYER.LAND;
+        const landKey = AudioKeys.SFX.PLAYER.MOVEMENT.LAND;
         this.engine?.soundManager.play(landKey, isPlayer ? 0.3 : 0.15);
       }
     }
@@ -528,7 +528,7 @@ export abstract class Character extends ex.Actor {
     if (!this.engine?.soundManager) return;
     const baseVolume = 0.3;
 
-    const jumpKey = AudioKeys.SFX.PLAYER.JUMP;
+    const jumpKey = AudioKeys.SFX.PLAYER.MOVEMENT.JUMP;
 
     this.engine.soundManager.play(jumpKey, baseVolume);
   }
@@ -544,7 +544,7 @@ export abstract class Character extends ex.Actor {
     if (!this.engine?.soundManager) return;
     const baseVolume = 0.3;
 
-    const jumpKey = AudioKeys.SFX.PLAYER.JUMP;
+    const jumpKey = AudioKeys.SFX.PLAYER.MOVEMENT.DODGE;
 
     this.engine.soundManager.play(jumpKey, baseVolume);
     this.body.group = ex.CollisionGroup.collidesWith([

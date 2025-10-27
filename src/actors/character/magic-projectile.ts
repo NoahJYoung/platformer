@@ -3,6 +3,8 @@ import { CollisionGroups } from "../config";
 import { Character } from "./character";
 import type { Element } from "./types";
 import { ElementColors } from "./types";
+import { AudioKeys } from "../../audio/sound-manager/audio-keys";
+import type { GameEngine } from "../../engine/game-engine";
 
 export class MagicProjectile extends ex.Actor {
   private emitter!: ex.ParticleEmitter;
@@ -17,6 +19,7 @@ export class MagicProjectile extends ex.Actor {
   private launchDirection: number;
   private outerCircle!: ex.Circle;
   private innerCircle!: ex.Circle;
+  private engine: GameEngine | null = null;
 
   constructor(
     pos: ex.Vector,
@@ -43,8 +46,12 @@ export class MagicProjectile extends ex.Actor {
     this.body.useGravity = false;
   }
 
-  onInitialize(engine: ex.Engine) {
+  onInitialize(engine: GameEngine) {
+    this.engine = engine;
     this.chargeStartTime = Date.now();
+    const chargeKey = AudioKeys.SFX.PLAYER.COMBAT.SPELLS.CHARGE;
+
+    engine.soundManager.play(chargeKey, 0.3);
 
     this.emitter = new ex.ParticleEmitter({
       pos: ex.vec(0, 0),
@@ -154,6 +161,10 @@ export class MagicProjectile extends ex.Actor {
 
     this.outerCircle.color = this.getSpellColor("primary");
 
+    const launchKey = AudioKeys.SFX.PLAYER.COMBAT.SPELLS.LAUNCH;
+
+    this.engine?.soundManager.play(launchKey, 0.3);
+
     this.body.collisionType = ex.CollisionType.Active;
 
     this.vel = ex.vec(1000 * this.launchDirection, 0);
@@ -178,6 +189,10 @@ export class MagicProjectile extends ex.Actor {
 
   private handleCollision(evt: ex.CollisionStartEvent) {
     if (this.isCharging) return;
+
+    const impactKey = AudioKeys.SFX.PLAYER.COMBAT.SPELLS.IMPACT;
+
+    this.engine?.soundManager.play(impactKey, 0.3);
 
     const other = evt.other.owner as ex.Actor;
 

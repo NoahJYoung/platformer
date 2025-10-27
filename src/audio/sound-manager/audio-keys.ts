@@ -1,14 +1,25 @@
 export const AudioKeys = {
   SFX: {
     PLAYER: {
-      FOOTSTEP: "player-footstep",
-      JUMP: "player-jump",
-      DODGE: "player-dodge",
-      LAND: "player-land",
-      HURT: "player-hurt",
-      DEATH: "player-death",
-      ATTACK: "player-attack",
-      SPELL_CAST: "player-spell-cast",
+      MOVEMENT: {
+        FOOTSTEP: "player-footstep",
+        JUMP: "player-jump",
+        DODGE: "player-dodge",
+        LAND: "player-land",
+      },
+      COMBAT: {
+        SPELLS: {
+          CHARGE: "player-spell-charge",
+          LAUNCH: "player-spell-launch",
+          IMPACT: "player-spell-impact",
+        },
+      },
+      ITEMS: {
+        EQUIPMENT: {
+          EQUIP: "player-equip-item",
+          UNEQUIP: "player-unequip-item",
+        },
+      },
     },
     ENEMY: {
       FOOTSTEP: "enemy-footstep",
