@@ -7,6 +7,7 @@ import type { WeaponSubType, WeaponItem } from "../character/types";
 import type { GameEngine } from "../../engine/game-engine";
 import type { Player } from "../player/player";
 import { HealthBar } from "../character/health-bar";
+import { AudioKeys } from "../../audio/sound-manager/audio-keys";
 
 export abstract class MaterialSource extends ex.Actor {
   public level = 10;
@@ -26,6 +27,7 @@ export abstract class MaterialSource extends ex.Actor {
   private isPlayerNearby: boolean = false;
   private lastDamageTime: number = 0;
   private damageCooldown: number = 500;
+  private engine: GameEngine | null = null;
 
   constructor(
     name: string,
@@ -54,7 +56,8 @@ export abstract class MaterialSource extends ex.Actor {
     this.health = level * 10;
   }
 
-  onInitialize(engine: ex.Engine) {
+  onInitialize(engine: GameEngine) {
+    this.engine = engine;
     this.healthBar = new HealthBar(
       this,
       () => this.health,
@@ -114,6 +117,23 @@ export abstract class MaterialSource extends ex.Actor {
       }
 
       if (this.acceptedWeaponTypes.includes(weapon.subtype)) {
+        const chopKey = AudioKeys.SFX.PLAYER.ACTIONS.CHOP;
+        const mineKey = AudioKeys.SFX.PLAYER.ACTIONS.MINE;
+
+        const [acceptedWeaponType] = this.acceptedWeaponTypes;
+
+        const soundMap: Partial<Record<WeaponSubType, string>> = {
+          axe: chopKey,
+          pickaxe: mineKey,
+        };
+
+        const key = soundMap[acceptedWeaponType];
+        const currentTime = Date.now();
+
+        if (key && currentTime - this.lastDamageTime > this.damageCooldown) {
+          this.engine?.soundManager.play(key, 0.6);
+        }
+
         const baseDamage = weapon.damage || 10;
 
         const engine = this.scene?.engine as GameEngine;

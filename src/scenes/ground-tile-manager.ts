@@ -67,8 +67,6 @@ export class GroundTileManager {
       return this.createGroundTiles(width, height, "normal");
     }
 
-    console.log({ theme });
-
     const tilesWide = Math.ceil(width / this.tileWidth);
     const tilesHigh = Math.ceil(height / this.tileHeight);
 

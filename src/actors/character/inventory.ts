@@ -1,15 +1,12 @@
-import { Character } from "./character";
 import type { ConsumableItem, InventoryItem, InventorySlot } from "./types";
 
 export class Inventory {
   private items: Map<number, InventorySlot | null> = new Map();
   public maxSlots: number = 20;
   public onRemoveItem?: () => void;
-  private character: Character;
 
-  constructor(character: Character, onRemoveItem?: () => void) {
+  constructor(onRemoveItem?: () => void) {
     this.onRemoveItem = onRemoveItem;
-    this.character = character;
     for (let i = 0; i < this.maxSlots; i++) {
       this.items.set(i, null);
     }

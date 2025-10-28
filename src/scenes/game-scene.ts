@@ -12,7 +12,6 @@ import { createItem } from "../items/item-creator";
 import { Tree } from "../actors/resources/tree/tree";
 import { DecorationManager } from "../sprite-sheets/scenery/decorations/decorations-manager";
 import { DecorationResources } from "../resources/decoration-resources";
-
 import { createForestDecorationLayer } from "./create-forest-decoration-layer";
 
 export class GameMapScene extends ex.Scene {
@@ -85,11 +84,12 @@ export class GameMapScene extends ex.Scene {
   onActivate(context: ex.SceneActivationContext<unknown>): void {
     const engine = this.engine as GameEngine;
     this.player = engine.player;
-    console.log("PLAYER: ", this.player);
 
     if (engine.hud) {
       this.add(engine.hud);
     }
+
+    engine.timeCycle.setBiome(this.config.type);
 
     if (!this.player) {
       console.error("No player found!");
@@ -97,9 +97,6 @@ export class GameMapScene extends ex.Scene {
     }
 
     if (this.player.scene && this.player.scene !== this) {
-      console.log(
-        `Removing player from previous scene: ${this.player.scene?.name}`
-      );
       this.player.scene.remove(this.player);
     }
 

@@ -4,6 +4,24 @@ export interface LoadedSounds {
   movement: MovementSounds;
   combat: CombatSounds;
   items: ItemSounds;
+  actions: ActionSounds;
+  ambient: AmbientSounds;
+}
+
+export interface WeatherSounds {
+  rain: ex.Sound;
+  thunder: ex.Sound;
+}
+
+export interface AmbientSounds {
+  forest: DayNightSounds;
+  mountain: DayNightSounds;
+  weather: WeatherSounds;
+}
+
+export interface DayNightSounds {
+  day: ex.Sound;
+  night: ex.Sound;
 }
 
 export interface MovementSounds {
@@ -13,27 +31,32 @@ export interface MovementSounds {
   land: ex.Sound;
 }
 
-interface CombatSounds {
+export interface CombatSounds {
   spells: SpellSounds;
   weapon: WeaponSounds;
 }
 
-interface SpellSounds {
+export interface SpellSounds {
   charge: ex.Sound;
   launch: ex.Sound;
   impact: ex.Sound;
 }
 
-interface WeaponSounds {
+export interface WeaponSounds {
   swing: ex.Sound;
   hit: ex.Sound;
 }
 
-interface ItemSounds {
+export interface ItemSounds {
   equipment: EquipmentSounds;
 }
 
-interface EquipmentSounds {
+export interface EquipmentSounds {
   equip: ex.Sound;
   unequip: ex.Sound;
+}
+
+export interface ActionSounds {
+  chop: ex.Sound;
+  mine: ex.Sound;
 }

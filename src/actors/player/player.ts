@@ -26,6 +26,9 @@ export class Player extends Character {
   private hasShownStarvationWarning: boolean = false;
   private hasShownDehydrationWarning: boolean = false;
 
+  private lastUIUpdate = 0;
+  private uiUpdateInterval = 100;
+
   constructor(
     pos: ex.Vector,
     appearanceOptions: AppearanceOptions,
@@ -202,6 +205,25 @@ export class Player extends Character {
     this.temperature = newTemp;
   }
 
+  protected updateResources(deltaSeconds: number): void {
+    const prevHealth = this.health;
+    const prevStamina = this.energy;
+    const prevMana = this.mana;
+
+    super.updateResources(deltaSeconds);
+    this.lastUIUpdate += deltaSeconds * 1000;
+    if (this.lastUIUpdate >= this.uiUpdateInterval) {
+      if (
+        prevHealth !== this.health ||
+        prevStamina !== this.energy ||
+        prevMana !== this.mana
+      ) {
+        this.events.emit("resourcesChanged");
+      }
+      this.lastUIUpdate = 0;
+    }
+  }
+
   getHunger(): number {
     return this.hunger;
   }
@@ -319,7 +341,7 @@ export class Player extends Character {
 
   public unequipItem(slot: EquipmentSlot): void {
     const unequipSoundKey = AudioKeys.SFX.PLAYER.ITEMS.EQUIPMENT.UNEQUIP;
-    this.engine?.soundManager.playWhilePaused(unequipSoundKey, 0.3);
+    this.engine?.soundManager.play(unequipSoundKey, 0.3);
 
     const previousItem = this.equipmentManager.unequip(slot);
     if (previousItem) {
@@ -332,7 +354,7 @@ export class Player extends Character {
       return;
     }
     const equipSoundKey = AudioKeys.SFX.PLAYER.ITEMS.EQUIPMENT.EQUIP;
-    this.engine?.soundManager.playWhilePaused(equipSoundKey, 0.3);
+    this.engine?.soundManager.play(equipSoundKey, 0.3);
     const previousItem = this.equipmentManager.equip(item);
     this.inventory.removeItemByReference(item);
     if (previousItem) {

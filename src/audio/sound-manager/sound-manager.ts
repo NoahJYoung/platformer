@@ -10,10 +10,22 @@ interface SoundPoolEntry {
   lastPlayedIndex?: number;
 }
 
+interface FadeOperation {
+  intervalId: number;
+  soundKey: string;
+}
+
 export class GameSoundManager extends ex.SoundManager<ChannelName, SoundName> {
   private soundPools: Map<SoundName, SoundPoolEntry> = new Map();
   private simplePlayer: SimpleAudioPlayer;
   private soundPaths: Map<SoundName, string> = new Map();
+  private activeFades: Map<string, FadeOperation> = new Map();
+
+  private playingBeforePause: Map<
+    SoundName,
+    { volume: number; loop: boolean }
+  > = new Map();
+
   constructor() {
     super({
       channels: ["sfx", "music", "ambient"],
@@ -110,6 +122,158 @@ export class GameSoundManager extends ex.SoundManager<ChannelName, SoundName> {
     }
   }
 
+  async playLooped(
+    name: SoundName,
+    volume: number = 0.5,
+    loop: boolean = true
+  ): Promise<void> {
+    const config = (this as any)._nameToConfig?.get(name);
+    const sound = config?.sound;
+
+    if (!sound) {
+      console.error("Sound not found:", name);
+      return;
+    }
+
+    if (sound.isPlaying()) {
+      sound.loop = loop;
+      sound.volume = volume === 0 ? 0.01 : volume;
+      if (volume === 0) {
+        sound.volume = 0;
+      }
+      return;
+    }
+
+    if (loop) {
+      sound.loop = true;
+    }
+
+    const startVolume = volume === 0 ? 0.01 : volume;
+
+    this.play(name, startVolume).catch((err) => {
+      console.error("Error playing sound:", err);
+    });
+
+    if (volume === 0) {
+      sound.volume = 0;
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  }
+
+  public stop(name: SoundName): void {
+    const config = (this as any)._nameToConfig?.get(name);
+    if (config?.sound) {
+      config.sound.stop();
+    }
+  }
+
+  public getSound(name: SoundName): ex.Sound | undefined {
+    const config = (this as any)._nameToConfig?.get(name);
+    return config?.sound;
+  }
+
+  public fadeOut(
+    soundKey: string,
+    duration: number,
+    onComplete?: () => void
+  ): void {
+    this.cancelFade(soundKey);
+
+    const sound = this.getSound(soundKey);
+
+    if (!sound || !sound.isPlaying()) {
+      onComplete?.();
+      return;
+    }
+
+    const startVolume = sound.volume;
+    const startTime = Date.now();
+
+    const fadeInterval = window.setInterval(() => {
+      const elapsed = (Date.now() - startTime) / 1000;
+      const progress = Math.min(elapsed / duration, 1);
+
+      const newVolume = startVolume * (1 - progress);
+      sound.volume = newVolume;
+
+      if (progress >= 1) {
+        this.cancelFade(soundKey);
+        sound.volume = 0;
+        onComplete?.();
+      }
+    }, 16);
+
+    this.activeFades.set(soundKey, {
+      intervalId: fadeInterval,
+      soundKey,
+    });
+  }
+
+  public fadeIn(
+    soundKey: string,
+    duration: number,
+    targetVolume: number = 1.0
+  ): void {
+    this.cancelFade(soundKey);
+
+    const sound = this.getSound(soundKey);
+
+    if (!sound || !sound.isPlaying()) {
+      return;
+    }
+
+    sound.volume = 0;
+    const startTime = Date.now();
+
+    const fadeInterval = window.setInterval(() => {
+      const elapsed = (Date.now() - startTime) / 1000;
+      const progress = Math.min(elapsed / duration, 1);
+
+      const newVolume = targetVolume * progress;
+      sound.volume = newVolume;
+
+      if (progress >= 1) {
+        this.cancelFade(soundKey);
+        sound.volume = targetVolume;
+      }
+    }, 16);
+
+    this.activeFades.set(soundKey, {
+      intervalId: fadeInterval,
+      soundKey,
+    });
+  }
+
+  public async crossfade(
+    fadeOutKey: string,
+    fadeInKey: string,
+    duration: number,
+    targetVolume: number = 1.0
+  ): Promise<void> {
+    this.fadeOut(fadeOutKey, duration, () => {
+      this.stop(fadeOutKey);
+    });
+
+    await this.playLooped(fadeInKey, 0, true);
+    this.fadeIn(fadeInKey, duration, targetVolume);
+  }
+
+  private cancelFade(soundKey: string): void {
+    const fade = this.activeFades.get(soundKey);
+    if (fade) {
+      window.clearInterval(fade.intervalId);
+      this.activeFades.delete(soundKey);
+    }
+  }
+
+  public cancelAllFades(): void {
+    this.activeFades.forEach((fade) => {
+      window.clearInterval(fade.intervalId);
+    });
+    this.activeFades.clear();
+  }
+
   public playWhilePaused(name: SoundName, volume: number = 1): void {
     const pool = this.soundPools.get(name);
 
@@ -147,5 +311,10 @@ export class GameSoundManager extends ex.SoundManager<ChannelName, SoundName> {
 
   getPoolSize(name: SoundName): number {
     return this.soundPools.get(name)?.sounds.length ?? 0;
+  }
+
+  public cleanup(): void {
+    this.cancelAllFades();
+    this.playingBeforePause.clear();
   }
 }

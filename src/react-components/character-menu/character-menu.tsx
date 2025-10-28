@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import type { Player } from "../../actors/player/player";
 import type {
   EquipmentItem,
@@ -27,8 +27,6 @@ export const CharacterMenu: React.FC<CharacterMenuProps> = ({
     forceUpdate();
   };
 
-  if (!isOpen) return null;
-
   const renderItemIcon = (item: InventoryItem | EquipmentItem) => {
     if (item.iconUrl) {
       return (
@@ -54,6 +52,20 @@ export const CharacterMenu: React.FC<CharacterMenuProps> = ({
   const handleDeselectItem = () => {
     setSelectedItem(null);
   };
+
+  useEffect(() => {
+    const handleResourcesChanged = () => {
+      forceUpdate();
+    };
+
+    player.events.on("resourcesChanged", handleResourcesChanged);
+
+    return () => {
+      player.events.off("resourcesChanged", handleResourcesChanged);
+    };
+  }, [player]);
+
+  if (!isOpen) return null;
 
   return (
     <div

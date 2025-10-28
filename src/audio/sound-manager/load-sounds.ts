@@ -20,9 +20,6 @@ export function loadSounds(): LoadedSounds {
   const jump = new ex.Sound("./assets/audio/sfx/movement/jump.wav");
   const dodge = new ex.Sound("./assets/audio/sfx/movement/dodge.wav");
   const land = new ex.Sound("./assets/audio/sfx/movement/land.wav");
-  const hurt = new ex.Sound("./assets/audio/sfx/player/hurt.wav");
-  const death = new ex.Sound("./assets/audio/sfx/player/death.wav");
-  const attack = new ex.Sound("./assets/audio/sfx/combat/attack.wav");
 
   // Spells
   const charge = new ex.Sound("./assets/audio/sfx/combat/spells/charge.mp3");
@@ -31,8 +28,8 @@ export function loadSounds(): LoadedSounds {
 
   // Weapon
 
-  const swing = new ex.Sound("./assets/audio/sfx/combat/weapon/impact.wav");
-  const hit = new ex.Sound("./assets/audio/sfx/combat/weapon/impact.wav");
+  const swing = new ex.Sound("./assets/audio/sfx/combat/weapon/swing.wav");
+  const hit = new ex.Sound("./assets/audio/sfx/combat/weapon/hit.wav");
 
   // Items
   const equip = new ex.Sound("./assets/audio/sfx/items/equipment/equip.wav");
@@ -40,12 +37,32 @@ export function loadSounds(): LoadedSounds {
     "./assets/audio/sfx/items/equipment/unequip.wav"
   );
 
+  // Actions
+  const chop = new ex.Sound("./assets/audio/sfx/actions/chop.wav");
+  const mine = new ex.Sound("./assets/audio/sfx/actions/mine.wav");
+
+  const forestDay = new ex.Sound("./assets/audio/ambient/forest/day.ogg");
+  const forestNight = new ex.Sound("./assets/audio/ambient/forest/night.ogg");
+  const mountainDay = new ex.Sound(
+    "./assets/audio/ambient/mountain/mountains.ogg"
+  );
+  const mountainNight = new ex.Sound(
+    "./assets/audio/ambient/mountain/mountains.ogg"
+  );
+
+  const rain = new ex.Sound("./assets/audio/ambient/weather/rain.ogg");
+  const thunder = new ex.Sound("./assets/audio/ambient/weather/thunder.mp3");
+
   return {
     movement: {
       jump,
       dodge,
       land,
       footsteps,
+    },
+    actions: {
+      chop,
+      mine,
     },
     combat: {
       spells: {
@@ -60,6 +77,20 @@ export function loadSounds(): LoadedSounds {
     },
     items: {
       equipment: { equip, unequip },
+    },
+    ambient: {
+      forest: {
+        day: forestDay,
+        night: forestNight,
+      },
+      mountain: {
+        day: mountainDay,
+        night: mountainNight,
+      },
+      weather: {
+        rain,
+        thunder,
+      },
     },
   };
 }
@@ -82,8 +113,24 @@ export function getAllSoundsForLoader(loadedSounds: LoadedSounds): ex.Sound[] {
   );
 
   allSounds.push(
+    loadedSounds.combat.weapon.swing,
+    loadedSounds.combat.weapon.hit
+  );
+
+  allSounds.push(
     loadedSounds.items.equipment.equip,
     loadedSounds.items.equipment.unequip
+  );
+
+  allSounds.push(loadedSounds.actions.chop, loadedSounds.actions.mine);
+
+  allSounds.push(
+    loadedSounds.ambient.forest.day,
+    loadedSounds.ambient.forest.night,
+    loadedSounds.ambient.mountain.day,
+    loadedSounds.ambient.mountain.night,
+    loadedSounds.ambient.weather.rain,
+    loadedSounds.ambient.weather.thunder
   );
 
   return allSounds;

@@ -58,6 +58,19 @@ export function registerSounds(
     channels: ["sfx"],
   });
 
+  // WEAPON
+  soundManager.track(AudioKeys.SFX.PLAYER.COMBAT.WEAPON.SWING, {
+    sound: sounds.combat.weapon.swing,
+    volume: 0.5,
+    channels: ["sfx"],
+  });
+
+  soundManager.track(AudioKeys.SFX.PLAYER.COMBAT.WEAPON.HIT, {
+    sound: sounds.combat.weapon.hit,
+    volume: 0.5,
+    channels: ["sfx"],
+  });
+
   // ITEMS
   // EQUIPMENT
   soundManager.trackWithPath(
@@ -76,6 +89,53 @@ export function registerSounds(
     "/assets/audio/sfx/items/equipment/unequip.wav"
   );
 
+  soundManager.track(AudioKeys.SFX.PLAYER.ACTIONS.CHOP, {
+    sound: sounds.actions.chop,
+    volume: 0.5,
+    channels: ["sfx"],
+  });
+
+  soundManager.track(AudioKeys.SFX.PLAYER.ACTIONS.MINE, {
+    sound: sounds.actions.mine,
+    volume: 0.5,
+    channels: ["sfx"],
+  });
+
+  soundManager.track(AudioKeys.AMBIENT.FOREST.DAY, {
+    sound: sounds.ambient.forest.day,
+    volume: 0.5,
+    channels: ["ambient"],
+  });
+
+  soundManager.track(AudioKeys.AMBIENT.FOREST.NIGHT, {
+    sound: sounds.ambient.forest.night,
+    volume: 0.5,
+    channels: ["ambient"],
+  });
+
+  soundManager.track(AudioKeys.AMBIENT.MOUNTAIN.DAY, {
+    sound: sounds.ambient.mountain.day,
+    volume: 0.5,
+    channels: ["ambient"],
+  });
+
+  soundManager.track(AudioKeys.AMBIENT.MOUNTAIN.NIGHT, {
+    sound: sounds.ambient.mountain.night,
+    volume: 0.5,
+    channels: ["ambient"],
+  });
+
+  soundManager.track(AudioKeys.AMBIENT.WEATHER.RAIN, {
+    sound: sounds.ambient.weather.rain,
+    volume: 0.25,
+    channels: ["ambient"],
+  });
+
+  soundManager.track(AudioKeys.AMBIENT.WEATHER.THUNDER, {
+    sound: sounds.ambient.weather.thunder,
+    volume: 0.5,
+    channels: ["sfx"],
+  });
   // soundManager.track(AudioKeys.SFX.PLAYER.HURT, {
   //   sound: allSounds[18],
   //   volume: 0.6,

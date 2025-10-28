@@ -51,7 +51,7 @@ export const createForestDecorationLayer = async ({
     scale: number;
   }> = [];
 
-  const minSpacing = 80;
+  const minSpacing = 120;
 
   const decorationData: Array<{
     deco: { name: string; sprite: ex.Sprite };
@@ -78,7 +78,7 @@ export const createForestDecorationLayer = async ({
 
   const gridSize = minSpacing;
   const occupiedCells = new Set<string>();
-  const maxAttempts = 10;
+  const maxAttempts = 20;
 
   for (let i = 0; i < treeCount; i++) {
     const treeType =

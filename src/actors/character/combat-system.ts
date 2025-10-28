@@ -3,6 +3,7 @@ import { CollisionGroups, SCALE } from "../config";
 import type { Character } from "./character";
 import type { AnimationController } from "./animation-controller";
 import type { WeaponItem } from "./types";
+import { AudioKeys } from "../../audio/sound-manager/audio-keys";
 
 export class CombatSystem {
   private canDealDamage: boolean = false;
@@ -46,10 +47,25 @@ export class CombatSystem {
 
     const newEnergy = Math.max(0, energy - this.attackEnergyCost);
 
+    const playWeaponSFX = () => {
+      if (this.animController.attackAnim) {
+        this.animController.attackAnim.events.on("frame", (evt) => {
+          if (evt.frameIndex === 3) {
+            const swingKey = AudioKeys.SFX.PLAYER.COMBAT.WEAPON.SWING;
+            const baseVolume = 0.2;
+            this.character.engine?.soundManager.play(swingKey, baseVolume);
+            this.animController.attackAnim?.events.clear();
+          }
+        });
+      }
+    };
+
     if (equippedWeapon) {
       this.performWeaponAttack(equippedWeapon);
+      playWeaponSFX();
     } else {
       this.performPunchAttack();
+      playWeaponSFX();
     }
 
     return newEnergy;
@@ -106,6 +122,9 @@ export class CombatSystem {
         this.canDealDamage &&
         validTargets.some((targetName) => target?.name?.startsWith(targetName))
       ) {
+        const hitKey = AudioKeys.SFX.PLAYER.COMBAT.WEAPON.HIT;
+        const baseVolume = this.character.name === "player" ? 0.3 : 0.2;
+        this.character.engine?.soundManager.play(hitKey, baseVolume);
         const baseDamage = weapon.damage || 10;
         const damage = this.character.getStrengthDamageMultiplier(baseDamage);
         if (typeof (target as Character).takeDamage === "function") {
@@ -113,7 +132,6 @@ export class CombatSystem {
           damageDealt = true;
 
           if (this.onDamageDealtCallback) {
-            console.log(`Dealt: ${damage} Damage`);
             this.onDamageDealtCallback(damage);
           }
         }
@@ -232,6 +250,9 @@ export class CombatSystem {
         this.canDealDamage &&
         validTargets.some((targetName) => target?.name?.startsWith(targetName))
       ) {
+        const hitKey = AudioKeys.SFX.PLAYER.COMBAT.WEAPON.HIT;
+        const baseVolume = this.character.name === "player" ? 0.2 : 0.1;
+        this.character.engine?.soundManager.play(hitKey, baseVolume);
         const baseDamage = 5;
         const damage = this.character.getStrengthDamageMultiplier(baseDamage);
 

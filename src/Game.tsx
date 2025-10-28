@@ -2,11 +2,12 @@ import React, { useEffect, useRef, useState } from "react";
 import { GameEngine } from "./engine/game-engine";
 import { CharacterMenu } from "./react-components/character-menu/character-menu";
 
-import "./globals.css";
 import type { LootDrop } from "./actors/character/loot-drop";
 import { LootMenu } from "./react-components/loot-menu/loot-menu";
 import type { MaterialSource } from "./actors/resources/material-source";
 import { MessageLog } from "./react-components/message-log/message-log";
+
+import "./globals.css";
 
 export const Game = () => {
   const gameRef = useRef(null);
@@ -68,20 +69,6 @@ export const Game = () => {
     window.addEventListener("keydown", handleKeyPress);
     return () => window.removeEventListener("keydown", handleKeyPress);
   }, [characterMenuOpen]);
-
-  // Pause/resume game engine when any menu is open
-  useEffect(() => {
-    if (!engine) return;
-
-    const isAnyMenuOpen =
-      characterMenuOpen || lootMenuOpen || materialSourceMenuOpen;
-
-    if (isAnyMenuOpen) {
-      engine.pause();
-    } else {
-      engine.resume();
-    }
-  }, [characterMenuOpen, lootMenuOpen, materialSourceMenuOpen, engine]);
 
   useEffect(() => {
     const preventBrowserHotkeys = (e: KeyboardEvent) => {

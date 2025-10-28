@@ -20,9 +20,9 @@ export class GameEngine extends ex.Engine {
   public player!: Player;
   public hud: HUD | null = null;
   public _nextSceneEntryPoint?: string;
-  public timeCycle: TimeCycle = new TimeCycle(this);
-  public messageManager: MessageManager = new MessageManager();
   public soundManager: GameSoundManager;
+  public timeCycle: TimeCycle;
+  public messageManager: MessageManager = new MessageManager();
   private isPaused = false;
 
   constructor() {
@@ -39,6 +39,7 @@ export class GameEngine extends ex.Engine {
     });
 
     this.soundManager = new GameSoundManager();
+    this.timeCycle = new TimeCycle(this, this.soundManager);
   }
 
   private static calculateGameDimensions(): { width: number; height: number } {
@@ -89,6 +90,9 @@ export class GameEngine extends ex.Engine {
     await this.start(loader);
 
     registerSounds(this.soundManager, loadedSounds);
+
+    this.timeCycle.initialize();
+    this.timeCycle.setBiome("forest");
 
     const playerAppearance: AppearanceOptions = {
       sex: "male",
@@ -175,10 +179,12 @@ export class GameEngine extends ex.Engine {
     }
   }
 
-  public resume() {
+  public async resume() {
     if (this.isPaused) {
-      this.start();
       this.isPaused = false;
+      this.start();
+
+      await new Promise((resolve) => setTimeout(resolve, 1000));
     }
   }
 

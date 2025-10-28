@@ -7,11 +7,19 @@ export const AudioKeys = {
         DODGE: "player-dodge",
         LAND: "player-land",
       },
+      ACTIONS: {
+        CHOP: "player-chop",
+        MINE: "player-mine",
+      },
       COMBAT: {
         SPELLS: {
           CHARGE: "player-spell-charge",
           LAUNCH: "player-spell-launch",
           IMPACT: "player-spell-impact",
+        },
+        WEAPON: {
+          SWING: "player-weapon-swing",
+          HIT: "player-weapon-hit",
         },
       },
       ITEMS: {
@@ -56,9 +64,18 @@ export const AudioKeys = {
     GAME_OVER: "music-gameover",
   },
   AMBIENT: {
-    FOREST: "ambient-forest",
-    CAVE: "ambient-cave",
-    WIND: "ambient-wind",
+    FOREST: {
+      DAY: "ambient-forest-day",
+      NIGHT: "ambient-forest-night",
+    },
+    MOUNTAIN: {
+      DAY: "ambient-mountain-day",
+      NIGHT: "ambient-mountain-night",
+    },
+    WEATHER: {
+      RAIN: "ambient-weather-rain",
+      THUNDER: "sfx-thunder",
+    },
   },
 } as const;
 

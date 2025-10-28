@@ -124,7 +124,7 @@ export abstract class Character extends ex.Actor {
       facingRight
     );
 
-    this.inventory = new Inventory(this);
+    this.inventory = new Inventory();
     this.equipmentManager = new EquipmentManager(this.animController);
 
     this.statsSystem = new StatsSystem(
@@ -542,7 +542,7 @@ export abstract class Character extends ex.Actor {
     }
     this.currentState = "dodging";
     if (!this.engine?.soundManager) return;
-    const baseVolume = 0.3;
+    const baseVolume = 0.5;
 
     const jumpKey = AudioKeys.SFX.PLAYER.MOVEMENT.DODGE;
 

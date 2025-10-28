@@ -13,6 +13,9 @@ import type { GameEngine } from "../engine/game-engine";
 import { StarField } from "./star-field";
 import type { WeatherType } from "./types";
 import { WeatherOverlay } from "./weather-overlay";
+import { AudioKeys } from "../audio/sound-manager/audio-keys";
+import type { GameSoundManager } from "../audio/sound-manager/sound-manager";
+import type { SceneType } from "../scenes/types";
 
 export type Season = "summer" | "fall" | "winter" | "spring";
 
@@ -49,8 +52,25 @@ export class TimeCycle {
   private darkMessageShown = false;
   private lightMessageShown = false;
 
-  constructor(game: GameEngine) {
+  private currentBiome: SceneType = "forest";
+  private currentAmbientSound: string | null = null;
+  private targetAmbientSound: string | null = null;
+  private ambientFadeSpeed: number = 0.2;
+  private isDayTime: boolean = true;
+  private ambientSoundCheckInterval: number = 1;
+  private lastAmbientSoundCheck: number = 0;
+  private soundManager;
+
+  private lightningTimer: number = 0;
+  private nextLightningTime: number = 0;
+  private minLightningInterval: number = 30;
+  private maxLightningInterval: number = 60;
+  private firstFlash = false;
+
+  constructor(game: GameEngine, soundManager: GameSoundManager) {
     this.game = game;
+    this.soundManager = soundManager;
+
     this.overlay = new Actor({
       pos: vec(0, 0),
       width: game.drawWidth * 2,
@@ -62,7 +82,7 @@ export class TimeCycle {
 
     this.createGradientCanvas();
 
-    this.timeOfDay = 17;
+    this.timeOfDay = 6;
     this.cycleSpeed = 0.034;
 
     this.season = "spring";
@@ -71,9 +91,15 @@ export class TimeCycle {
     this.seasonChangeCallbacks = [];
     this.starField = new StarField(game);
     this.weatherOverlay = new WeatherOverlay(game);
-    this.updateWeather();
 
     this.weatherOverlay.createWeatherEffect(game.currentScene);
+  }
+
+  public initialize() {
+    if (this.soundManager) {
+      this.updateWeather();
+      this.updateAmbientSound().catch(console.error);
+    }
   }
 
   private createGradientCanvas() {
@@ -112,6 +138,8 @@ export class TimeCycle {
     }
 
     this.checkWeatherChange();
+    this.checkAmbientSoundChange(delta);
+    this.checkLightning(delta);
 
     const nightData = this.calculateDarkEffect(this.timeOfDay);
     this.weatherOverlay.update(delta);
@@ -139,6 +167,120 @@ export class TimeCycle {
     this.starField?.update(delta);
   }
 
+  private checkAmbientSoundChange(delta: number) {
+    this.lastAmbientSoundCheck += delta / 1000;
+
+    if (this.lastAmbientSoundCheck >= this.ambientSoundCheckInterval) {
+      this.lastAmbientSoundCheck = 0;
+
+      const wasDay = this.isDayTime;
+      this.isDayTime = this.timeOfDay >= 6 && this.timeOfDay < 20;
+
+      if (wasDay !== this.isDayTime) {
+        this.updateAmbientSound().catch(console.error);
+      }
+    }
+  }
+
+  private getAmbientSoundKey(): string {
+    const timeOfDay = this.isDayTime ? "DAY" : "NIGHT";
+    const biome = this.currentBiome.toUpperCase();
+    const weather = this.weather;
+
+    if (weather === "raining") {
+      return AudioKeys.AMBIENT.WEATHER.RAIN;
+    }
+
+    return (AudioKeys.AMBIENT as Record<string, any>)[
+      biome as keyof typeof AudioKeys.AMBIENT
+    ][timeOfDay];
+  }
+
+  private async updateAmbientSound() {
+    if (!this.soundManager) {
+      console.warn(
+        "Sound manager not initialized, skipping ambient sound update"
+      );
+      return;
+    }
+
+    const newSoundKey = this.getAmbientSoundKey();
+
+    if (newSoundKey === this.currentAmbientSound) {
+      return;
+    }
+
+    this.targetAmbientSound = newSoundKey;
+
+    const soundToStop = this.currentAmbientSound;
+
+    if (soundToStop) {
+      const currentSound = this.soundManager.getSound(soundToStop);
+
+      if (currentSound && currentSound.isPlaying()) {
+        this.soundManager.fadeOut(
+          soundToStop,
+          1 / this.ambientFadeSpeed,
+          () => {
+            if (this.soundManager) {
+              this.soundManager.stop(soundToStop);
+            }
+          }
+        );
+      } else {
+        if (currentSound) {
+          this.soundManager.stop(soundToStop);
+        }
+      }
+    }
+
+    if (this.targetAmbientSound) {
+      await this.soundManager.playLooped(this.targetAmbientSound, 0, true);
+
+      this.soundManager.fadeIn(
+        this.targetAmbientSound,
+        1 / this.ambientFadeSpeed,
+        0.3
+      );
+    }
+
+    this.currentAmbientSound = this.targetAmbientSound;
+  }
+
+  public setBiome(biome: SceneType) {
+    if (this.currentBiome !== biome) {
+      this.currentBiome = biome;
+      this.updateAmbientSound().catch(console.error);
+    }
+  }
+
+  public getBiome(): SceneType {
+    return this.currentBiome;
+  }
+
+  public refreshAmbientSound() {
+    this.updateAmbientSound().catch(console.error);
+  }
+
+  public getCurrentAmbientSound() {
+    return this.currentAmbientSound;
+  }
+
+  public stopAmbientSounds() {
+    if (!this.soundManager) {
+      return;
+    }
+
+    if (this.currentAmbientSound) {
+      this.soundManager.fadeOut(this.currentAmbientSound, 0.5, () => {
+        if (this.soundManager) {
+          this.soundManager.stop(this.currentAmbientSound!);
+          this.currentAmbientSound = null;
+        }
+      });
+    }
+  }
+
   private calculateAmbientTemperature(): number {
     let baseTemp: number;
     switch (this.season) {
@@ -158,10 +300,10 @@ export class TimeCycle {
 
     switch (this.weather) {
       case "raining":
-        baseTemp -= 4;
+        baseTemp -= 6;
         break;
       case "snowing":
-        baseTemp -= 5;
+        baseTemp -= 10;
         break;
       case "clear":
       default:
@@ -362,7 +504,7 @@ export class TimeCycle {
   } {
     switch (season) {
       case "spring":
-        return { rain: 0.2, snow: 0, clear: 0.8 };
+        return { rain: 0.25, snow: 0, clear: 0.75 };
       case "summer":
         return { rain: 0.1, snow: 0, clear: 0.9 };
       case "fall":
@@ -391,14 +533,19 @@ export class TimeCycle {
 
     if (random < probabilities.snow) {
       newWeather = "snowing";
+      this.firstFlash = false;
     } else if (random < probabilities.snow + probabilities.rain) {
       newWeather = "raining";
+      this.flashLightning();
+      setTimeout(() => (this.firstFlash = true), 10000);
     } else {
       newWeather = "clear";
+      this.firstFlash = false;
     }
 
     if (newWeather !== this.weather) {
       this.weather = newWeather;
+      this.updateAmbientSound();
 
       if (this.game.currentScene) {
         this.weatherOverlay.switchScene(this.game.currentScene);
@@ -411,6 +558,60 @@ export class TimeCycle {
 
       this.game.showMessage(messages[newWeather]);
     }
+  }
+
+  private checkLightning(delta: number) {
+    if (this.weather !== "raining" || !this.firstFlash) {
+      this.lightningTimer = 0;
+      return;
+    }
+
+    this.lightningTimer += delta / 1000;
+
+    if (this.lightningTimer >= this.nextLightningTime) {
+      this.flashLightning();
+
+      this.lightningTimer = 0;
+      this.nextLightningTime =
+        this.minLightningInterval +
+        Math.random() * (this.maxLightningInterval - this.minLightningInterval);
+    }
+  }
+
+  private flashLightning() {
+    if (!this.overlay) return;
+
+    const originalCanvas = this.overlay.graphics.current;
+
+    if (!originalCanvas) {
+      return;
+    }
+
+    this.soundManager.play(AudioKeys.AMBIENT.WEATHER.THUNDER, 0.2);
+
+    const flashCanvas = new Canvas({
+      width: this.game.drawWidth * 2,
+      height: this.game.drawHeight * 2,
+      cache: true,
+      draw: (ctx) => {
+        ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+        ctx.fillRect(0, 0, this.game.drawWidth * 2, this.game.drawHeight * 2);
+      },
+    });
+
+    this.overlay.graphics.use(flashCanvas);
+
+    setTimeout(() => {
+      this.overlay.graphics.use(originalCanvas);
+
+      setTimeout(() => {
+        this.overlay.graphics.use(flashCanvas);
+
+        setTimeout(() => {
+          this.overlay.graphics.use(originalCanvas);
+        }, 100);
+      }, 150);
+    }, 100);
   }
 
   private getSceneLightStrength = () => {
