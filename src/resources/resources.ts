@@ -4,6 +4,7 @@ import { playerResourcesArray } from "./player-resources";
 import { weaponResourcesArray } from "./weapon-resources";
 import { clothingResourcesArray } from "./clothing-resources";
 import { treeResourcesArray } from "./tree-resources";
+import { oreResourceArray } from "./ore-resources";
 import { decorationResourcesArray } from "./decoration-resources";
 
 export const Resources = [
@@ -14,4 +15,5 @@ export const Resources = [
   ...clothingResourcesArray,
   ...treeResourcesArray,
   ...decorationResourcesArray,
+  ...oreResourceArray,
 ];

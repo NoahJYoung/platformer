@@ -3,15 +3,17 @@ import type { EnemyConfig } from "../actors/enemy/types";
 import type {
   SceneConfig,
   PlatformConfig,
-  TreeConfig,
   SceneType,
+  MaterialSourceType,
 } from "../scenes/types";
 import {
   getHeightByTreeType,
   type TreeType,
 } from "../actors/resources/tree/tree-types";
+import type { OreType } from "../actors/resources/ore/ore-types";
 
 const TREE_WIDTH = 64;
+const ORE_WIDTH = 64;
 const GROUND_HEIGHT = 32;
 
 export interface WorldGeneratorConfig {
@@ -23,6 +25,7 @@ export interface WorldGeneratorConfig {
   maxHeight?: number;
   platformDensity?: "low" | "medium" | "high";
   treeDensity?: "low" | "medium" | "high";
+  oreDensity?: "low" | "medium" | "high";
   enemyDensity?: "low" | "medium" | "high";
   handcraftedScenes?: Map<number, SceneConfig>;
 }
@@ -49,6 +52,7 @@ export class ProceduralWorldGenerator {
       maxHeight: config.maxHeight ?? 1200,
       platformDensity: config.platformDensity ?? "medium",
       treeDensity: config.treeDensity ?? "medium",
+      oreDensity: config.oreDensity ?? "medium",
       enemyDensity: config.enemyDensity ?? "low",
       handcraftedScenes: config.handcraftedScenes ?? new Map(),
     };
@@ -113,7 +117,8 @@ export class ProceduralWorldGenerator {
 
     const surfacePoints = this.getAllSurfacePoints(platforms, width, height);
     const trees = this.generateTrees(surfacePoints, biomeType, platforms);
-    const enemies = this.generateEnemies(surfacePoints, trees, index);
+    const ores = this.generateOres(surfacePoints, biomeType, trees);
+    const enemies = this.generateEnemies(surfacePoints, trees, ores, index);
 
     const scene: SceneConfig = {
       type: biomeType,
@@ -126,6 +131,7 @@ export class ProceduralWorldGenerator {
       platforms,
       materialSources: {
         trees,
+        ores,
       },
       enemies,
     };
@@ -284,7 +290,7 @@ export class ProceduralWorldGenerator {
   }
 
   /**
-   * Get all surface points where trees can be placed (ground and platforms)
+   * Get all surface points where trees/ores can be placed (ground and platforms)
    */
   private getAllSurfacePoints(
     platforms: PlatformConfig[],
@@ -319,8 +325,8 @@ export class ProceduralWorldGenerator {
     surfaces: Rectangle[],
     sceneType: SceneType,
     platforms: PlatformConfig[]
-  ): TreeConfig[] {
-    const trees: TreeConfig[] = [];
+  ): MaterialSourceType<TreeType>[] {
+    const trees: MaterialSourceType<TreeType>[] = [];
 
     const densityMultiplier = {
       low: 0.5,
@@ -379,6 +385,98 @@ export class ProceduralWorldGenerator {
     return trees;
   }
 
+  /**
+   * Generate ores on available surfaces
+   */
+  private generateOres(
+    surfaces: Rectangle[],
+    sceneType: SceneType,
+    trees: MaterialSourceType<TreeType>[]
+  ): MaterialSourceType<OreType>[] {
+    const ores: MaterialSourceType<OreType>[] = [];
+
+    const totalOres =
+      sceneType === "mountain"
+        ? this.rng.nextInt(0, 3)
+        : this.rng.next() < 0.15
+        ? 1
+        : 0;
+
+    let oresPlaced = 0;
+
+    surfaces.forEach((surface) => {
+      if (oresPlaced >= totalOres) return;
+
+      const isGround = surface.y > surfaces[0].y - 50;
+
+      const shouldPlaceHere = isGround
+        ? this.rng.next() < 0.7
+        : this.rng.next() < 0.3;
+
+      if (!shouldPlaceHere) return;
+
+      const numberOfOres = Math.min(1, totalOres - oresPlaced);
+
+      for (let i = 0; i < numberOfOres; i++) {
+        let attempts = 0;
+        let placed = false;
+        const oreType = this.getRandomOreType(sceneType);
+
+        while (attempts < 10 && !placed) {
+          const oreX =
+            surface.x +
+            this.rng.nextInt(ORE_WIDTH / 2, surface.width - ORE_WIDTH / 2);
+
+          const oreY = surface.y - ORE_WIDTH / 2;
+
+          const collidesWithOre = ores.some((existingOre) =>
+            this.checkCollision(
+              {
+                x: oreX,
+                y: oreY,
+                width: ORE_WIDTH,
+                height: ORE_WIDTH,
+              },
+              {
+                x: existingOre.x,
+                y: existingOre.y,
+                width: ORE_WIDTH,
+                height: ORE_WIDTH,
+              }
+            )
+          );
+
+          const collidesWithTree = trees.some((tree) =>
+            this.checkCollision(
+              {
+                x: oreX,
+                y: oreY,
+                width: ORE_WIDTH,
+                height: ORE_WIDTH,
+              },
+              {
+                x: tree.x,
+                y: tree.y,
+                width: TREE_WIDTH,
+                height: getHeightByTreeType(tree.type),
+              }
+            )
+          );
+
+          if (!collidesWithOre && !collidesWithTree) {
+            ores.push({ x: oreX, y: oreY, type: oreType });
+            placed = true;
+            oresPlaced++;
+          }
+
+          attempts++;
+        }
+      }
+    });
+
+    return ores;
+  }
+
   private getRandomTreeType(): TreeType {
     const roll = this.rng.next();
 
@@ -393,12 +491,31 @@ export class ProceduralWorldGenerator {
     }
   }
 
+  private getRandomOreType(sceneType: SceneType): OreType {
+    const roll = this.rng.next();
+
+    if (sceneType === "forest") {
+      return roll < 0.9 ? "bronze" : "iron";
+    }
+
+    if (roll < 0.85) {
+      return "bronze";
+    } else if (roll < 0.95) {
+      return "iron";
+    } else if (roll < 0.99) {
+      return "gold";
+    } else {
+      return "rune";
+    }
+  }
+
   /**
    * Generate enemies for a scene
    */
   private generateEnemies(
     surfaces: Rectangle[],
-    trees: TreeConfig[],
+    trees: MaterialSourceType<TreeType>[],
+    ores: MaterialSourceType<OreType>[],
     sceneIndex: number
   ): EnemyConfig[] {
     const enemies: EnemyConfig[] = [];
@@ -434,11 +551,15 @@ export class ProceduralWorldGenerator {
           (tree) => Math.abs(tree.x - enemyX) < TREE_WIDTH + 50
         );
 
+        const collidesWithOre = ores.some(
+          (ore) => Math.abs(ore.x - enemyX) < ORE_WIDTH + 50
+        );
+
         const tooCloseToEnemy = enemies.some(
           (enemy) => Math.abs(enemy.pos.x - enemyX) < 200
         );
 
-        if (!collidesWithTree && !tooCloseToEnemy) {
+        if (!collidesWithTree && !collidesWithOre && !tooCloseToEnemy) {
           const sex = this.rng.next() > 0.5 ? "male" : "female";
           const baseLevel = Math.floor(3 + sceneIndex * 1.5);
 
@@ -548,6 +669,7 @@ export class ProceduralWorldGenerator {
           numberOfScenes: this.config.numberOfScenes,
           platformDensity: this.config.platformDensity,
           treeDensity: this.config.treeDensity,
+          oreDensity: this.config.oreDensity,
           enemyDensity: this.config.enemyDensity,
         },
       },

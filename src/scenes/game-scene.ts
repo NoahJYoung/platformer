@@ -10,6 +10,7 @@ import { GroundTileManager } from "./ground-tile-manager";
 import { BackgroundResources, FloorResources } from "../resources";
 import { createItem } from "../items/item-creator";
 import { Tree } from "../actors/resources/tree/tree";
+import { Ore } from "../actors/resources/ore/ore";
 import { DecorationManager } from "../sprite-sheets/scenery/decorations/decorations-manager";
 import { DecorationResources } from "../resources/decoration-resources";
 import { createForestDecorationLayer } from "./create-forest-decoration-layer";
@@ -71,6 +72,7 @@ export class GameMapScene extends ex.Scene {
     engine.timeCycle.onSeasonChange(() => {
       this.rebuildBackground(engine);
       this.createTrees();
+      this.createOres();
     });
 
     this.setupEnemySpawning();
@@ -78,6 +80,7 @@ export class GameMapScene extends ex.Scene {
     engine.timeCycle.onSeasonChange(() => {
       this.rebuildBackground(engine);
       this.createTrees();
+      this.createOres();
     });
   }
 
@@ -633,6 +636,17 @@ export class GameMapScene extends ex.Scene {
     });
   }
 
+  protected createOres() {
+    if (this.config.type !== "mountain") {
+      return;
+    }
+
+    this.config.materialSources?.ores.forEach(({ x, y, type }) => {
+      const ore = new Ore(ex.vec(x, y), type);
+      this.add(ore);
+    });
+  }
+
   protected async createLevel(engine: GameEngine): Promise<void> {
     await this.createBackground(engine);
     this.createPlatforms();
@@ -641,6 +655,7 @@ export class GameMapScene extends ex.Scene {
     this.add(ground);
 
     this.createTrees();
+    this.createOres();
 
     const exitLabel = new ex.Label({
       text: "Forest →",

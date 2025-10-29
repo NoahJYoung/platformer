@@ -162,6 +162,8 @@ export class GameEngine extends ex.Engine {
     const faceScarf = createItem("brown_scarf", this.player.sex);
     const leatherGloves = createItem("dark_gloves", this.player.sex);
     const smallLantern = createItem("small_lantern", this.player.sex);
+    const ironPick = createItem("iron_pickaxe", this.player.sex);
+
     const torch = createItem("torch", this.player.sex);
     const knife = createItem("iron_knife", this.player.sex);
     const waterSkin = createItem("leather_water_skin");
@@ -170,6 +172,7 @@ export class GameEngine extends ex.Engine {
     this.player.inventory.addItem(1, ironAxe);
     this.player.inventory.addItem(2, knife);
     this.player.inventory.addItem(3, waterSkin);
+    this.player.inventory.addItem(4, ironPick);
   }
 
   public pause() {

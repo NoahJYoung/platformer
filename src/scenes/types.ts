@@ -2,6 +2,7 @@ import type { Canvas, ImageSource, Vector } from "excalibur";
 import type { Inventory } from "../actors/character/inventory";
 import type { EnemyConfig } from "../actors/enemy/types";
 import type { TreeType } from "../actors/resources/tree/tree-types";
+import type { OreType } from "../actors/resources/ore/ore-types";
 
 export type SceneType = "forest" | "mountain" | "village";
 
@@ -19,7 +20,8 @@ export interface SceneConfig {
 }
 
 export interface MaterialSourceConfig {
-  trees: TreeConfig[];
+  trees: MaterialSourceType<TreeType>[];
+  ores: MaterialSourceType<OreType>[];
 }
 
 export interface PlatformConfig {
@@ -38,10 +40,10 @@ export interface ExitConfig {
   targetEntry: string;
 }
 
-export interface TreeConfig {
+export interface MaterialSourceType<T = OreType | TreeType> {
   x: number;
   y: number;
-  type: TreeType;
+  type: T;
 }
 
 export interface PlayerState {
