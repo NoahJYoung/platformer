@@ -120,7 +120,7 @@ export type Resource = (typeof Resources)[keyof typeof Resources];
 
 export type ItemType = "weapon" | "armor" | "consumable" | "material" | "quest";
 
-export type ItemTag = "light-source";
+export type ItemTag = "light-source" | "torch";
 
 export interface InventoryItem {
   id: string;

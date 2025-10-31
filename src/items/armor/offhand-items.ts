@@ -28,7 +28,7 @@ export const offhandItems = new Map<string, ItemFactoryData>([
       type: "armor",
       slot: "offhand",
       description: "A torch to light your way",
-      tags: ["light-source"],
+      tags: ["light-source", "torch"],
 
       spriteSheets: {
         male: ClothingResources.offhand.male.torch,

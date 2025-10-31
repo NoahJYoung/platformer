@@ -113,7 +113,7 @@ export class GameEngine extends ex.Engine {
 
     const generator = new ProceduralWorldGenerator({
       seed: Date.now(),
-      numberOfScenes: 8,
+      numberOfScenes: 12,
       platformDensity: "low",
       treeDensity: "low",
       enemyDensity: "medium",

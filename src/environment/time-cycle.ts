@@ -16,6 +16,7 @@ import { WeatherOverlay } from "./weather-overlay";
 import { AudioKeys } from "../audio/sound-manager/audio-keys";
 import type { GameSoundManager } from "../audio/sound-manager/sound-manager";
 import type { SceneType } from "../scenes/types";
+import type { GameMapScene } from "../scenes/game-scene";
 
 export type Season = "summer" | "fall" | "winter" | "spring";
 
@@ -82,7 +83,7 @@ export class TimeCycle {
 
     this.createGradientCanvas();
 
-    this.timeOfDay = 6;
+    this.timeOfDay = 20;
     this.cycleSpeed = 0.034;
 
     this.season = "spring";
@@ -514,7 +515,24 @@ export class TimeCycle {
     }
   }
 
+  private checkEquippedLightSources() {
+    const player = (this.game.currentScene as GameMapScene).player;
+    const lightSources = player?.equipmentManager.equippedLightSources;
+    if (
+      lightSources?.some(
+        (source) => source.tags?.includes("torch") && source.slot === "offhand"
+      )
+    ) {
+      player?.unequipItem("offhand");
+      this.game.showMessage("Your torch went out due to the rain");
+      player?.events.emit("resourcesChanged");
+    }
+  }
+
   private checkWeatherChange() {
+    if (this.weather === "raining") {
+      this.checkEquippedLightSources();
+    }
     const hoursSinceLastCheck = Math.abs(
       this.timeOfDay - this.lastWeatherCheck
     );
@@ -537,6 +555,7 @@ export class TimeCycle {
     } else if (random < probabilities.snow + probabilities.rain) {
       newWeather = "raining";
       this.flashLightning();
+
       setTimeout(() => (this.firstFlash = true), 10000);
     } else {
       newWeather = "clear";

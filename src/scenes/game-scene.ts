@@ -18,7 +18,7 @@ import { createForestDecorationLayer } from "./create-forest-decoration-layer";
 export class GameMapScene extends ex.Scene {
   public name: string = "unknown";
   protected config: SceneConfig;
-  protected player: Player | null = null;
+  public player: Player | null = null;
   protected levelWidth: number;
   protected levelHeight: number;
   private groundTileManager = new GroundTileManager(FloorResources.floor1);
