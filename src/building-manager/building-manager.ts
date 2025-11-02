@@ -1,12 +1,12 @@
 import * as ex from "excalibur";
 import type { GameMapScene } from "../scenes/game-scene";
 import type { Player } from "../actors/player/player";
-import { BuildingTile } from "./building-tile-actor";
 import { BuildingGroup } from "./building-group";
 import type {
   BuildingTileConfig,
-  BuildingTileDefinition,
+  ImageSourcesByMaterial,
   PlacedBuildingTile,
+  SpriteSheetsByMaterial,
 } from "./building-tile-types";
 import { BUILDING_TILES } from "./building-tile-catalog";
 import type { MovementBoundaries } from "../actors/character/types";
@@ -16,7 +16,7 @@ export const TILE_SIZE = 16;
 export class BuildingManager {
   private scene: GameMapScene;
   private player: Player;
-  private spriteSheet: ex.SpriteSheet;
+  private spriteSheets: SpriteSheetsByMaterial;
 
   private buildingGroups: BuildingGroup[] = [];
   private gridOccupancy: Map<string, BuildingGroup> = new Map();
@@ -32,20 +32,32 @@ export class BuildingManager {
   constructor(
     scene: GameMapScene,
     player: Player,
-    houseTilesResource: ex.ImageSource
+    imageSourcesByMaterial: ImageSourcesByMaterial
   ) {
     this.scene = scene;
     this.player = player;
+    const { wood, stone } = imageSourcesByMaterial;
+    this.spriteSheets = {
+      stone: ex.SpriteSheet.fromImageSource({
+        image: stone,
+        grid: {
+          columns: 28,
+          rows: 14,
+          spriteWidth: 16,
+          spriteHeight: 16,
+        },
+      }),
 
-    this.spriteSheet = ex.SpriteSheet.fromImageSource({
-      image: houseTilesResource,
-      grid: {
-        columns: 28,
-        rows: 14,
-        spriteWidth: 16,
-        spriteHeight: 16,
-      },
-    });
+      wood: ex.SpriteSheet.fromImageSource({
+        image: wood,
+        grid: {
+          columns: 28,
+          rows: 14,
+          spriteWidth: 16,
+          spriteHeight: 16,
+        },
+      }),
+    };
   }
 
   /**
@@ -139,7 +151,7 @@ export class BuildingManager {
     const outdoorSprite = tileConfig.outdoorSprite;
 
     if (width === 1 && height === 1) {
-      const sprite = this.spriteSheet.getSprite(
+      const sprite = this.spriteSheets[tileConfig.material || "wood"].getSprite(
         outdoorSprite.spriteX,
         outdoorSprite.spriteY
       );
@@ -156,7 +168,9 @@ export class BuildingManager {
           ctx.globalAlpha = 0.6;
           for (let dy = 0; dy < height; dy++) {
             for (let dx = 0; dx < width; dx++) {
-              const sprite = this.spriteSheet.getSprite(
+              const sprite = this.spriteSheets[
+                tileConfig.material || "wood"
+              ].getSprite(
                 outdoorSprite.spriteX + dx,
                 outdoorSprite.spriteY + dy
               );
@@ -225,7 +239,7 @@ export class BuildingManager {
     let targetGroup: BuildingGroup;
 
     if (adjacentGroups.length === 0) {
-      targetGroup = new BuildingGroup(this.spriteSheet);
+      targetGroup = new BuildingGroup(this.spriteSheets);
       this.scene.add(targetGroup);
       this.buildingGroups.push(targetGroup);
 
@@ -639,7 +653,7 @@ export class BuildingManager {
     const minGridY = Math.min(...gridCoords.map((c) => c.y));
     const maxGridY = Math.max(...gridCoords.map((c) => c.y));
 
-    const padding = TILE_SIZE;
+    const padding = TILE_SIZE * 2;
 
     return {
       minX: minGridX * TILE_SIZE + padding,

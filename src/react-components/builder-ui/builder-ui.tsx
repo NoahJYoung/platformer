@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from "react";
 import type { BuildingManager } from "../../building-manager/building-manager";
-import type { BuildingTileCategory } from "../../building-manager/building-tile-types";
+import type {
+  BuildingMaterial,
+  BuildingTileCategory,
+} from "../../building-manager/building-tile-types";
 import {
-  getTilesByCategory,
   BUILDING_TILES,
+  getTilesByMaterial,
 } from "../../building-manager/building-tile-catalog";
 
 const getTileIcon = (category: BuildingTileCategory): string => {
@@ -40,21 +43,12 @@ export const BuildingUI: React.FC<BuildingUIProps> = ({
   isOpen,
   onClose,
 }) => {
-  const [selectedCategory, setSelectedCategory] =
-    useState<BuildingTileCategory>("door");
+  const [selectedMaterial, setSelectedMaterial] =
+    useState<BuildingMaterial>("wood");
   const [selectedTileId, setSelectedTileId] = useState<string | null>(null);
   const [isRemoveMode, setIsRemoveMode] = useState(false);
 
-  const categories: BuildingTileCategory[] = [
-    "foundation",
-    "floor",
-    "wall",
-    "roof",
-    "door",
-    "window",
-    "beam",
-    "corner",
-  ];
+  const materials: BuildingMaterial[] = ["wood", "stone"];
 
   useEffect(() => {
     if (buildingManager && selectedTileId) {
@@ -64,17 +58,17 @@ export const BuildingUI: React.FC<BuildingUIProps> = ({
 
   if (!isOpen || !buildingManager) return null;
 
-  const tilesInCategory = getTilesByCategory(selectedCategory);
+  const tilesInCategory = getTilesByMaterial(selectedMaterial);
 
   const handleTileSelect = (tileId: string) => {
     setSelectedTileId(tileId);
     setIsRemoveMode(false);
   };
 
-  const handleCategorySelect = (category: BuildingTileCategory) => {
-    setSelectedCategory(category);
+  const handleCategorySelect = (material: BuildingMaterial) => {
+    setSelectedMaterial(material);
     // Auto-select first tile in category
-    const tiles = getTilesByCategory(category);
+    const tiles = getTilesByMaterial(material);
     if (tiles.length > 0) {
       setSelectedTileId(tiles[0].id);
     }
@@ -142,7 +136,6 @@ export const BuildingUI: React.FC<BuildingUIProps> = ({
         </div>
       </div>
 
-      {/* Category Tabs */}
       <div
         style={{
           display: "flex",
@@ -152,13 +145,13 @@ export const BuildingUI: React.FC<BuildingUIProps> = ({
           paddingBottom: "4px",
         }}
       >
-        {categories.map((category) => (
+        {materials.map((material) => (
           <button
-            key={category}
-            onClick={() => handleCategorySelect(category)}
+            key={material}
+            onClick={() => handleCategorySelect(material)}
             style={{
               padding: "8px 12px",
-              background: selectedCategory === category ? "#4caf50" : "#333",
+              background: selectedMaterial === material ? "#4caf50" : "#333",
               color: "white",
               border: "none",
               borderRadius: "4px",
@@ -169,7 +162,7 @@ export const BuildingUI: React.FC<BuildingUIProps> = ({
               minWidth: "60px",
             }}
           >
-            {category}
+            {material}
           </button>
         ))}
       </div>

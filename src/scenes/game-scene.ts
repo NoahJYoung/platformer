@@ -56,11 +56,10 @@ export class GameMapScene extends ex.Scene {
       return;
     }
 
-    this.buildingManager = new BuildingManager(
-      this,
-      this.player,
-      BuildingResources.house_tiles
-    );
+    this.buildingManager = new BuildingManager(this, this.player, {
+      wood: BuildingResources.wood_house_tiles,
+      stone: BuildingResources.stone_house_tiles,
+    });
 
     this.buildingInput = new BuildingInput(engine, this.buildingManager);
     this.buildingInput.initialize();

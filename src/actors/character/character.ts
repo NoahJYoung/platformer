@@ -323,6 +323,10 @@ export abstract class Character extends ex.Actor {
 
   public abstract shouldPreventHealthRecovery(): boolean;
 
+  public getIsInside() {
+    return this.isInside;
+  }
+
   protected handleCollisionStart(evt: ex.CollisionStartEvent) {
     const otherActor = evt.other.owner as ex.Actor;
 

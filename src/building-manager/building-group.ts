@@ -3,6 +3,7 @@ import { CollisionGroups } from "../actors/config";
 import type {
   BuildingTileConfig,
   BuildingTileDefinition,
+  SpriteSheetsByMaterial,
 } from "./building-tile-types";
 import { TILE_SIZE } from "./building-manager";
 
@@ -12,12 +13,12 @@ import { TILE_SIZE } from "./building-manager";
 export class BuildingGroup extends ex.Actor {
   public tiles: Map<string, BuildingTileConfig> = new Map(); // key: "gridX,gridY"
   public gridPositions: Set<string> = new Set();
-  private spriteSheet: ex.SpriteSheet;
+  private spriteSheets: SpriteSheetsByMaterial;
   public hasFoundation: boolean = false;
   public isIndoorView: boolean = false; // Track if we're showing indoor view
   public doorPositions: Set<string> = new Set(); // Track door locations for exit detection
 
-  constructor(spriteSheet: ex.SpriteSheet) {
+  constructor(spriteSheets: SpriteSheetsByMaterial) {
     super({
       name: `building_group_${Date.now()}`,
       pos: ex.vec(0, 0),
@@ -27,7 +28,7 @@ export class BuildingGroup extends ex.Actor {
       z: 0, // Default to floor level
     });
 
-    this.spriteSheet = spriteSheet;
+    this.spriteSheets = spriteSheets;
   }
 
   /**
@@ -302,10 +303,9 @@ export class BuildingGroup extends ex.Actor {
           // Draw multi-tile pieces
           for (let dy = 0; dy < config.height; dy++) {
             for (let dx = 0; dx < config.width; dx++) {
-              const sprite = this.spriteSheet.getSprite(
-                spriteDef.spriteX + dx,
-                spriteDef.spriteY + dy
-              );
+              const sprite = this.spriteSheets[
+                config.material || "wood"
+              ].getSprite(spriteDef.spriteX + dx, spriteDef.spriteY + dy);
               if (sprite) {
                 ctx.drawImage(
                   sprite.image.image as HTMLImageElement,

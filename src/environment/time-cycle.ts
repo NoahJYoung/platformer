@@ -517,6 +517,9 @@ export class TimeCycle {
 
   private checkEquippedLightSources() {
     const player = (this.game.currentScene as GameMapScene).player;
+    if (player?.getIsInside()) {
+      return;
+    }
     const lightSources = player?.equipmentManager.equippedLightSources;
     if (
       lightSources?.some(

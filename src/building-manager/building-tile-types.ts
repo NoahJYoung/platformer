@@ -17,9 +17,18 @@ export interface BuildingTileDefinition {
   layer: BuildingTileLayer;
 }
 
-/**
- * The complete tile configuration - includes both indoor/outdoor sprites
- */
+export type BuildingMaterial = "stone" | "wood";
+
+export interface SpriteSheetsByMaterial {
+  stone: ex.SpriteSheet;
+  wood: ex.SpriteSheet;
+}
+
+export interface ImageSourcesByMaterial {
+  stone: ex.ImageSource;
+  wood: ex.ImageSource;
+}
+
 export interface BuildingTileConfig {
   id: string;
   name: string;
@@ -31,6 +40,7 @@ export interface BuildingTileConfig {
   category: BuildingTileCategory;
   outdoorSprite: BuildingTileDefinition;
   indoorSprite?: BuildingTileDefinition;
+  material?: BuildingMaterial;
 }
 
 export interface PlacedBuildingTile {
