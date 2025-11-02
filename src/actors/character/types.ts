@@ -122,6 +122,13 @@ export type ItemType = "weapon" | "armor" | "consumable" | "material" | "quest";
 
 export type ItemTag = "light-source" | "torch";
 
+export interface MovementBoundaries {
+  minX: number;
+  maxX: number;
+  minY: number;
+  maxY: number;
+}
+
 export interface InventoryItem {
   id: string;
   iconUrl: string;

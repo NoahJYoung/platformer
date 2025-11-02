@@ -14,19 +14,25 @@ import { Ore } from "../actors/resources/ore/ore";
 import { DecorationManager } from "../sprite-sheets/scenery/decorations/decorations-manager";
 import { DecorationResources } from "../resources/decoration-resources";
 import { createForestDecorationLayer } from "./create-forest-decoration-layer";
+import { BuildingManager } from "../building-manager/building-manager";
+import { BuildingInput } from "../building-manager/building-input";
+import { BuildingResources } from "../resources/building-resources";
 
 export class GameMapScene extends ex.Scene {
   public name: string = "unknown";
-  protected config: SceneConfig;
+  public config: SceneConfig;
   public player: Player | null = null;
-  protected levelWidth: number;
-  protected levelHeight: number;
+  public levelWidth: number;
+  public levelHeight: number;
   private groundTileManager = new GroundTileManager(FloorResources.floor1);
   private decorationManager: DecorationManager | null = null;
   private spawnIntervalTime = 20000;
 
   private AUTO_SPAWN_ENEMIES = false;
   private spawnInterval: ex.Timer | null = null;
+
+  private buildingManager: BuildingManager | null = null;
+  private buildingInput: BuildingInput | null = null;
 
   constructor(config: SceneConfig) {
     super();
@@ -49,6 +55,15 @@ export class GameMapScene extends ex.Scene {
       console.error("No player found!");
       return;
     }
+
+    this.buildingManager = new BuildingManager(
+      this,
+      this.player,
+      BuildingResources.house_tiles
+    );
+
+    this.buildingInput = new BuildingInput(engine, this.buildingManager);
+    this.buildingInput.initialize();
 
     engine.timeCycle.addToScene(this);
 
@@ -122,6 +137,14 @@ export class GameMapScene extends ex.Scene {
       this.remove(this.spawnInterval);
       this.spawnInterval = null;
     }
+
+    if (this.buildingInput) {
+      this.buildingInput.destroy();
+    }
+  }
+
+  public getBuildingManager(): BuildingManager | null {
+    return this.buildingManager;
   }
 
   private setupEnemySpawning(): void {

@@ -12,6 +12,7 @@ import { GameEngine } from "../../engine/game-engine";
 import type { LootDrop } from "../character/loot-drop";
 import type { MaterialSource } from "../resources/material-source";
 import { AudioKeys } from "../../audio/sound-manager/audio-keys";
+import type { GameMapScene } from "../../scenes/game-scene";
 
 export class Player extends Character {
   private lastToggleFrame: number = -1;
@@ -25,6 +26,9 @@ export class Player extends Character {
   private hasShownThirstWarning: boolean = false;
   private hasShownStarvationWarning: boolean = false;
   private hasShownDehydrationWarning: boolean = false;
+
+  private lastInteractionTime: number = 0;
+  private interactionCooldown: number = 500;
 
   private lastUIUpdate = 0;
   private uiUpdateInterval = 100;
@@ -43,6 +47,32 @@ export class Player extends Character {
 
   onPreUpdate(engine: GameEngine) {
     this.handleInput(engine);
+
+    if (this.isInside && this.buildingBounds) {
+      this.enforceMovementBoundaries();
+    }
+  }
+
+  private enforceMovementBoundaries() {
+    if (!this.buildingBounds) return;
+
+    const { minX, maxX, minY, maxY } = this.buildingBounds;
+
+    if (this.pos.x < minX) {
+      this.pos.x = minX;
+      this.vel.x = 0;
+    } else if (this.pos.x > maxX) {
+      this.pos.x = maxX;
+      this.vel.x = 0;
+    }
+
+    if (this.pos.y < minY) {
+      this.pos.y = minY;
+      this.vel.y = 0;
+    } else if (this.pos.y > maxY) {
+      this.pos.y = maxY;
+      this.vel.y = 0;
+    }
   }
 
   update(engine: GameEngine, elapsed: number): void {
@@ -192,6 +222,29 @@ export class Player extends Character {
     if (kb.wasPressed(ex.Keys.J) && this.currentState !== "hurt") {
       if (this.energy >= this.attackEnergyCost) {
         this.attack(currentTime);
+      }
+    }
+
+    if (kb.wasPressed(ex.Keys.F) && this.currentState !== "hurt") {
+      const scene = this.scene as GameMapScene;
+
+      const buildingManager = scene.getBuildingManager?.();
+
+      if (buildingManager) {
+        if (
+          currentTime - this.lastInteractionTime >=
+          this.interactionCooldown
+        ) {
+          const interacted = buildingManager.tryDoorInteraction(this.pos);
+
+          if (interacted) {
+            this.lastInteractionTime = currentTime;
+
+            const isInside = buildingManager.isPlayerInside(this.pos);
+            const message = isInside ? "Entered building" : "Exited building";
+            (engine as GameEngine).showMessage(message);
+          }
+        }
       }
     }
   }

@@ -14,6 +14,7 @@ export const CollisionGroups = {
   Player: ex.CollisionGroupManager.create("player"),
   Enemy: ex.CollisionGroupManager.create("enemy"),
   Environment: ex.CollisionGroupManager.create("environment"),
+  Building: ex.CollisionGroupManager.create("building"),
   Weapon: ex.CollisionGroupManager.create("weapon"),
   Interactable: ex.CollisionGroupManager.create("interactable"),
   Resource: ex.CollisionGroupManager.create("resource"),

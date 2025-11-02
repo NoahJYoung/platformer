@@ -12,6 +12,7 @@ import type {
   Element,
   EquipmentItem,
   InventoryItem,
+  MovementBoundaries,
   SkinToneOptions,
 } from "./types";
 import { EquipmentManager } from "./equipment-manager";
@@ -88,6 +89,9 @@ export abstract class Character extends ex.Actor {
   public isShieldActive: boolean = false;
   protected baseShieldManaCost: number = 5;
 
+  protected isInside: boolean;
+  protected buildingBounds: MovementBoundaries | null;
+
   public isRunMode: boolean = false;
 
   constructor(
@@ -96,10 +100,13 @@ export abstract class Character extends ex.Actor {
     appearanceOptions: AppearanceOptions,
     facingRight: boolean,
     showHealthBar: boolean = false,
-    attributes?: AttributesConfig
+    attributes?: AttributesConfig,
+    isInside: boolean = false,
+    buildingBounds: MovementBoundaries | null = null
   ) {
     super({
       name: name,
+      z: 1,
       offset: ex.vec(12, 0),
       pos: pos,
       width: 16,
@@ -115,6 +122,9 @@ export abstract class Character extends ex.Actor {
     this.skinTone = appearanceOptions.skinTone;
     this.hairStyle = appearanceOptions.hairStyle;
     this.displayName = appearanceOptions.displayName;
+
+    this.isInside = isInside;
+    this.buildingBounds = buildingBounds;
 
     this.animController = new AnimationController(
       this,
@@ -242,6 +252,16 @@ export abstract class Character extends ex.Actor {
         "success"
       );
     }
+  }
+
+  public enterBuilding(bounds: MovementBoundaries) {
+    this.buildingBounds = bounds;
+    this.isInside = true;
+  }
+
+  public exitBuilding() {
+    this.buildingBounds = null;
+    this.isInside = false;
   }
 
   protected updateResources(deltaSeconds: number) {

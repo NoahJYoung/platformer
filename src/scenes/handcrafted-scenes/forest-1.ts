@@ -16,5 +16,6 @@ export const forest_1: SceneConfig = {
   enemies: [],
   materialSources: {
     trees: [],
+    ores: [],
   },
 };

@@ -8,6 +8,9 @@ import type { MaterialSource } from "./actors/resources/material-source";
 import { MessageLog } from "./react-components/message-log/message-log";
 
 import "./globals.css";
+import type { BuildingManager } from "./building-manager/building-manager";
+import { BuildingUI } from "./react-components/builder-ui/builder-ui";
+import type { GameMapScene } from "./scenes/game-scene";
 
 export const Game = () => {
   const gameRef = useRef(null);
@@ -18,6 +21,11 @@ export const Game = () => {
   const [materialSourceMenuOpen, setMaterialSourceMenuOpen] = useState(false);
   const [currentMaterialSource, setCurrentMaterialSource] =
     useState<MaterialSource | null>(null);
+
+  // Building system state
+  const [buildingManager, setBuildingManager] =
+    useState<BuildingManager | null>(null);
+  const [isBuildUIOpen, setIsBuildUIOpen] = useState(false);
 
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
@@ -39,10 +47,42 @@ export const Game = () => {
           return;
         }
       }
+
+      // Listen for B key to sync with building mode
+      if (event.key.toLowerCase() === "b") {
+        const currentScene = engine?.currentScene as GameMapScene;
+        if (currentScene?.getBuildingManager) {
+          const manager = currentScene.getBuildingManager();
+          setBuildingManager(manager);
+          // Toggle UI when build mode is toggled
+          setTimeout(() => {
+            setIsBuildUIOpen(manager?.isBuildMode || false);
+          }, 50);
+        }
+      }
     };
 
     window.addEventListener("keydown", handleKeyPress);
     return () => window.removeEventListener("keydown", handleKeyPress);
+  }, [engine]);
+
+  // Update building manager when scene changes
+  useEffect(() => {
+    if (engine) {
+      const updateBuildingManager = () => {
+        const currentScene = engine.currentScene as GameMapScene;
+        if (currentScene?.getBuildingManager) {
+          setBuildingManager(currentScene.getBuildingManager());
+        }
+      };
+
+      // Update immediately
+      updateBuildingManager();
+
+      // Update when scene changes
+      const interval = setInterval(updateBuildingManager, 1000);
+      return () => clearInterval(interval);
+    }
   }, [engine]);
 
   useEffect(() => {
@@ -114,6 +154,34 @@ export const Game = () => {
         <MessageLog gameEngine={engine} />
 
         <canvas id="game-canvas" ref={gameRef} />
+
+        {/* Building Mode Button - Fixed position */}
+        {buildingManager && (
+          <button
+            onClick={() => {
+              buildingManager.toggleBuildMode();
+              setIsBuildUIOpen(!isBuildUIOpen);
+            }}
+            style={{
+              position: "fixed",
+              bottom: "20px",
+              right: "20px",
+              padding: "15px",
+              background: isBuildUIOpen ? "#4caf50" : "#666",
+              color: "white",
+              border: "none",
+              borderRadius: "50%",
+              fontSize: "24px",
+              cursor: "pointer",
+              boxShadow: "0 4px 8px rgba(0,0,0,0.3)",
+              zIndex: 999,
+              transition: "background 0.3s",
+            }}
+            title="Toggle Build Mode (B)"
+          >
+            {isBuildUIOpen ? "🏗️" : "🏠"}
+          </button>
+        )}
       </div>
 
       {engine?.player && (
@@ -156,6 +224,18 @@ export const Game = () => {
               }}
             />
           )}
+
+          {/* Building UI Panel */}
+          <BuildingUI
+            buildingManager={buildingManager}
+            isOpen={isBuildUIOpen}
+            onClose={() => {
+              setIsBuildUIOpen(false);
+              if (buildingManager?.isBuildMode) {
+                buildingManager.toggleBuildMode();
+              }
+            }}
+          />
         </>
       )}
     </div>

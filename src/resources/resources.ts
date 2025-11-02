@@ -6,6 +6,7 @@ import { clothingResourcesArray } from "./clothing-resources";
 import { treeResourcesArray } from "./tree-resources";
 import { oreResourceArray } from "./ore-resources";
 import { decorationResourcesArray } from "./decoration-resources";
+import { buildingResourcesArray } from "./building-resources";
 
 export const Resources = [
   ...backgroundResourcesArray,
@@ -16,4 +17,5 @@ export const Resources = [
   ...treeResourcesArray,
   ...decorationResourcesArray,
   ...oreResourceArray,
+  ...buildingResourcesArray,
 ];
