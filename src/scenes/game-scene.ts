@@ -47,9 +47,6 @@ export class GameMapScene extends ex.Scene {
 
   async onInitialize(engine: GameEngine): Promise<void> {
     this.player = engine.player;
-    // this.groundTileManager.setTheme("normal", 0, 0, 1, 2);
-    // this.groundTileManager.setTheme("fall", 3, 0, 1, 2);
-    // this.groundTileManager.setTheme("winter", 6, 0, 1, 2);
 
     if (!this.player) {
       console.error("No player found!");
@@ -305,7 +302,6 @@ export class GameMapScene extends ex.Scene {
       this.remove(actor);
     });
 
-    // Remove all old ground actors
     const oldGroundActors = this.actors.filter(
       (actor) =>
         actor.name === "ground" || actor.name?.startsWith("ground_segment_")
@@ -314,7 +310,6 @@ export class GameMapScene extends ex.Scene {
       this.remove(actor);
     });
 
-    // Create new ground segments
     const groundActors = this.createGroundSegments(engine);
     groundActors.forEach((ground) => {
       this.add(ground);
@@ -619,7 +614,6 @@ export class GameMapScene extends ex.Scene {
   createGroundSegments(engine: GameEngine): ex.Actor[] {
     const groundActors: ex.Actor[] = [];
 
-    // Use ground segments from config, or create default
     const segments = this.config.groundSegments || [
       {
         x: this.levelWidth / 2,
@@ -634,20 +628,18 @@ export class GameMapScene extends ex.Scene {
       season === "winter" ? "winter" : season === "fall" ? "fall" : "normal";
 
     segments.forEach((segment, index) => {
-      // Add overlap to eliminate visual gaps between adjacent segments
-      const VISUAL_OVERLAP = 4; // Extend graphics by 4px on each side
+      const VISUAL_OVERLAP = 4;
       const visualWidth = segment.width + VISUAL_OVERLAP * 2;
 
       const ground = new ex.Actor({
         name: `ground_segment_${index}`,
         pos: ex.vec(segment.x, segment.y + segment.height / 2),
-        width: segment.width, // Collision stays at original width
+        width: segment.width,
         height: segment.height,
         collisionType: ex.CollisionType.Fixed,
         collisionGroup: CollisionGroups.Environment,
       });
 
-      // Create visual graphics with extended width to overlap adjacent segments
       const groundCanvas = this.groundTileManager.createGroundCanvasElement(
         visualWidth,
         segment.height,
@@ -675,7 +667,7 @@ export class GameMapScene extends ex.Scene {
    */
   getGroundFromSeason(engine: GameEngine): ex.Actor {
     const segments = this.createGroundSegments(engine);
-    return segments[0]; // Return first segment for compatibility
+    return segments[0];
   }
 
   protected createTrees() {
@@ -700,7 +692,6 @@ export class GameMapScene extends ex.Scene {
     await this.createBackground(engine);
     this.createPlatforms();
 
-    // Create all ground segments
     const groundActors = this.createGroundSegments(engine);
     groundActors.forEach((ground) => {
       this.add(ground);
