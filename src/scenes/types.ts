@@ -17,6 +17,7 @@ export interface SceneConfig {
   enemies?: EnemyConfig[];
   platforms?: PlatformConfig[];
   materialSources?: MaterialSourceConfig;
+  groundSegments?: GroundSegmentConfig[]; // NEW
 }
 
 export interface MaterialSourceConfig {
@@ -29,6 +30,14 @@ export interface PlatformConfig {
   y: number;
   width: number;
   height: number;
+}
+
+// NEW: Ground segment configuration
+export interface GroundSegmentConfig {
+  x: number; // Center X position
+  y: number; // Top Y position
+  width: number; // Width of segment
+  height: number; // Height/depth of segment
 }
 
 export interface ExitConfig {

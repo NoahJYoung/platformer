@@ -101,7 +101,7 @@ export class GameEngine extends ex.Engine {
       displayName: "Player",
     };
 
-    const testSkillLevel = 40;
+    const testSkillLevel = 100;
 
     this.player = new Player(ex.vec(100, 100), playerAppearance, {
       strength: testSkillLevel,

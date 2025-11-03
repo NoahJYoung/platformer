@@ -5,6 +5,7 @@ import type {
   PlatformConfig,
   SceneType,
   MaterialSourceType,
+  GroundSegmentConfig,
 } from "../scenes/types";
 import {
   getHeightByTreeType,
@@ -15,6 +16,13 @@ import type { OreType } from "../actors/resources/ore/ore-types";
 const TREE_WIDTH = 64;
 const ORE_WIDTH = 64;
 const GROUND_HEIGHT = 32;
+const MIN_GROUND_HEIGHT = 32;
+const MAX_GROUND_HEIGHT = 200;
+const MIN_GAP = 0;
+const MIN_HEIGHT_DIFFERENCE = 32;
+
+const TILE_WIDTH = 32;
+const TILE_HEIGHT = 32;
 
 export interface WorldGeneratorConfig {
   seed?: number;
@@ -27,6 +35,7 @@ export interface WorldGeneratorConfig {
   treeDensity?: "low" | "medium" | "high";
   oreDensity?: "low" | "medium" | "high";
   enemyDensity?: "low" | "medium" | "high";
+  groundVariation?: "none" | "low" | "medium" | "high";
   handcraftedScenes?: Map<number, SceneConfig>;
 }
 
@@ -54,10 +63,25 @@ export class ProceduralWorldGenerator {
       treeDensity: config.treeDensity ?? "medium",
       oreDensity: config.oreDensity ?? "medium",
       enemyDensity: config.enemyDensity ?? "low",
+      groundVariation: config.groundVariation ?? "medium",
       handcraftedScenes: config.handcraftedScenes ?? new Map(),
     };
 
     this.rng = new SeededRandom(this.config.seed);
+  }
+
+  /**
+   * Snap a value to the nearest tile width multiple (32px)
+   */
+  private snapToTileWidth(value: number): number {
+    return Math.round(value / TILE_WIDTH) * TILE_WIDTH;
+  }
+
+  /**
+   * Snap a value to the nearest tile height multiple (32px)
+   */
+  private snapToTileHeight(value: number): number {
+    return Math.round(value / TILE_HEIGHT) * TILE_HEIGHT;
   }
 
   /**
@@ -69,6 +93,13 @@ export class ProceduralWorldGenerator {
     for (let i = 0; i < this.config.numberOfScenes; i++) {
       if (this.config.handcraftedScenes.has(i)) {
         const handcrafted = this.config.handcraftedScenes.get(i)!;
+
+        if (!handcrafted.groundSegments) {
+          handcrafted.groundSegments = this.generateDefaultGroundSegments(
+            handcrafted.width,
+            handcrafted.height
+          );
+        }
         this.generatedScenes.push(handcrafted);
       } else {
         const scene = this.generateScene(i);
@@ -111,11 +142,22 @@ export class ProceduralWorldGenerator {
     const backgroundTheme =
       themeRoll < 0.6 ? "normal" : themeRoll < 0.8 ? "fall" : "winter";
 
+    const groundSegments = this.generateGroundSegments(
+      width,
+      height,
+      biomeType
+    );
+
     const platforms = isMountain
       ? this.generateMountainPlatforms(width, height)
       : this.generatePlatforms(width, height);
 
-    const surfacePoints = this.getAllSurfacePoints(platforms, width, height);
+    const surfacePoints = this.getAllSurfacePoints(
+      platforms,
+      groundSegments,
+      width,
+      height
+    );
     const trees = this.generateTrees(surfacePoints, biomeType, platforms);
     const ores = this.generateOres(surfacePoints, biomeType, trees);
     const enemies = this.generateEnemies(surfacePoints, trees, ores, index);
@@ -129,6 +171,7 @@ export class ProceduralWorldGenerator {
       spawnPoints: {},
       exits: [],
       platforms,
+      groundSegments,
       materialSources: {
         trees,
         ores,
@@ -137,6 +180,108 @@ export class ProceduralWorldGenerator {
     };
 
     return scene;
+  }
+
+  /**
+   * UPDATED: Generate varied ground segments with NO GAPS - segments always touch
+   * Ensures: 1) No overlaps, 2) All segments reach bottom, 3) Segments always connect, 4) Minimum height difference
+   * 5) Visual width (including overlap) is always a multiple of tile width
+   */
+  private generateGroundSegments(
+    sceneWidth: number,
+    sceneHeight: number,
+    biomeType: SceneType
+  ): GroundSegmentConfig[] {
+    const segments: GroundSegmentConfig[] = [];
+
+    const variationSettings = {
+      none: { heightVariation: 0 },
+      low: { heightVariation: 30 },
+      medium: { heightVariation: 60 },
+      high: { heightVariation: 100 },
+    }[this.config.groundVariation];
+
+    const minSegmentWidth = 250;
+    const maxSegmentWidth = 600;
+    const baseGroundY = sceneHeight - GROUND_HEIGHT;
+
+    const VISUAL_OVERLAP = 4;
+
+    let currentX = 0;
+    let previousGroundY = baseGroundY;
+
+    while (currentX < sceneWidth) {
+      const rawSegmentWidth = this.rng.nextInt(
+        minSegmentWidth,
+        maxSegmentWidth
+      );
+
+      const rawVisualWidth = rawSegmentWidth + VISUAL_OVERLAP * 2;
+      const snappedVisualWidth = this.snapToTileWidth(rawVisualWidth);
+
+      const segmentWidth = snappedVisualWidth - VISUAL_OVERLAP * 2;
+
+      const heightOffset = this.rng.nextInt(
+        -variationSettings.heightVariation,
+        variationSettings.heightVariation / 2
+      );
+      let rawGroundY = Math.min(baseGroundY, baseGroundY + heightOffset);
+
+      let groundY = this.snapToTileHeight(rawGroundY);
+
+      if (segments.length > 0) {
+        const heightDifference = Math.abs(groundY - previousGroundY);
+
+        if (heightDifference < MIN_HEIGHT_DIFFERENCE) {
+          if (groundY < previousGroundY) {
+            groundY = Math.max(0, previousGroundY - MIN_HEIGHT_DIFFERENCE);
+          } else {
+            groundY = Math.min(
+              baseGroundY,
+              previousGroundY + MIN_HEIGHT_DIFFERENCE
+            );
+          }
+        }
+      }
+
+      const segmentDepth = sceneHeight - groundY;
+
+      const actualWidth = Math.min(segmentWidth, sceneWidth - currentX);
+
+      segments.push({
+        x: currentX + actualWidth / 2,
+        y: groundY,
+        width: actualWidth,
+        height: segmentDepth,
+      });
+
+      previousGroundY = groundY;
+
+      currentX += actualWidth;
+    }
+
+    return segments;
+  }
+
+  /**
+   * Generate default flat ground segments (for handcrafted scenes or fallback)
+   * Ground always reaches the bottom of the screen
+   */
+  private generateDefaultGroundSegments(
+    sceneWidth: number,
+    sceneHeight: number
+  ): GroundSegmentConfig[] {
+    const groundY = sceneHeight - GROUND_HEIGHT;
+    const segmentDepth = sceneHeight - groundY;
+
+    return [
+      {
+        x: sceneWidth / 2,
+        y: groundY,
+        width: sceneWidth + 400,
+        height: segmentDepth,
+      },
+    ];
   }
 
   /**
@@ -290,20 +435,23 @@ export class ProceduralWorldGenerator {
   }
 
   /**
-   * Get all surface points where trees/ores can be placed (ground and platforms)
+   * UPDATED: Get all surface points including ground segments
    */
   private getAllSurfacePoints(
     platforms: PlatformConfig[],
+    groundSegments: GroundSegmentConfig[],
     sceneWidth: number,
     sceneHeight: number
   ): Rectangle[] {
     const surfaces: Rectangle[] = [];
 
-    surfaces.push({
-      x: 0,
-      y: sceneHeight - GROUND_HEIGHT,
-      width: sceneWidth,
-      height: GROUND_HEIGHT,
+    groundSegments.forEach((segment) => {
+      surfaces.push({
+        x: segment.x - segment.width / 2,
+        y: segment.y,
+        width: segment.width,
+        height: segment.height,
+      });
     });
 
     platforms.forEach((platform) => {
@@ -534,62 +682,72 @@ export class ProceduralWorldGenerator {
       baseEnemyCount + 2
     );
 
-    const groundSurface = surfaces[0];
+    const groundSurfaces = surfaces.filter((s) => s.height >= GROUND_HEIGHT);
 
-    for (let i = 0; i < enemyCount; i++) {
-      let attempts = 0;
-      let placed = false;
+    groundSurfaces.forEach((surface) => {
+      const enemiesForThisSurface = Math.max(
+        1,
+        Math.floor(enemyCount / groundSurfaces.length)
+      );
 
-      while (attempts < 20 && !placed) {
-        const enemyX = this.rng.nextInt(
-          groundSurface.x + 200,
-          groundSurface.x + groundSurface.width - 200
-        );
-        const enemyY = groundSurface.y;
+      for (let i = 0; i < enemiesForThisSurface; i++) {
+        let attempts = 0;
+        let placed = false;
 
-        const collidesWithTree = trees.some(
-          (tree) => Math.abs(tree.x - enemyX) < TREE_WIDTH + 50
-        );
+        while (attempts < 20 && !placed) {
+          const enemyX = this.rng.nextInt(
+            surface.x + 100,
+            surface.x + surface.width - 100
+          );
+          const enemyY = surface.y;
 
-        const collidesWithOre = ores.some(
-          (ore) => Math.abs(ore.x - enemyX) < ORE_WIDTH + 50
-        );
+          const collidesWithTree = trees.some(
+            (tree) => Math.abs(tree.x - enemyX) < TREE_WIDTH + 50
+          );
 
-        const tooCloseToEnemy = enemies.some(
-          (enemy) => Math.abs(enemy.pos.x - enemyX) < 200
-        );
+          const collidesWithOre = ores.some(
+            (ore) => Math.abs(ore.x - enemyX) < ORE_WIDTH + 50
+          );
 
-        if (!collidesWithTree && !collidesWithOre && !tooCloseToEnemy) {
-          const sex = this.rng.next() > 0.5 ? "male" : "female";
-          const baseLevel = Math.floor(3 + sceneIndex * 1.5);
+          const tooCloseToEnemy = enemies.some(
+            (enemy) => Math.abs(enemy.pos.x - enemyX) < 200
+          );
 
-          enemies.push({
-            name: `enemy_${sceneIndex}_${i}`,
-            pos: ex.vec(enemyX, enemyY),
-            appearanceOptions: {
-              sex,
-              skinTone: this.rng.nextInt(1, 6) as 1 | 2 | 3 | 4 | 5,
-              hairStyle: this.rng.nextInt(1, 6) as 1 | 2 | 3 | 4 | 5,
-              displayName: `Enemy ${i + 1}`,
-            },
-            facingRight: this.rng.next() > 0.5,
-            attributes: {
-              strength: Math.floor(baseLevel * difficultyScaling),
-              vitality: Math.floor(baseLevel * difficultyScaling),
-              agility: Math.floor(baseLevel * difficultyScaling),
-              intelligence: Math.floor(baseLevel * difficultyScaling),
-            },
-          });
-          placed = true;
+          if (!collidesWithTree && !collidesWithOre && !tooCloseToEnemy) {
+            const sex = this.rng.next() > 0.5 ? "male" : "female";
+            const baseLevel = Math.floor(3 + sceneIndex * 1.5);
+
+            enemies.push({
+              name: `enemy_${sceneIndex}_${enemies.length}`,
+              pos: ex.vec(enemyX, enemyY),
+              appearanceOptions: {
+                sex,
+                skinTone: this.rng.nextInt(1, 6) as 1 | 2 | 3 | 4 | 5,
+                hairStyle: this.rng.nextInt(1, 6) as 1 | 2 | 3 | 4 | 5,
+                displayName: `Enemy ${enemies.length + 1}`,
+              },
+              facingRight: this.rng.next() > 0.5,
+              attributes: {
+                strength: Math.floor(baseLevel * difficultyScaling),
+                vitality: Math.floor(baseLevel * difficultyScaling),
+                agility: Math.floor(baseLevel * difficultyScaling),
+                intelligence: Math.floor(baseLevel * difficultyScaling),
+              },
+            });
+            placed = true;
+          }
+
+          attempts++;
         }
-
-        attempts++;
       }
-    }
+    });
 
     return enemies;
   }
 
+  /**
+   * UPDATED: Connect scenes with spawn points on actual ground
+   */
   private connectScenes(): void {
     for (let i = 0; i < this.generatedScenes.length; i++) {
       const scene = this.generatedScenes[i];
@@ -602,14 +760,30 @@ export class ProceduralWorldGenerator {
       scene.spawnPoints = scene.spawnPoints || {};
       scene.exits = scene.exits || [];
 
-      const groundLevel = scene.height - GROUND_HEIGHT - 50;
+      const defaultGroundSegment = this.findGroundSegmentAt(
+        scene,
+        scene.width / 2
+      );
+      const groundLevel = defaultGroundSegment
+        ? defaultGroundSegment.y - 50
+        : scene.height - GROUND_HEIGHT - 50;
+
       scene.spawnPoints.default = ex.vec(scene.width / 2, groundLevel);
 
       if (nextScene) {
         const exitHeight = 200;
+
+        const exitGroundSegment = this.findGroundSegmentAt(
+          scene,
+          scene.width - 10
+        );
+        const exitY = exitGroundSegment
+          ? exitGroundSegment.y - exitHeight / 2
+          : scene.height - exitHeight / 2;
+
         scene.exits.push({
           x: scene.width - 10,
-          y: scene.height - exitHeight / 2,
+          y: exitY,
           width: 20,
           height: exitHeight,
           targetScene: nextScene.name,
@@ -617,7 +791,11 @@ export class ProceduralWorldGenerator {
         });
 
         nextScene.spawnPoints = nextScene.spawnPoints || {};
-        const nextGroundLevel = nextScene.height - GROUND_HEIGHT - 50;
+        const nextGroundSegment = this.findGroundSegmentAt(nextScene, 100);
+        const nextGroundLevel = nextGroundSegment
+          ? nextGroundSegment.y - 50
+          : nextScene.height - GROUND_HEIGHT - 50;
+
         nextScene.spawnPoints[`from_${scene.name}`] = ex.vec(
           100,
           nextGroundLevel
@@ -626,9 +804,14 @@ export class ProceduralWorldGenerator {
 
       if (prevScene) {
         const exitHeight = 200;
+        const exitGroundSegment = this.findGroundSegmentAt(scene, 10);
+        const exitY = exitGroundSegment
+          ? exitGroundSegment.y - exitHeight / 2
+          : scene.height - exitHeight / 2;
+
         scene.exits.push({
           x: 10,
-          y: scene.height - exitHeight / 2,
+          y: exitY,
           width: 20,
           height: exitHeight,
           targetScene: prevScene.name,
@@ -636,13 +819,41 @@ export class ProceduralWorldGenerator {
         });
 
         prevScene.spawnPoints = prevScene.spawnPoints || {};
-        const prevGroundLevel = prevScene.height - GROUND_HEIGHT - 50;
+        const prevGroundSegment = this.findGroundSegmentAt(
+          prevScene,
+          prevScene.width - 100
+        );
+        const prevGroundLevel = prevGroundSegment
+          ? prevGroundSegment.y - 50
+          : prevScene.height - GROUND_HEIGHT - 50;
+
         prevScene.spawnPoints[`from_${scene.name}`] = ex.vec(
           prevScene.width - 100,
           prevGroundLevel
         );
       }
     }
+  }
+
+  /**
+   * Helper: Find ground segment at a specific X position
+   */
+  private findGroundSegmentAt(
+    scene: SceneConfig,
+    x: number
+  ): GroundSegmentConfig | null {
+    if (!scene.groundSegments) return null;
+
+    for (const segment of scene.groundSegments) {
+      const segmentLeft = segment.x - segment.width / 2;
+      const segmentRight = segment.x + segment.width / 2;
+
+      if (x >= segmentLeft && x <= segmentRight) {
+        return segment;
+      }
+    }
+
+    return null;
   }
 
   /**
@@ -671,6 +882,7 @@ export class ProceduralWorldGenerator {
           treeDensity: this.config.treeDensity,
           oreDensity: this.config.oreDensity,
           enemyDensity: this.config.enemyDensity,
+          groundVariation: this.config.groundVariation,
         },
       },
       null,
