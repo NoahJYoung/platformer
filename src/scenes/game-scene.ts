@@ -376,62 +376,27 @@ export class GameMapScene extends ex.Scene {
         parallax: ex.vec(0.7, 0.7),
         z: -94,
       },
-
-      createForestDecorationLayer({
-        engine,
-        sceneType: this.config.type,
-        seed: this.hashString(`${this.name}-0`),
-        z: -93.5,
-        parallax: 0.75,
-        decorationManager: this.decorationManager,
-        density: this.config.type === "forest" ? 0.005 : 0.002,
-      }),
-
-      this.config.type === "forest"
-        ? createForestDecorationLayer({
-            engine,
-            sceneType: this.config.type,
-
-            seed: this.hashString(`${this.name}-92.5`),
-            z: -92.5,
-            parallax: 0.8,
-            decorationManager: this.decorationManager,
-          })
-        : null,
-
-      createForestDecorationLayer({
-        engine,
-        sceneType: this.config.type,
-
-        seed: this.hashString(`${this.name}-92`),
+      {
+        resource: backgrounds.decoration4,
+        parallax: ex.vec(0.75, 0.75),
+        z: -93,
+      },
+      {
+        resource: backgrounds.decoration3,
+        parallax: ex.vec(0.8, 0.8),
         z: -92,
-        parallax: 0.85,
-        decorationManager: this.decorationManager,
-        density: this.config.type === "forest" ? 0.005 : 0.002,
-      }),
-
-      this.config.type === "forest"
-        ? createForestDecorationLayer({
-            engine,
-            sceneType: this.config.type,
-
-            seed: this.hashString(`${this.name}-91.5`),
-            z: -91.5,
-            parallax: 0.9,
-            decorationManager: this.decorationManager,
-          })
-        : null,
-
-      createForestDecorationLayer({
-        engine,
-        sceneType: this.config.type,
-        seed: this.hashString(`${this.name}-91`),
+      },
+      {
+        resource: backgrounds.decoration2,
+        parallax: ex.vec(0.85, 0.85),
         z: -91,
-        parallax: 0.95,
-        decorationManager: this.decorationManager,
-        density: this.config.type === "forest" ? 0.005 : 0.002,
-      }),
-    ].filter((layer) => !!layer);
+      },
+      {
+        resource: backgrounds.decoration1,
+        parallax: ex.vec(0.9, 0.9),
+        z: -90,
+      },
+    ];
 
     for (const layer of layers) {
       const resolvedLayer = await Promise.resolve(layer);

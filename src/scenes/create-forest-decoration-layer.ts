@@ -1,3 +1,5 @@
+// Updated createForestDecorationLayer to be terrain-aware
+
 import type { TreeType } from "../actors/resources/tree/tree-types";
 import type { GameEngine } from "../engine/game-engine";
 import { TreeResources } from "../resources/tree-resources";
@@ -16,6 +18,12 @@ interface ForestDecorationLayerConfig {
   z: number;
   parallax: number;
   density?: number;
+  groundSegments?: Array<{
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  }>; // NEW
 }
 
 export const createForestDecorationLayer = async ({
@@ -26,6 +34,7 @@ export const createForestDecorationLayer = async ({
   z,
   parallax,
   density = 0.005,
+  groundSegments, // NEW
 }: ForestDecorationLayerConfig): Promise<BackgroundLayer> => {
   const season = engine.timeCycle.getCurrentSeason();
   const seededRandom = createSeededRandom(seed);
@@ -37,10 +46,41 @@ export const createForestDecorationLayer = async ({
   const canvasWidth = BACKGROUND_WIDTH + padding * 2;
 
   const canvasHeight = BACKGROUND_HEIGHT;
-  const groundHeight = 32 * parallax;
-  const groundY = BACKGROUND_HEIGHT - groundHeight * parallax;
-  const treeGroundY = groundY;
-  const decorationGroundY = groundY;
+
+  // Helper function to get ground height at a specific world X position
+  const getGroundHeightAt = (worldX: number): number => {
+    if (!groundSegments || groundSegments.length === 0) {
+      return BACKGROUND_HEIGHT - 32; // Default ground level
+    }
+
+    // Find the segment that contains this X coordinate
+    for (const segment of groundSegments) {
+      const halfWidth = segment.width / 2;
+      const segmentLeft = segment.x - halfWidth;
+      const segmentRight = segment.x + halfWidth;
+
+      if (worldX >= segmentLeft && worldX <= segmentRight) {
+        // Return the Y position of the top of the ground segment
+        return segment.y;
+      }
+    }
+
+    // If not in any segment, return the nearest segment's height
+    let nearestSegment = groundSegments[0];
+    let minDistance = Math.abs(worldX - groundSegments[0].x);
+
+    for (const segment of groundSegments) {
+      const distance = Math.abs(worldX - segment.x);
+      if (distance < minDistance) {
+        minDistance = distance;
+        nearestSegment = segment;
+      }
+    }
+
+    return nearestSegment.y;
+  };
+
+  const decorationGroundY = BACKGROUND_HEIGHT - 32; // fallback
   const treeCount = Math.floor(canvasWidth * density);
   const decorationCount = Math.floor(canvasWidth * density);
 
@@ -69,7 +109,11 @@ export const createForestDecorationLayer = async ({
       Math.max(seededRandom() * canvasWidth, deco.sprite.width / 2),
       canvasWidth - deco.sprite.width / 2
     );
-    const y = decorationGroundY;
+
+    // Calculate world X position considering parallax
+    const worldX = (x * 2) / parallax;
+    const groundHeight = getGroundHeightAt(worldX);
+    const y = groundHeight * parallax;
 
     decorationData.push({ deco, x, y, scale });
   }
@@ -84,7 +128,6 @@ export const createForestDecorationLayer = async ({
     const treeType =
       sceneType === "forest" ? getRandomTreeType(seededRandom) : "pine-tree";
     const graphic = getTreeGraphic(treeType, season, seededRandom);
-    const y = treeGroundY;
 
     let placed = false;
     let attempts = 0;
@@ -99,6 +142,12 @@ export const createForestDecorationLayer = async ({
 
       if (!occupiedCells.has(cellKey)) {
         occupiedCells.add(cellKey);
+
+        // Calculate world X position considering parallax
+        const worldX = (x * 2) / parallax;
+        const groundHeight = getGroundHeightAt(worldX);
+        const y = groundHeight * parallax;
+
         treeData.push({ graphic, x, y, scale });
         placed = true;
       }
@@ -107,6 +156,10 @@ export const createForestDecorationLayer = async ({
 
     if (!placed) {
       const x = seededRandom() * canvasWidth;
+      const worldX = (x * 2) / parallax;
+      const groundHeight = getGroundHeightAt(worldX);
+      const y = groundHeight * parallax;
+
       treeData.push({ graphic, x, y, scale });
     }
 

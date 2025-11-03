@@ -17,7 +17,7 @@ const TREE_WIDTH = 64;
 const ORE_WIDTH = 64;
 const GROUND_HEIGHT = 32;
 const MIN_GROUND_HEIGHT = 32;
-const MAX_GROUND_HEIGHT = 200;
+const MAX_GROUND_HEIGHT = 256;
 const MIN_GAP = 0;
 const MIN_HEIGHT_DIFFERENCE = 32;
 
@@ -81,7 +81,7 @@ export class ProceduralWorldGenerator {
    * Snap a value to the nearest tile height multiple (32px)
    */
   private snapToTileHeight(value: number): number {
-    return Math.round(value / TILE_HEIGHT) * TILE_HEIGHT;
+    return Math.max(Math.round(value / TILE_HEIGHT) * TILE_HEIGHT);
   }
 
   /**
@@ -202,7 +202,7 @@ export class ProceduralWorldGenerator {
     }[this.config.groundVariation];
 
     const minSegmentWidth = 250;
-    const maxSegmentWidth = 600;
+    const maxSegmentWidth = Math.min(sceneWidth);
     const baseGroundY = sceneHeight - GROUND_HEIGHT;
 
     const VISUAL_OVERLAP = 4;
@@ -225,7 +225,7 @@ export class ProceduralWorldGenerator {
         -variationSettings.heightVariation,
         variationSettings.heightVariation / 2
       );
-      let rawGroundY = Math.min(baseGroundY, baseGroundY + heightOffset);
+      const rawGroundY = Math.min(baseGroundY, baseGroundY + heightOffset);
 
       let groundY = this.snapToTileHeight(rawGroundY);
 
@@ -250,7 +250,7 @@ export class ProceduralWorldGenerator {
 
       segments.push({
         x: currentX + actualWidth / 2,
-        y: groundY,
+        y: Math.min(groundY, sceneHeight - TILE_HEIGHT / 2),
         width: actualWidth,
         height: segmentDepth,
       });

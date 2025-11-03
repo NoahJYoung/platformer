@@ -14,6 +14,18 @@ export const BackgroundResources = {
       layer5Night: new ex.ImageSource(
         "/assets/backgrounds/forest/fall/layer5-night.png"
       ),
+      decoration1: new ex.ImageSource(
+        "/assets/backgrounds/forest/fall/decorations1.png"
+      ),
+      decoration2: new ex.ImageSource(
+        "/assets/backgrounds/forest/fall/decorations2.png"
+      ),
+      decoration3: new ex.ImageSource(
+        "/assets/backgrounds/forest/fall/decorations3.png"
+      ),
+      decoration4: new ex.ImageSource(
+        "/assets/backgrounds/forest/fall/decorations4.png"
+      ),
     },
     winter: {
       layer1: new ex.ImageSource(
@@ -29,14 +41,26 @@ export const BackgroundResources = {
         "/assets/backgrounds/forest/winter/layer4.png"
       ),
       layer4Night: new ex.ImageSource(
-        "/assets/backgrounds/forest/fall/layer4-night.png"
+        "/assets/backgrounds/forest/winter/layer4-night.png"
       ),
 
       layer5: new ex.ImageSource(
         "/assets/backgrounds/forest/winter/layer5.png"
       ),
       layer5Night: new ex.ImageSource(
-        "/assets/backgrounds/forest/fall/layer5-night.png"
+        "/assets/backgrounds/forest/winter/layer5-night.png"
+      ),
+      decoration1: new ex.ImageSource(
+        "/assets/backgrounds/forest/winter/decorations1.png"
+      ),
+      decoration2: new ex.ImageSource(
+        "/assets/backgrounds/forest/winter/decorations2.png"
+      ),
+      decoration3: new ex.ImageSource(
+        "/assets/backgrounds/forest/winter/decorations3.png"
+      ),
+      decoration4: new ex.ImageSource(
+        "/assets/backgrounds/forest/winter/decorations4.png"
       ),
     },
     normal: {
@@ -60,7 +84,19 @@ export const BackgroundResources = {
         "/assets/backgrounds/forest/normal/layer5.png"
       ),
       layer5Night: new ex.ImageSource(
-        "/assets/backgrounds/forest/fall/layer5-night.png"
+        "/assets/backgrounds/forest/normal/layer5-night.png"
+      ),
+      decoration1: new ex.ImageSource(
+        "/assets/backgrounds/forest/normal/decorations1.png"
+      ),
+      decoration2: new ex.ImageSource(
+        "/assets/backgrounds/forest/normal/decorations2.png"
+      ),
+      decoration3: new ex.ImageSource(
+        "/assets/backgrounds/forest/normal/decorations3.png"
+      ),
+      decoration4: new ex.ImageSource(
+        "/assets/backgrounds/forest/normal/decorations4.png"
       ),
     },
   },
