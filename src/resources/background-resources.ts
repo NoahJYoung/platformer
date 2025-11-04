@@ -123,6 +123,18 @@ export const BackgroundResources = {
       layer5Night: new ex.ImageSource(
         "/assets/backgrounds/mountain/fall/layer5-night.png"
       ),
+      decoration1: new ex.ImageSource(
+        "/assets/backgrounds/mountain/fall/decorations1.png"
+      ),
+      decoration2: new ex.ImageSource(
+        "/assets/backgrounds/mountain/fall/decorations2.png"
+      ),
+      decoration3: new ex.ImageSource(
+        "/assets/backgrounds/mountain/fall/decorations3.png"
+      ),
+      decoration4: new ex.ImageSource(
+        "/assets/backgrounds/mountain/fall/decorations4.png"
+      ),
     },
     winter: {
       layer1: new ex.ImageSource(
@@ -138,14 +150,26 @@ export const BackgroundResources = {
         "/assets/backgrounds/mountain/winter/layer4.png"
       ),
       layer4Night: new ex.ImageSource(
-        "/assets/backgrounds/mountain/fall/layer4-night.png"
+        "/assets/backgrounds/mountain/winter/layer4-night.png"
       ),
 
       layer5: new ex.ImageSource(
         "/assets/backgrounds/mountain/winter/layer5.png"
       ),
       layer5Night: new ex.ImageSource(
-        "/assets/backgrounds/mountain/fall/layer5-night.png"
+        "/assets/backgrounds/mountain/winter/layer5-night.png"
+      ),
+      decoration1: new ex.ImageSource(
+        "/assets/backgrounds/mountain/winter/decorations1.png"
+      ),
+      decoration2: new ex.ImageSource(
+        "/assets/backgrounds/mountain/winter/decorations2.png"
+      ),
+      decoration3: new ex.ImageSource(
+        "/assets/backgrounds/mountain/winter/decorations3.png"
+      ),
+      decoration4: new ex.ImageSource(
+        "/assets/backgrounds/mountain/winter/decorations4.png"
       ),
     },
     normal: {
@@ -169,7 +193,19 @@ export const BackgroundResources = {
         "/assets/backgrounds/mountain/normal/layer5.png"
       ),
       layer5Night: new ex.ImageSource(
-        "/assets/backgrounds/mountain/fall/layer5-night.png"
+        "/assets/backgrounds/mountain/normal/layer5-night.png"
+      ),
+      decoration1: new ex.ImageSource(
+        "/assets/backgrounds/mountain/normal/decorations1.png"
+      ),
+      decoration2: new ex.ImageSource(
+        "/assets/backgrounds/mountain/normal/decorations2.png"
+      ),
+      decoration3: new ex.ImageSource(
+        "/assets/backgrounds/mountain/normal/decorations3.png"
+      ),
+      decoration4: new ex.ImageSource(
+        "/assets/backgrounds/mountain/normal/decorations4.png"
       ),
     },
   },

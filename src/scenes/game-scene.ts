@@ -13,7 +13,6 @@ import { Tree } from "../actors/resources/tree/tree";
 import { Ore } from "../actors/resources/ore/ore";
 import { DecorationManager } from "../sprite-sheets/scenery/decorations/decorations-manager";
 import { DecorationResources } from "../resources/decoration-resources";
-import { createForestDecorationLayer } from "./create-forest-decoration-layer";
 import { BuildingManager } from "../building-manager/building-manager";
 import { BuildingInput } from "../building-manager/building-input";
 import { BuildingResources } from "../resources/building-resources";
@@ -25,7 +24,6 @@ export class GameMapScene extends ex.Scene {
   public levelWidth: number;
   public levelHeight: number;
   private groundTileManager = new GroundTileManager(FloorResources.floor1);
-  private decorationManager: DecorationManager | null = null;
   private spawnIntervalTime = 20000;
 
   private AUTO_SPAWN_ENEMIES = false;
@@ -315,11 +313,30 @@ export class GameMapScene extends ex.Scene {
       this.add(ground);
     });
 
-    this.createBackground(engine);
+    this.createBackground(
+      engine,
+      this.levelHeight - this.getAverageGroundHeight(groundActors)
+    );
     engine.timeCycle.starField?.createStars(this);
   }
 
-  protected async createBackground(engine: GameEngine): Promise<void> {
+  private getAverageGroundHeight(groundActors: ex.Actor[]): number {
+    if (groundActors.length === 0) {
+      return this.levelHeight;
+    }
+
+    const totalY = groundActors.reduce((sum, actor) => {
+      // Get the top edge of the ground actor (pos.y - height/2)
+      return sum + (actor.pos.y - actor.height / 2);
+    }, 0);
+
+    return totalY / groundActors.length;
+  }
+
+  protected async createBackground(
+    engine: GameEngine,
+    averageGroundHeight: number
+  ): Promise<void> {
     const season = engine.timeCycle.getCurrentSeason();
     const biome = this.config.type;
     const theme =
@@ -373,66 +390,39 @@ export class GameMapScene extends ex.Scene {
       },
       {
         resource: backgrounds.layer1,
-        parallax: ex.vec(0.7, 0.7),
+        parallax: ex.vec(0.65, 0.65),
         z: -94,
       },
       {
         resource: backgrounds.decoration4,
-        parallax: ex.vec(0.75, 0.75),
+        parallax: ex.vec(0.7, 0.7),
         z: -93,
+        isDecoration: true,
       },
       {
         resource: backgrounds.decoration3,
-        parallax: ex.vec(0.8, 0.8),
+        parallax: ex.vec(0.75, 0.75),
         z: -92,
+        isDecoration: true,
       },
       {
         resource: backgrounds.decoration2,
-        parallax: ex.vec(0.85, 0.85),
+        parallax: ex.vec(0.8, 0.8),
         z: -91,
+        isDecoration: true,
       },
       {
         resource: backgrounds.decoration1,
-        parallax: ex.vec(0.9, 0.9),
+        parallax: ex.vec(0.85, 0.85),
         z: -90,
+        isDecoration: true,
       },
     ];
 
     for (const layer of layers) {
       const resolvedLayer = await Promise.resolve(layer);
 
-      if ("isDecoration" in resolvedLayer && resolvedLayer.isDecoration) {
-        if (!resolvedLayer.canvas) {
-          continue;
-        }
-        const parallaxFactor = resolvedLayer.parallax.y;
-        const decorationWidth = resolvedLayer.canvas.width;
-        const decorationHeight = resolvedLayer.canvas.height;
-
-        const decorationTilesNeeded =
-          Math.ceil(this.levelWidth / decorationWidth) + 2;
-
-        for (let i = -1; i < decorationTilesNeeded; i++) {
-          const y =
-            ((this.levelHeight || 0) - decorationHeight / 2) * parallaxFactor;
-          const x =
-            ((i * decorationWidth + decorationWidth) * parallaxFactor) / 2;
-
-          const decorationLayer = new ex.Actor({
-            name: `decoration_layer_${i}`,
-            pos: ex.vec(x, y),
-            anchor: ex.vec(0.5, 0.5),
-            z: resolvedLayer.z,
-          });
-
-          decorationLayer.graphics.use(resolvedLayer.canvas);
-          decorationLayer.addComponent(
-            new ex.ParallaxComponent(resolvedLayer.parallax)
-          );
-
-          this.add(decorationLayer);
-        }
-      } else if (resolvedLayer.isSky) {
+      if (resolvedLayer.isSky) {
         if (!resolvedLayer.resource) {
           continue;
         }
@@ -478,7 +468,9 @@ export class GameMapScene extends ex.Scene {
           const parallaxFactor = resolvedLayer.parallax.y;
 
           const y =
-            ((this.levelHeight || 0) - sprite.height / 2) * parallaxFactor;
+            ((this.levelHeight || 0) - sprite.height / 2) * parallaxFactor -
+            (resolvedLayer.isDecoration ? averageGroundHeight / 2 : 0);
+          // (resolvedLayer.isDecoration ? 0 : 10 * parallaxFactor);
           const x = i * bgWidth + bgWidth / 2;
 
           const background = new ex.Actor({
@@ -654,10 +646,14 @@ export class GameMapScene extends ex.Scene {
   }
 
   protected async createLevel(engine: GameEngine): Promise<void> {
-    await this.createBackground(engine);
+    const groundActors = this.createGroundSegments(engine);
+
+    await this.createBackground(
+      engine,
+      this.levelHeight - this.getAverageGroundHeight(groundActors)
+    );
     this.createPlatforms();
 
-    const groundActors = this.createGroundSegments(engine);
     groundActors.forEach((ground) => {
       this.add(ground);
     });
