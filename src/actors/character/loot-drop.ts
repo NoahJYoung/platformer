@@ -1,5 +1,5 @@
 import * as ex from "excalibur";
-import { CollisionGroups, SCALE } from "../config";
+import { CollisionGroups } from "../config";
 import type { Inventory } from "./inventory";
 import type { EquipmentManager } from "./equipment-manager";
 import type { EquipmentItem } from "./types";
@@ -11,7 +11,7 @@ export class LootDrop extends ex.Actor {
   public equipment: Map<string, EquipmentItem | null> | null;
   private interactionIndicator?: ex.Actor;
   private isPlayerNearby: boolean = false;
-  private deathTimer: ex.Timer;
+  private deathTimer!: ex.Timer;
 
   constructor(
     pos: ex.Vector,

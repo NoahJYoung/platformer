@@ -369,51 +369,51 @@ export class GameMapScene extends ex.Scene {
       },
       {
         resource: backgrounds.layer4,
-        parallax: ex.vec(0.1, 0.1),
+        parallax: ex.vec(0.1, 1),
         z: -98,
       },
       {
         resource: backgrounds.layer4Night,
-        parallax: ex.vec(0.1, 0.1),
+        parallax: ex.vec(0.1, 1),
         isNight: true,
         z: -97.5,
       },
       {
         resource: backgrounds.layer3,
-        parallax: ex.vec(0.175, 0.175),
+        parallax: ex.vec(0.175, 1),
         z: -96,
       },
       {
         resource: backgrounds.layer2,
-        parallax: ex.vec(0.35, 0.35),
+        parallax: ex.vec(0.35, 1),
         z: -95,
       },
       {
         resource: backgrounds.layer1,
-        parallax: ex.vec(0.65, 0.65),
+        parallax: ex.vec(0.65, 1),
         z: -94,
       },
       {
         resource: backgrounds.decoration4,
-        parallax: ex.vec(0.7, 0.7),
+        parallax: ex.vec(0.7, 1),
         z: -93,
         isDecoration: true,
       },
       {
         resource: backgrounds.decoration3,
-        parallax: ex.vec(0.75, 0.75),
+        parallax: ex.vec(0.75, 1),
         z: -92,
         isDecoration: true,
       },
       {
         resource: backgrounds.decoration2,
-        parallax: ex.vec(0.8, 0.8),
+        parallax: ex.vec(0.8, 1),
         z: -91,
         isDecoration: true,
       },
       {
         resource: backgrounds.decoration1,
-        parallax: ex.vec(0.85, 0.85),
+        parallax: ex.vec(0.85, 1),
         z: -90,
         isDecoration: true,
       },
@@ -465,21 +465,23 @@ export class GameMapScene extends ex.Scene {
             continue;
           }
 
-          const parallaxFactor = resolvedLayer.parallax.y;
-
-          const y =
-            ((this.levelHeight || 0) - sprite.height / 2) * parallaxFactor -
-            (resolvedLayer.isDecoration ? averageGroundHeight / 2 : 0);
-          // (resolvedLayer.isDecoration ? 0 : 10 * parallaxFactor);
           const x = i * bgWidth + bgWidth / 2;
+
+          // Position at a fixed Y - no parallax factor applied to Y
+          const y =
+            this.levelHeight -
+            bgHeight / 2 -
+            (resolvedLayer.isDecoration ? averageGroundHeight / 2 : 0) +
+            32;
 
           const background = new ex.Actor({
             pos: ex.vec(x, y),
-            anchor: ex.vec(0.5, 0.5),
+            anchor: ex.vec(0.5, 0.65),
             z: resolvedLayer.z,
           });
 
           background.graphics.use(sprite);
+          // Use parallax only for X axis (1 for Y means no parallax on Y)
           background.addComponent(
             new ex.ParallaxComponent(resolvedLayer.parallax)
           );

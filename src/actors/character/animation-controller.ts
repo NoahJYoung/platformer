@@ -5,7 +5,6 @@ import {
   SPRITE_HEIGHT,
   LEFT_MARGIN,
   FRAME_SPACING,
-  scale,
   SPRITE_WIDTH,
   SPRITE_BUFFER,
 } from "../config";
@@ -199,9 +198,6 @@ export class AnimationController {
           );
         }
 
-        skinSprite.scale = scale;
-        if (hairSprite) hairSprite.scale = scale;
-
         const xOffset = 24;
         const yOffset = -8 + SPRITE_BUFFER / 2;
 
@@ -210,7 +206,6 @@ export class AnimationController {
         if (offhandSheet) {
           const backSprite = offhandSheet.getSprite(frameIndex, row);
           if (backSprite) {
-            backSprite.scale = scale;
             members.push({
               graphic: backSprite,
               offset: ex.vec(xOffset, yOffset),
@@ -221,7 +216,6 @@ export class AnimationController {
         if (backSheet) {
           const backSprite = backSheet.getSprite(frameIndex, row);
           if (backSprite) {
-            backSprite.scale = scale;
             members.push({
               graphic: backSprite,
               offset: ex.vec(xOffset, yOffset),
@@ -234,7 +228,6 @@ export class AnimationController {
         if (legsSheet) {
           const legsSprite = legsSheet.getSprite(frameIndex, row);
           if (legsSprite) {
-            legsSprite.scale = scale;
             members.push({
               graphic: legsSprite,
               offset: ex.vec(xOffset, yOffset),
@@ -245,7 +238,6 @@ export class AnimationController {
         if (bodySheet) {
           const bodySprite = bodySheet.getSprite(frameIndex, row);
           if (bodySprite) {
-            bodySprite.scale = scale;
             members.push({
               graphic: bodySprite,
               offset: ex.vec(xOffset, yOffset),
@@ -256,7 +248,6 @@ export class AnimationController {
         if (feetSheet) {
           const feetSprite = feetSheet.getSprite(frameIndex, row);
           if (feetSprite) {
-            feetSprite.scale = scale;
             members.push({
               graphic: feetSprite,
               offset: ex.vec(xOffset, yOffset),
@@ -267,7 +258,6 @@ export class AnimationController {
         if (glovesSheet) {
           const glovesSprite = glovesSheet.getSprite(frameIndex, row);
           if (glovesSprite) {
-            glovesSprite.scale = scale;
             members.push({
               graphic: glovesSprite,
               offset: ex.vec(xOffset, yOffset),
@@ -285,7 +275,6 @@ export class AnimationController {
         if (headSheet) {
           const headSprite = headSheet.getSprite(frameIndex, row);
           if (headSprite) {
-            headSprite.scale = scale;
             members.push({
               graphic: headSprite,
               offset: ex.vec(xOffset, yOffset),
@@ -296,7 +285,6 @@ export class AnimationController {
         if (maskSheet) {
           const maskSprite = maskSheet.getSprite(frameIndex, row);
           if (maskSprite) {
-            maskSprite.scale = scale;
             members.push({
               graphic: maskSprite,
               offset: ex.vec(xOffset, yOffset),
@@ -587,7 +575,6 @@ export class AnimationController {
       const frames = ex.range(0, frameCount - 1).map((frameIndex) => {
         const sprite = weaponSheet.getSprite(frameIndex, row);
         if (sprite) {
-          sprite.scale = scale;
           const group = new ex.GraphicsGroup({
             members: [{ graphic: sprite, offset: ex.vec(0, yOffset) }],
           });

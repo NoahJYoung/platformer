@@ -1,5 +1,5 @@
 import * as ex from "excalibur";
-import { CollisionGroups, SCALE } from "../config";
+import { CollisionGroups } from "../config";
 import type { Character } from "./character";
 import type { AnimationController } from "./animation-controller";
 import type { WeaponItem } from "./types";

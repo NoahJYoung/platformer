@@ -1,14 +1,15 @@
 import * as ex from "excalibur";
 
-export const SCALE = 1;
 export const SPRITE_BUFFER = 4;
 export const SPRITE_HEIGHT = 64;
 export const SPRITE_WIDTH = 24;
 
-export const scale = ex.vec(SCALE, SCALE);
 export const STANDARD_SPRITE_WIDTH = 72;
 export const FRAME_SPACING = 8;
 export const LEFT_MARGIN = 4;
+
+export const GAME_WIDTH = Math.min(window.innerWidth, 900);
+export const GAME_HEIGHT = Math.min(window.innerHeight, 600);
 
 export const CollisionGroups = {
   Player: ex.CollisionGroupManager.create("player"),

@@ -1,5 +1,4 @@
 import * as ex from "excalibur";
-import { SCALE } from "../config";
 import type { Character } from "./character";
 import type { MaterialSource } from "../resources/material-source";
 
@@ -59,16 +58,11 @@ export class HealthBar extends ex.Actor {
         ctx.fillRect(0, 0, this.barWidth + 2, this.barHeight + 2);
 
         ctx.fillStyle = "#333333";
-        ctx.fillRect(SCALE, SCALE, this.barWidth, this.barHeight);
+        ctx.fillRect(1, 1, this.barWidth, this.barHeight);
 
         const healthColor = this.getHealthColor(healthPercent);
         ctx.fillStyle = healthColor;
-        ctx.fillRect(
-          SCALE,
-          SCALE,
-          this.barWidth * healthPercent,
-          this.barHeight
-        );
+        ctx.fillRect(1, 1, this.barWidth * healthPercent, this.barHeight);
       },
     });
 

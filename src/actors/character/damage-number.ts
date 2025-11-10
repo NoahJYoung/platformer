@@ -1,5 +1,4 @@
 import * as ex from "excalibur";
-import { SCALE } from "../config";
 
 export class DamageNumber extends ex.Actor {
   private lifetime: number = 1000;

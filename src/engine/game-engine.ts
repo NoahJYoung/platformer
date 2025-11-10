@@ -3,7 +3,10 @@ import { Resources } from "../resources";
 import { Player } from "../actors/player/player";
 import { HUD } from "../hud/hud";
 import { TimeCycle } from "../environment/time-cycle";
-import type { AppearanceOptions } from "../actors/character/types";
+import type {
+  AppearanceOptions,
+  AttributesConfig,
+} from "../actors/character/types";
 import { GameMapScene } from "../scenes/game-scene";
 import { createItem } from "../items/item-creator";
 import { ProceduralWorldGenerator } from "../worlds-generator/world-generator";
@@ -15,6 +18,9 @@ import {
 import { registerSounds } from "../audio/sound-manager/register-sounds";
 import { GameSoundManager } from "../audio/sound-manager/sound-manager";
 import { MessageManager, type MessageType } from "./message-manager";
+import { CharacterCreationScene } from "../scenes/character-creation-scene/character-creation-scene";
+import { MainMenuScene } from "../scenes/main-menu-scene/main-menu-scene";
+import { GAME_HEIGHT, GAME_WIDTH } from "../actors/config";
 
 export class GameEngine extends ex.Engine {
   public player!: Player;
@@ -24,15 +30,18 @@ export class GameEngine extends ex.Engine {
   public timeCycle: TimeCycle;
   public messageManager: MessageManager = new MessageManager();
   private isPaused = false;
+  public onCharacterCreated?: (
+    appearance: AppearanceOptions,
+    attributes: AttributesConfig
+  ) => void;
 
   constructor() {
-    const dimensions = GameEngine.calculateGameDimensions();
-
     super({
-      width: dimensions.width,
-      height: dimensions.height,
-      displayMode: ex.DisplayMode.FitContainer,
+      width: GAME_WIDTH,
+      height: GAME_HEIGHT,
+      displayMode: ex.DisplayMode.FitContainerAndFill,
       canvasElementId: "game-canvas",
+      suppressPlayButton: true,
       physics: {
         gravity: ex.vec(0, 800),
       },
@@ -40,41 +49,28 @@ export class GameEngine extends ex.Engine {
 
     this.soundManager = new GameSoundManager();
     this.timeCycle = new TimeCycle(this, this.soundManager);
+
+    // this.setupResizeHandler();
   }
 
-  private static calculateGameDimensions(): { width: number; height: number } {
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
+  // private setupResizeHandler(): void {
+  //   let resizeTimeout: number;
 
-    const targetAspectRatio = 2;
+  //   window.addEventListener("resize", () => {
+  //     clearTimeout(resizeTimeout);
+  //     resizeTimeout = window.setTimeout(() => {
+  //       const dimensions = GameEngine.calculateGameDimensions();
+  //       this.screen.resolution = {
+  //         width: dimensions.width,
+  //         height: dimensions.height,
+  //       };
 
-    const baseHeight = 300;
-
-    const isMobile = viewportWidth < 768;
-
-    let width: number;
-    let height: number;
-
-    if (isMobile) {
-      height = Math.min(viewportHeight * 0.7, 450);
-      width = height * targetAspectRatio;
-
-      if (width > viewportWidth * 0.95) {
-        width = viewportWidth * 0.95;
-        height = width / targetAspectRatio;
-      }
-    } else {
-      const heightMultiplier = 1.5;
-
-      height = baseHeight * heightMultiplier;
-      width = height * targetAspectRatio;
-    }
-
-    return {
-      width: Math.round(width),
-      height: Math.round(height),
-    };
-  }
+  //       if (this.hud) {
+  //         this.hud.onResize?.(dimensions);
+  //       }
+  //     }, 250);
+  //   });
+  // }
 
   async initialize() {
     const loader = new ex.Loader({});
@@ -92,23 +88,26 @@ export class GameEngine extends ex.Engine {
     registerSounds(this.soundManager, loadedSounds);
 
     this.timeCycle.initialize();
-    this.timeCycle.setBiome("forest");
 
-    const playerAppearance: AppearanceOptions = {
-      sex: "male",
-      skinTone: 1,
-      hairStyle: 10,
-      displayName: "Player",
+    const mainMenuScene = new MainMenuScene();
+    this.addScene("mainMenu", mainMenuScene);
+
+    const charCreationScene = new CharacterCreationScene();
+    this.addScene("characterCreation", charCreationScene);
+
+    this.onCharacterCreated = (appearance, attributes) => {
+      this.setupGameWorld(appearance, attributes);
     };
 
-    const testSkillLevel = 100;
+    this.goToScene("mainMenu");
+  }
 
-    this.player = new Player(ex.vec(100, 100), playerAppearance, {
-      strength: testSkillLevel,
-      intelligence: testSkillLevel,
-      agility: testSkillLevel,
-      vitality: testSkillLevel,
-    });
+  private setupGameWorld(
+    playerAppearance: AppearanceOptions,
+    attributes: AttributesConfig
+  ) {
+    this.player = new Player(ex.vec(100, 100), playerAppearance, attributes);
+
     this.setupNewPlayer();
 
     const generator = new ProceduralWorldGenerator({
@@ -129,7 +128,7 @@ export class GameEngine extends ex.Engine {
 
     this.hud = new HUD(this);
     this.goToScene(scenes[0].name);
-    this.showMessage("Game engine started", "success");
+    this.showMessage(`Welcome, ${playerAppearance.displayName}!`, "success");
   }
 
   public forceSingleUpdate() {

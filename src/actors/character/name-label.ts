@@ -1,5 +1,4 @@
 import * as ex from "excalibur";
-import { SCALE } from "../config";
 import type { Character } from "./character";
 import type { GameEngine } from "../../engine/game-engine";
 
@@ -54,7 +53,6 @@ export class NameLabel extends ex.Actor {
         size: 8,
         family: "Arial",
         bold: false,
-        textAlign: ex.TextAlign.Center,
         color: isThreeOrMoreLevelsHigher ? ex.Color.Red : ex.Color.White,
         shadow: {
           offset: ex.vec(1, 1),

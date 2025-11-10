@@ -11,6 +11,7 @@ import "./globals.css";
 import type { BuildingManager } from "./building-manager/building-manager";
 import { BuildingUI } from "./react-components/builder-ui/builder-ui";
 import type { GameMapScene } from "./scenes/game-scene";
+import { GAME_HEIGHT, GAME_WIDTH } from "./actors/config";
 
 export const Game = () => {
   const gameRef = useRef(null);
@@ -142,8 +143,8 @@ export const Game = () => {
         style={{
           maxWidth: "100%",
           maxHeight: "100%",
-          width: 1440,
-          height: 900,
+          width: GAME_WIDTH,
+          height: GAME_HEIGHT,
           overflow: "hidden",
           display: "flex",
           justifyContent: "center",
@@ -153,7 +154,12 @@ export const Game = () => {
       >
         <MessageLog gameEngine={engine} />
 
-        <canvas id="game-canvas" ref={gameRef} />
+        <canvas
+          height={GAME_HEIGHT}
+          width={GAME_WIDTH}
+          id="game-canvas"
+          ref={gameRef}
+        />
 
         {/* Building Mode Button - Fixed position */}
         {buildingManager && (

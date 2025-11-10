@@ -16,7 +16,7 @@ export class GroundTileManager {
   private imageSource: ex.ImageSource;
   private tileWidth: number = 32;
   private tileHeight: number = 32;
-  private tileOverlap: number = 5; // Pixels to overlap tiles to prevent gaps
+  private tileOverlap: number = 5;
 
   private themes: Record<string, GroundThemeConfig> = {
     normal: {
@@ -103,7 +103,7 @@ export class GroundTileManager {
     width: number,
     height: number,
     theme: "normal" | "fall" | "winter",
-    extendEdges: boolean = true // Kept for compatibility but not used
+    extendEdges: boolean = true
   ): ex.GraphicsGroup {
     const themeConfig = this.themes[theme];
     if (!themeConfig) {
@@ -218,7 +218,6 @@ export class GroundTileManager {
         const sourceX = tileCol * this.tileWidth;
         const sourceY = tileRow * this.tileHeight;
 
-        // Add overlap for tiles after the first row/column
         const destX = col * this.tileWidth - (col > 0 ? this.tileOverlap : 0);
         const destY = row * this.tileHeight - (row > 0 ? this.tileOverlap : 0);
         const drawWidth = this.tileWidth + (col > 0 ? this.tileOverlap : 0);

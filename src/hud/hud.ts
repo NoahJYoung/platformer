@@ -437,6 +437,16 @@ export class HUD extends ex.ScreenElement {
     this.drawSegmentedBar(ctx, thirst, 100, "#4A90E2");
   }
 
+  public onResize(dimensions: { width: number; height: number }): void {
+    const isMobile = dimensions.width < 768;
+
+    if (isMobile) {
+      this.pos = ex.vec(10, 10);
+    } else {
+      this.pos = ex.vec(20, 20);
+    }
+  }
+
   onPreUpdate() {
     const player = this.engine.player;
 
