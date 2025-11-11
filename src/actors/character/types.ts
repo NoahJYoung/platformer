@@ -130,6 +130,7 @@ export interface MovementBoundaries {
 }
 
 export interface InventoryItem {
+  key: string;
   id: string;
   iconUrl: string;
   name: string;

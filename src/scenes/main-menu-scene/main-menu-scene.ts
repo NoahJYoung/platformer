@@ -1,6 +1,7 @@
 import * as ex from "excalibur";
 import type { GameEngine } from "../../engine/game-engine";
 import { UIButton } from "../character-creation-scene/ui-button";
+import { SaveManager } from "../../engine/save-manager";
 
 export class MainMenuScene extends ex.Scene {
   onInitialize(engine: GameEngine): void {
@@ -86,10 +87,18 @@ export class MainMenuScene extends ex.Scene {
       pos: ex.vec(centerX, centerY + 80),
       width: 200,
       height: 50,
-      normalColor: ex.Color.fromHex("#333333"),
-      hoverColor: ex.Color.fromHex("#444444"),
+      normalColor: SaveManager.hasSave(0)
+        ? ex.Color.fromHex("#2ecc71")
+        : ex.Color.fromHex("#333333"),
+      hoverColor: SaveManager.hasSave(0)
+        ? ex.Color.fromHex("#27ae60")
+        : ex.Color.fromHex("#444444"),
       onClick: () => {
-        engine.showMessage("Save/Load system coming soon!", "info");
+        if (SaveManager.hasSave(0)) {
+          SaveManager.loadGame(engine, 0);
+        } else {
+          engine.showMessage("No save file found!", "info");
+        }
       },
     });
     this.add(loadGameButton);

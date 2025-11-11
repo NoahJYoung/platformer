@@ -14,6 +14,7 @@ export const createItem = (
 
   if (itemData.spriteSheets) {
     return {
+      key,
       id: itemData?.stackSize ? key : uuid(),
       spriteSheet: itemData?.spriteSheets[sex],
       ...itemData,
@@ -21,6 +22,7 @@ export const createItem = (
   }
 
   return {
+    key,
     id: itemData?.stackSize ? key : uuid(),
     ...itemData,
   } as InventoryItem;

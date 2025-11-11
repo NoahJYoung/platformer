@@ -3,7 +3,7 @@ import { Player } from "../actors/player/player";
 import { GameEngine } from "../engine/game-engine";
 import type { WeaponItem } from "../actors/character/types";
 import type { BackgroundLayer, SceneConfig } from "./types";
-import { CollisionGroups } from "../actors/config";
+import { CollisionGroups, GAME_HEIGHT } from "../actors/config";
 import { Enemy } from "../actors/enemy/enemy";
 import type { EnemyConfig } from "../actors/enemy/types";
 import { GroundTileManager } from "./ground-tile-manager";
@@ -16,6 +16,7 @@ import { DecorationResources } from "../resources/decoration-resources";
 import { BuildingManager } from "../building-manager/building-manager";
 import { BuildingInput } from "../building-manager/building-input";
 import { BuildingResources } from "../resources/building-resources";
+import { SaveManager } from "../engine/save-manager";
 
 export class GameMapScene extends ex.Scene {
   public name: string = "unknown";
@@ -123,6 +124,8 @@ export class GameMapScene extends ex.Scene {
     }, 100);
 
     engine.forceSingleUpdate();
+
+    SaveManager.autoSave(engine);
   }
 
   onDeactivate(): void {
@@ -369,51 +372,51 @@ export class GameMapScene extends ex.Scene {
       },
       {
         resource: backgrounds.layer4,
-        parallax: ex.vec(0.1, 1),
+        parallax: ex.vec(0.1, 0.1),
         z: -98,
       },
       {
         resource: backgrounds.layer4Night,
-        parallax: ex.vec(0.1, 1),
+        parallax: ex.vec(0.1, 0.1),
         isNight: true,
         z: -97.5,
       },
       {
         resource: backgrounds.layer3,
-        parallax: ex.vec(0.175, 1),
+        parallax: ex.vec(0.175, 0.175),
         z: -96,
       },
       {
         resource: backgrounds.layer2,
-        parallax: ex.vec(0.35, 1),
+        parallax: ex.vec(0.35, 0.35),
         z: -95,
       },
       {
         resource: backgrounds.layer1,
-        parallax: ex.vec(0.65, 1),
+        parallax: ex.vec(0.65, 0.65),
         z: -94,
       },
       {
         resource: backgrounds.decoration4,
-        parallax: ex.vec(0.7, 1),
+        parallax: ex.vec(0.7, 0.7),
         z: -93,
         isDecoration: true,
       },
       {
         resource: backgrounds.decoration3,
-        parallax: ex.vec(0.75, 1),
+        parallax: ex.vec(0.75, 0.75),
         z: -92,
         isDecoration: true,
       },
       {
         resource: backgrounds.decoration2,
-        parallax: ex.vec(0.8, 1),
+        parallax: ex.vec(0.8, 0.8),
         z: -91,
         isDecoration: true,
       },
       {
         resource: backgrounds.decoration1,
-        parallax: ex.vec(0.85, 1),
+        parallax: ex.vec(0.85, 0.85),
         z: -90,
         isDecoration: true,
       },
@@ -460,6 +463,7 @@ export class GameMapScene extends ex.Scene {
         }
       } else {
         for (let i = -1; i < tilesNeeded; i++) {
+          const parallaxFactor = resolvedLayer.parallax.y;
           const sprite = resolvedLayer.resource?.toSprite();
           if (!sprite) {
             continue;
@@ -467,21 +471,18 @@ export class GameMapScene extends ex.Scene {
 
           const x = i * bgWidth + bgWidth / 2;
 
-          // Position at a fixed Y - no parallax factor applied to Y
+          // DO NOT CHANGE. This is a weird workaround I found for offsetting the parallax positioning
           const y =
-            this.levelHeight -
-            bgHeight / 2 -
-            (resolvedLayer.isDecoration ? averageGroundHeight / 2 : 0) +
-            32;
+            (this.levelHeight - bgHeight / 2) * parallaxFactor +
+            (GAME_HEIGHT / 5) * (1 - parallaxFactor);
 
           const background = new ex.Actor({
             pos: ex.vec(x, y),
-            anchor: ex.vec(0.5, 0.65),
+            anchor: ex.vec(0.5, 0.5),
             z: resolvedLayer.z,
           });
 
           background.graphics.use(sprite);
-          // Use parallax only for X axis (1 for Y means no parallax on Y)
           background.addComponent(
             new ex.ParallaxComponent(resolvedLayer.parallax)
           );
@@ -662,25 +663,5 @@ export class GameMapScene extends ex.Scene {
 
     this.createTrees();
     this.createOres();
-
-    const exitLabel = new ex.Label({
-      text: "Forest →",
-      pos: ex.vec(2350, this.levelHeight - 100),
-      font: new ex.Font({
-        size: 20,
-        color: ex.Color.Black,
-      }),
-    });
-    this.add(exitLabel);
-  }
-
-  private hashString(str: string): number {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      const char = str.charCodeAt(i);
-      hash = (hash << 5) - hash + char;
-      hash = hash & hash;
-    }
-    return Math.abs(hash);
   }
 }

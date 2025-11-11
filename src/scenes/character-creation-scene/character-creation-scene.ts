@@ -1,6 +1,9 @@
 import * as ex from "excalibur";
 import type { GameEngine } from "../../engine/game-engine";
-import type { AppearanceOptions } from "../../actors/character/types";
+import type {
+  AppearanceOptions,
+  AttributesConfig,
+} from "../../actors/character/types";
 import { AppearanceSelector } from "./appearance-selector";
 import { NameInput } from "./name-input";
 import { StatDistributor } from "./stat-distributor";
@@ -135,8 +138,15 @@ export class CharacterCreationScene extends ex.Scene {
     };
     const attributes = this.statDistributor.getAttributes();
 
+    const maxLevelAttributes: AttributesConfig = {
+      vitality: 100,
+      strength: 100,
+      agility: 100,
+      intelligence: 100,
+    };
+
     if (engine.onCharacterCreated) {
-      engine.onCharacterCreated(appearance, attributes);
+      engine.onCharacterCreated(appearance, maxLevelAttributes);
     }
   }
 }
