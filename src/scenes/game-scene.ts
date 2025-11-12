@@ -582,10 +582,11 @@ export class GameMapScene extends ex.Scene {
     const platform = new ex.Actor({
       name: "platform",
       pos: ex.vec(x, y),
+      anchor: ex.vec(0, 1),
       width: width,
       height: height,
       collisionType: ex.CollisionType.Fixed,
-      collisionGroup: CollisionGroups.Environment,
+      collisionGroup: CollisionGroups.Platform,
     });
 
     if (this.groundTileManager && this.engine) {

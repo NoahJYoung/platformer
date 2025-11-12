@@ -21,4 +21,5 @@ export const CollisionGroups = {
   Resource: ex.CollisionGroupManager.create("resource"),
   Trigger: ex.CollisionGroupManager.create("trigger"),
   Roof: ex.CollisionGroupManager.create("roof"),
+  Platform: ex.CollisionGroupManager.create("platform"),
 };

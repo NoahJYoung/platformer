@@ -17,7 +17,7 @@ export const knifeItems = new Map<string, ItemFactoryData>([
         female: new ImageSource(""),
       },
       damage: 8,
-      reach: 15,
+      reach: 8,
     } satisfies ItemFactoryData,
   ],
 ]);

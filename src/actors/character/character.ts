@@ -219,7 +219,11 @@ export abstract class Character extends ex.Actor {
     this.on("precollision", (evt) => this.handleRoofCollision(evt));
     this.on("postcollision", (evt) => {
       const otherActor = evt.other.owner as ex.Actor;
-      if (otherActor?.body.group === CollisionGroups.Roof) {
+      if (
+        [CollisionGroups.Roof, CollisionGroups.Platform].includes(
+          otherActor?.body.group
+        )
+      ) {
         this.isOnRoof = false;
       }
     });
@@ -230,36 +234,39 @@ export abstract class Character extends ex.Actor {
 
     if (!otherActor) return;
 
-    if (otherActor.body.group === CollisionGroups.Roof) {
+    if (
+      [CollisionGroups.Roof, CollisionGroups.Platform].includes(
+        otherActor?.body.group
+      )
+    ) {
+      const isPlatform = otherActor?.body.group === CollisionGroups.Platform;
       const roofWorldPos = otherActor.globalPos;
-      const roofTop = roofWorldPos.y;
+      const roofTop = roofWorldPos.y - (isPlatform ? otherActor.height : 0);
+      const playerBottom = this.pos.y + this.height / 2;
 
       if (this.vel.y < 0) {
         evt.contact.cancel();
         this.isOnRoof = false;
-        this.canJump = false;
         return;
       }
 
-      if (this.vel.y >= 0) {
-        const playerBottom = this.pos.y + this.height / 2;
-        const distance = playerBottom - roofTop;
+      const isComingFromAbove = playerBottom <= roofTop + 4;
 
-        if (distance <= 8) {
-          this.canJump = true;
-          this.numberOfJumps = 0;
+      if (!isComingFromAbove) {
+        evt.contact.cancel();
+        this.isOnRoof = false;
+        return;
+      }
 
-          if (!this.isOnRoof && this.vel.y > 50) {
-            const isPlayer = this.name === "player";
-            const landKey = AudioKeys.SFX.PLAYER.MOVEMENT.LAND;
-            this.engine?.soundManager.play(landKey, isPlayer ? 0.3 : 0.15);
-            this.isOnRoof = true;
-          }
-          return;
-        } else {
-          this.isOnRoof = false;
-          this.canJump = false;
-          evt.contact.cancel();
+      if (this.vel.y >= 0 && isComingFromAbove) {
+        this.canJump = true;
+        this.numberOfJumps = 0;
+
+        if (!this.isOnRoof && this.vel.y > 50) {
+          const isPlayer = this.name === "player";
+          const landKey = AudioKeys.SFX.PLAYER.MOVEMENT.LAND;
+          this.engine?.soundManager.play(landKey, isPlayer ? 0.3 : 0.15);
+          this.isOnRoof = true;
         }
       }
     }

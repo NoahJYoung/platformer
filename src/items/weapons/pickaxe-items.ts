@@ -17,7 +17,7 @@ export const pickaxeItems = new Map<string, ItemFactoryData>([
         female: WeaponResources.female.iron_pickaxe,
       },
       damage: 5,
-      reach: 25,
+      reach: 10,
     } satisfies ItemFactoryData,
   ],
 ]);

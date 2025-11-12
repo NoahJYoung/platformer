@@ -12,7 +12,17 @@ export const forest_1: SceneConfig = {
     default: ex.vec(200, 600),
   },
   exits: [],
-  platforms: [],
+  platforms: [
+    { x: 1024, y: 768, width: 1024, height: 32 },
+    { x: 1024 + 32 * 1, y: 768 - 32 * 1, width: 1024 - 64 * 1, height: 32 },
+    { x: 1024 + 32 * 2, y: 768 - 32 * 2, width: 1024 - 64 * 2, height: 32 },
+    { x: 1024 + 32 * 3, y: 768 - 32 * 3, width: 1024 - 64 * 3, height: 32 },
+    { x: 1024 + 32 * 4, y: 768 - 32 * 4, width: 1024 - 64 * 4, height: 32 },
+    { x: 1024 + 32 * 5, y: 768 - 32 * 5, width: 1024 - 64 * 5, height: 32 },
+    { x: 1024 + 32 * 6, y: 768 - 32 * 6, width: 1024 - 64 * 6, height: 32 },
+    { x: 1024 + 32 * 7, y: 768 - 32 * 7, width: 1024 - 64 * 7, height: 32 },
+    { x: 1024 + 32 * 8, y: 768 - 32 * 8, width: 1024 - 64 * 8, height: 32 },
+  ],
   enemies: [],
   waterSegments: [
     {
