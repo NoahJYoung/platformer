@@ -16,7 +16,7 @@ export const swordItems = new Map<string, ItemFactoryData>([
         female: WeaponResources.female.iron_sword,
       },
       damage: 15,
-      reach: 30,
+      reach: 12,
     } satisfies ItemFactoryData,
   ],
 ]);

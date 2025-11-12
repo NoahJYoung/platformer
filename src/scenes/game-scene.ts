@@ -118,9 +118,6 @@ export class GameMapScene extends ex.Scene {
     this.player.pos = spawnPos;
 
     if (this.config.buildingData && this.config.buildingData.tiles.length > 0) {
-      console.log(
-        `📦 Loading ${this.config.buildingData.tiles.length} building tiles for scene ${this.name}`
-      );
       this.loadBuildingData(this.config.buildingData);
     }
 
@@ -158,6 +155,7 @@ export class GameMapScene extends ex.Scene {
       worldY: number;
     }>;
   }): void {
+    console.log("LOADING: ", buildingData);
     if (!this.buildingManager) {
       console.error(
         "Cannot load building data: BuildingManager not initialized"

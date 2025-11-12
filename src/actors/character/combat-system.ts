@@ -104,6 +104,7 @@ export class CombatSystem {
 
     const attackHitbox = new ex.Actor({
       pos: ex.vec(0, 0),
+      anchor: ex.vec(0, 0.5),
       name: `weapon-hitbox-${weapon.subtype}`,
       width: weapon.reach || 30,
       height: 20,
@@ -152,11 +153,17 @@ export class CombatSystem {
         if (!damageDealt) {
           this.canDealDamage = true;
         }
-        const baseReach = weapon.reach || 30;
+        const baseReach = weapon.reach || 5;
         const extensionAmount = 10 * (currentFrame - 3);
         const extendedReach = baseReach + extensionAmount;
 
-        attackHitbox.collider.set(ex.Shape.Box(extendedReach, 20));
+        attackHitbox.collider.set(
+          ex.Shape.Box(
+            extendedReach,
+            20,
+            this.animController.facingRight ? ex.vec(0, 0.5) : ex.vec(1, 0.5)
+          )
+        );
 
         const offsetX = this.animController.facingRight
           ? extensionAmount / 2
@@ -222,10 +229,16 @@ export class CombatSystem {
           this.canDealDamage = true;
         }
 
-        const extensionAmount = 10 * (currentFrame - 2);
+        const extensionAmount = 5 * (currentFrame - 2);
         const extendedReach = 5 + extensionAmount;
 
-        punchHitbox.collider.set(ex.Shape.Box(extendedReach, 20));
+        punchHitbox.collider.set(
+          ex.Shape.Box(
+            extendedReach,
+            20,
+            this.animController.facingRight ? ex.vec(0, 0.5) : ex.vec(1, 0.5)
+          )
+        );
 
         const offsetX = this.animController.facingRight
           ? extensionAmount / 2
