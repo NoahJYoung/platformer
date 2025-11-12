@@ -93,6 +93,7 @@ export abstract class Character extends ex.Actor {
   protected buildingBounds: MovementBoundaries | null;
 
   public isRunMode: boolean = false;
+  public isOnRoof = false;
 
   constructor(
     name: string,
@@ -213,9 +214,53 @@ export abstract class Character extends ex.Actor {
       this.handleCollisionStart(evt);
     });
 
-    this.on("collisionend", (evt) => {
-      this.handleCollisionEnd(evt);
+    this.on("precollision", (evt) => this.handleRoofCollision(evt));
+    this.on("postcollision", (evt) => {
+      const otherActor = evt.other.owner as ex.Actor;
+      if (otherActor?.body.group === CollisionGroups.Roof) {
+        this.isOnRoof = false;
+      }
     });
+  }
+
+  private handleRoofCollision(evt: ex.PreCollisionEvent): void {
+    const otherActor = evt.other.owner as ex.Actor;
+
+    if (!otherActor) return;
+
+    if (otherActor.body.group === CollisionGroups.Roof) {
+      const roofWorldPos = otherActor.globalPos;
+      const roofTop = roofWorldPos.y;
+
+      if (this.vel.y < 0) {
+        evt.contact.cancel();
+        this.isOnRoof = false;
+        this.canJump = false;
+        return;
+      }
+
+      if (this.vel.y >= 0) {
+        const playerBottom = this.pos.y + this.height / 2;
+        const distance = playerBottom - roofTop;
+
+        if (distance <= 8) {
+          this.canJump = true;
+          this.numberOfJumps = 0;
+
+          if (!this.isOnRoof && this.vel.y > 50) {
+            const isPlayer = this.name === "player";
+            const landKey = AudioKeys.SFX.PLAYER.MOVEMENT.LAND;
+            this.engine?.soundManager.play(landKey, isPlayer ? 0.3 : 0.15);
+            this.isOnRoof = true;
+          }
+          return;
+        } else {
+          this.isOnRoof = false;
+          this.canJump = false;
+          evt.contact.cancel();
+        }
+      }
+    }
   }
 
   public equipItem(item: EquipmentItem) {
@@ -421,14 +466,7 @@ export abstract class Character extends ex.Actor {
     return this.baseShieldManaCost * (1 - reduction);
   }
 
-  protected handleCollisionEnd(evt: ex.CollisionEndEvent) {
-    // const otherActor = evt.other.owner as ex.Actor;
-    // if (otherActor?.name?.startsWith("platform")) {
-    //   if (this.pos.y < otherActor.pos.y) {
-    //     this.canJump = false;
-    //   }
-    // }
-  }
+  protected handleCollisionEnd(evt: ex.CollisionEndEvent) {}
 
   public createDisplayClone(): ex.Actor {
     const originalState = this.animController.currentState;

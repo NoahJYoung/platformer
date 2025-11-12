@@ -17,7 +17,20 @@ export interface SceneConfig {
   enemies?: EnemyConfig[];
   platforms?: PlatformConfig[];
   materialSources?: MaterialSourceConfig;
-  groundSegments?: GroundSegmentConfig[]; // NEW
+  groundSegments?: GroundSegmentConfig[];
+  buildingData?: BuildingData;
+}
+
+export interface BuildingData {
+  tiles: PlacedBuildingTileData[];
+}
+
+export interface PlacedBuildingTileData {
+  tileId: string;
+  gridX: number;
+  gridY: number;
+  worldX: number;
+  worldY: number;
 }
 
 export interface MaterialSourceConfig {
@@ -32,12 +45,11 @@ export interface PlatformConfig {
   height: number;
 }
 
-// NEW: Ground segment configuration
 export interface GroundSegmentConfig {
-  x: number; // Center X position
-  y: number; // Top Y position
-  width: number; // Width of segment
-  height: number; // Height/depth of segment
+  x: number;
+  y: number;
+  width: number;
+  height: number;
 }
 
 export interface ExitConfig {

@@ -211,11 +211,17 @@ export class BuildingManager {
     }
   }
 
-  public placeTile(worldPos: ex.Vector): boolean {
-    if (!this.isBuildMode || !this.selectedTileId) return false;
+  public placeTile(
+    worldPos: ex.Vector,
+    autoGrid?: ex.Vector,
+    autoBuild?: boolean
+  ): boolean {
+    if ((!autoBuild && !this.isBuildMode) || !this.selectedTileId) return false;
 
-    const gridPos = this.worldToGrid(worldPos);
+    const gridPos = autoGrid || this.worldToGrid(worldPos);
     const tileConfig = BUILDING_TILES[this.selectedTileId];
+
+    console.log({ worldPos, gridPos });
 
     if (!tileConfig || !this.canPlaceTile(gridPos.x, gridPos.y, tileConfig)) {
       return false;
@@ -295,7 +301,30 @@ export class BuildingManager {
       );
     }
 
+    this.updateSceneConfig();
+
+    console.log("BEFORE RETURN");
+
     return true;
+  }
+
+  private updateSceneConfig(): void {
+    const tiles = this.getPlacedTiles();
+
+    // Store building data on the scene's config
+    (this.scene.config as any).buildingData = {
+      tiles: tiles.map((tile) => ({
+        tileId: tile.config.id,
+        gridX: tile.gridX,
+        gridY: tile.gridY,
+        worldX: tile.worldX,
+        worldY: tile.worldY,
+      })),
+    };
+
+    console.log(
+      `💾 Updated scene config: ${tiles.length} tiles in ${this.scene.name}`
+    );
   }
 
   /**
@@ -346,6 +375,8 @@ export class BuildingManager {
         }, Total tiles: ${this.getTotalTileCount()}`
       );
     }
+
+    this.updateSceneConfig();
 
     return true;
   }

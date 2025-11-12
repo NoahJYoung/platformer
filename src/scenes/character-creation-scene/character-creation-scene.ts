@@ -146,7 +146,7 @@ export class CharacterCreationScene extends ex.Scene {
     };
 
     if (engine.onCharacterCreated) {
-      engine.onCharacterCreated(appearance, maxLevelAttributes);
+      engine.onCharacterCreated(appearance, attributes);
     }
   }
 }

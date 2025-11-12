@@ -413,6 +413,7 @@ export class SaveManager {
   private static serializeScenes(scenes: SceneConfig[]): any[] {
     return scenes.map((scene) => ({
       ...scene,
+      buildingData: (scene as any).buildingData,
 
       spawnPoints: scene.spawnPoints
         ? Object.fromEntries(

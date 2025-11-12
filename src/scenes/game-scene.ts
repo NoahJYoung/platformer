@@ -11,12 +11,12 @@ import { BackgroundResources, FloorResources } from "../resources";
 import { createItem } from "../items/item-creator";
 import { Tree } from "../actors/resources/tree/tree";
 import { Ore } from "../actors/resources/ore/ore";
-import { DecorationManager } from "../sprite-sheets/scenery/decorations/decorations-manager";
-import { DecorationResources } from "../resources/decoration-resources";
+
 import { BuildingManager } from "../building-manager/building-manager";
 import { BuildingInput } from "../building-manager/building-input";
 import { BuildingResources } from "../resources/building-resources";
 import { SaveManager } from "../engine/save-manager";
+import { BUILDING_TILES } from "../building-manager/building-tile-catalog";
 
 export class GameMapScene extends ex.Scene {
   public name: string = "unknown";
@@ -39,9 +39,6 @@ export class GameMapScene extends ex.Scene {
     this.levelWidth = config.width;
     this.levelHeight = config.height;
     this.name = config.name;
-    this.decorationManager = new DecorationManager(
-      DecorationResources.decorations
-    );
   }
 
   async onInitialize(engine: GameEngine): Promise<void> {
@@ -119,6 +116,13 @@ export class GameMapScene extends ex.Scene {
     const spawnPos = this.getSpawnPosition(entryPoint);
     this.player.pos = spawnPos;
 
+    if (this.config.buildingData && this.config.buildingData.tiles.length > 0) {
+      console.log(
+        `📦 Loading ${this.config.buildingData.tiles.length} building tiles for scene ${this.name}`
+      );
+      this.loadBuildingData(this.config.buildingData);
+    }
+
     setTimeout(() => {
       if (this.player) this.add(this.player);
     }, 100);
@@ -142,6 +146,71 @@ export class GameMapScene extends ex.Scene {
 
   public getBuildingManager(): BuildingManager | null {
     return this.buildingManager;
+  }
+
+  private loadBuildingData(buildingData: {
+    tiles: Array<{
+      tileId: string;
+      gridX: number;
+      gridY: number;
+      worldX: number;
+      worldY: number;
+    }>;
+  }): void {
+    if (!this.buildingManager) {
+      console.error(
+        "Cannot load building data: BuildingManager not initialized"
+      );
+      return;
+    }
+
+    let successCount = 0;
+    let failCount = 0;
+
+    buildingData.tiles.forEach((tileData) => {
+      try {
+        const tileConfig = BUILDING_TILES[tileData.tileId];
+
+        if (!tileConfig) {
+          console.warn(
+            `❌ Building tile "${tileData.tileId}" not found in BUILDING_TILES catalog`
+          );
+          failCount++;
+          return;
+        }
+
+        this.buildingManager?.selectTile(tileData.tileId);
+
+        const worldPos = ex.vec(tileData.worldX, tileData.worldY);
+        const gridPos = ex.vec(tileData.gridX, tileData.gridY);
+        const success = this.buildingManager?.placeTile(
+          worldPos,
+          gridPos,
+          true
+        );
+
+        if (success) {
+          successCount++;
+        } else {
+          console.warn(
+            `❌ Failed to place building tile "${tileData.tileId}" at (${tileData.gridX}, ${tileData.gridY})`
+          );
+          failCount++;
+        }
+      } catch (error) {
+        console.error("Error loading building tile:", error, tileData);
+        failCount++;
+      }
+    });
+
+    (this.buildingManager as any).selectedTileId = null;
+    if (typeof (this.buildingManager as any).destroyGhostTile === "function") {
+      (this.buildingManager as any).destroyGhostTile();
+    }
+
+    console.log(
+      `Building data loaded: ${successCount} tiles placed successfully, ${failCount} failed`
+    );
   }
 
   private setupEnemySpawning(): void {
@@ -329,7 +398,6 @@ export class GameMapScene extends ex.Scene {
     }
 
     const totalY = groundActors.reduce((sum, actor) => {
-      // Get the top edge of the ground actor (pos.y - height/2)
       return sum + (actor.pos.y - actor.height / 2);
     }, 0);
 
@@ -471,7 +539,6 @@ export class GameMapScene extends ex.Scene {
 
           const x = i * bgWidth + bgWidth / 2;
 
-          // DO NOT CHANGE. This is a weird workaround I found for offsetting the parallax positioning
           const y =
             (this.levelHeight - bgHeight / 2) * parallaxFactor +
             (GAME_HEIGHT / 5) * (1 - parallaxFactor);

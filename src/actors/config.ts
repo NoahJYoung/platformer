@@ -20,4 +20,5 @@ export const CollisionGroups = {
   Interactable: ex.CollisionGroupManager.create("interactable"),
   Resource: ex.CollisionGroupManager.create("resource"),
   Trigger: ex.CollisionGroupManager.create("trigger"),
+  Roof: ex.CollisionGroupManager.create("roof"),
 };

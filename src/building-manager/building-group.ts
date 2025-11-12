@@ -11,12 +11,15 @@ import { TILE_SIZE } from "./building-manager";
  * Represents a group of connected building tiles merged into a single actor
  */
 export class BuildingGroup extends ex.Actor {
-  public tiles: Map<string, BuildingTileConfig> = new Map(); // key: "gridX,gridY"
+  public tiles: Map<string, BuildingTileConfig> = new Map();
   public gridPositions: Set<string> = new Set();
   private spriteSheets: SpriteSheetsByMaterial;
   public hasFoundation: boolean = false;
-  public isIndoorView: boolean = false; // Track if we're showing indoor view
-  public doorPositions: Set<string> = new Set(); // Track door locations for exit detection
+  public isIndoorView: boolean = false;
+  public doorPositions: Set<string> = new Set();
+
+  // Track roof collider actors
+  private roofColliders: Map<string, ex.Actor> = new Map();
 
   constructor(spriteSheets: SpriteSheetsByMaterial) {
     super({
@@ -25,7 +28,7 @@ export class BuildingGroup extends ex.Actor {
       anchor: ex.vec(0, 0),
       collisionType: ex.CollisionType.Fixed,
       collisionGroup: CollisionGroups.Building,
-      z: 0, // Default to floor level
+      z: 0,
     });
 
     this.spriteSheets = spriteSheets;
@@ -39,12 +42,10 @@ export class BuildingGroup extends ex.Actor {
     gridY: number,
     tileConfig: BuildingTileConfig
   ): void {
-    // Track if this group has a foundation
     if (tileConfig.category === "foundation") {
       this.hasFoundation = true;
     }
 
-    // Track door positions
     if (tileConfig.category === "door") {
       for (let dy = 0; dy < tileConfig.height; dy++) {
         for (let dx = 0; dx < tileConfig.width; dx++) {
@@ -57,7 +58,6 @@ export class BuildingGroup extends ex.Actor {
       `Adding tile: ${tileConfig.name} at (${gridX}, ${gridY}) - Size: ${tileConfig.width}x${tileConfig.height}`
     );
 
-    // Store tile data
     for (let dy = 0; dy < tileConfig.height; dy++) {
       for (let dx = 0; dx < tileConfig.width; dx++) {
         const tileKey = this.gridKey(gridX + dx, gridY + dy);
@@ -67,8 +67,58 @@ export class BuildingGroup extends ex.Actor {
       }
     }
 
-    // Rebuild the merged graphic
+    // Add roof collider if this is a roof tile
+    if (tileConfig.category === "roof") {
+      this.addRoofCollider(gridX, gridY, tileConfig);
+    }
+
     this.rebuildGraphic();
+  }
+
+  /**
+   * Add a one-way platform collider for roof tiles
+   */
+  private addRoofCollider(
+    gridX: number,
+    gridY: number,
+    tileConfig: BuildingTileConfig
+  ): void {
+    const key = this.gridKey(gridX, gridY);
+
+    // Don't add duplicate colliders
+    if (this.roofColliders.has(key)) return;
+
+    // Calculate world position for this roof tile
+    const worldX = gridX * TILE_SIZE + (tileConfig.width * TILE_SIZE) / 2;
+    const worldY = gridY * TILE_SIZE; // Top edge of the tile
+
+    const roofCollider = new ex.Actor({
+      name: `roof_collider_${gridX}_${gridY}`,
+      pos: ex.vec(worldX, worldY),
+      width: tileConfig.width * TILE_SIZE,
+      height: 4, // Thin platform
+      anchor: ex.vec(0.5, 0), // Anchor at top
+      collisionType: ex.CollisionType.Fixed,
+      collisionGroup: CollisionGroups.Roof,
+      z: 1, // Above the building graphic
+    });
+
+    // Make it invisible (or add debug graphic if needed)
+    roofCollider.graphics.visible = false;
+
+    // Optional: Add debug visualization
+    // roofCollider.graphics.use(
+    //   new ex.Rectangle({
+    //     width: tileConfig.width * TILE_SIZE,
+    //     height: 4,
+    //     color: ex.Color.fromRGB(255, 0, 0, 0.5),
+    //   })
+    // );
+
+    this.addChild(roofCollider);
+    this.roofColliders.set(key, roofCollider);
+
+    console.log(`  Added roof collider at (${gridX}, ${gridY})`);
   }
 
   /**
@@ -80,27 +130,43 @@ export class BuildingGroup extends ex.Actor {
 
     if (!tileConfig) return null;
 
-    // Remove all spaces occupied by this tile
+    // Remove roof collider if it's a roof tile
+    if (tileConfig.category === "roof") {
+      this.removeRoofCollider(gridX, gridY);
+    }
+
     for (let dy = 0; dy < tileConfig.height; dy++) {
       for (let dx = 0; dx < tileConfig.width; dx++) {
         const removeKey = this.gridKey(gridX + dx, gridY + dy);
         this.tiles.delete(removeKey);
         this.gridPositions.delete(removeKey);
-        this.doorPositions.delete(removeKey); // Remove from door positions too
+        this.doorPositions.delete(removeKey);
       }
     }
 
-    // Check if we removed a foundation
     if (tileConfig.category === "foundation") {
       this.hasFoundation = this.checkHasFoundation();
     }
 
-    // Rebuild graphic
     if (this.tiles.size > 0) {
       this.rebuildGraphic();
     }
 
     return tileConfig;
+  }
+
+  /**
+   * Remove a roof collider
+   */
+  private removeRoofCollider(gridX: number, gridY: number): void {
+    const key = this.gridKey(gridX, gridY);
+    const collider = this.roofColliders.get(key);
+
+    if (collider) {
+      this.removeChild(collider);
+      this.roofColliders.delete(key);
+      console.log(`  Removed roof collider at (${gridX}, ${gridY})`);
+    }
   }
 
   /**
@@ -140,28 +206,34 @@ export class BuildingGroup extends ex.Actor {
       `🔗 Merging group with ${otherGroup.tiles.size} tiles into this group`
     );
 
-    // Copy all tiles from other group
     for (const [key, tileConfig] of otherGroup.tiles.entries()) {
       this.tiles.set(key, tileConfig);
       this.gridPositions.add(key);
     }
 
-    // Copy door positions
     for (const doorPos of otherGroup.doorPositions) {
       this.doorPositions.add(doorPos);
     }
 
-    // Merge foundation status
     if (otherGroup.hasFoundation) {
       this.hasFoundation = true;
     }
 
-    // Preserve indoor/outdoor state (if other group was larger, use its state)
     if (otherGroup.isIndoorView) {
       this.isIndoorView = true;
     }
 
-    // Rebuild graphic with all merged tiles
+    // Transfer roof colliders from other group
+    for (const [key, collider] of otherGroup.roofColliders) {
+      // Remove from other group
+      otherGroup.removeChild(collider);
+
+      // Add to this group
+      this.addChild(collider);
+      this.roofColliders.set(key, collider);
+    }
+    otherGroup.roofColliders.clear();
+
     this.rebuildGraphic();
   }
 
@@ -194,21 +266,18 @@ export class BuildingGroup extends ex.Actor {
     width: number = 1,
     height: number = 1
   ): boolean {
-    // Check all positions the new tile would occupy
     for (let dy = 0; dy < height; dy++) {
       for (let dx = 0; dx < width; dx++) {
         const tileX = gridX + dx;
         const tileY = gridY + dy;
 
-        // Check all 4 cardinal directions from this position
         const adjacentPositions = [
-          this.gridKey(tileX - 1, tileY), // left
-          this.gridKey(tileX + 1, tileY), // right
-          this.gridKey(tileX, tileY - 1), // up
-          this.gridKey(tileX, tileY + 1), // down
+          this.gridKey(tileX - 1, tileY),
+          this.gridKey(tileX + 1, tileY),
+          this.gridKey(tileX, tileY - 1),
+          this.gridKey(tileX, tileY + 1),
         ];
 
-        // If any of these positions exist in the group, we're adjacent
         if (adjacentPositions.some((pos) => this.gridPositions.has(pos))) {
           return true;
         }
@@ -238,7 +307,6 @@ export class BuildingGroup extends ex.Actor {
   private rebuildGraphic(): void {
     if (this.tiles.size === 0) return;
 
-    // Calculate bounds
     const gridCoords = Array.from(this.gridPositions).map((key) => {
       const [x, y] = key.split(",").map(Number);
       return { x, y };
@@ -252,29 +320,27 @@ export class BuildingGroup extends ex.Actor {
     const width = (maxX - minX + 1) * TILE_SIZE;
     const height = (maxY - minY + 1) * TILE_SIZE;
 
-    // Update actor position
     this.pos = ex.vec(minX * TILE_SIZE, minY * TILE_SIZE);
 
-    // Create a canvas with all tiles drawn
+    // Update roof collider positions relative to new group position
+    this.updateRoofColliderPositions(minX, minY);
+
     const canvas = new ex.Canvas({
       width: width,
       height: height,
       draw: (ctx) => {
-        // Group tiles by category for layering
         const tilesToDraw: Array<{
           gridX: number;
           gridY: number;
           config: BuildingTileConfig;
         }> = [];
 
-        // Collect unique tiles (not duplicates from multi-tile pieces)
         const drawn = new Set<string>();
         for (const [key, tileConfig] of this.tiles.entries()) {
           if (!drawn.has(key)) {
             const [gridX, gridY] = key.split(",").map(Number);
             tilesToDraw.push({ gridX, gridY, config: tileConfig });
 
-            // Mark all spaces this tile occupies as drawn
             for (let dy = 0; dy < tileConfig.height; dy++) {
               for (let dx = 0; dx < tileConfig.width; dx++) {
                 drawn.add(this.gridKey(gridX + dx, gridY + dy));
@@ -283,7 +349,6 @@ export class BuildingGroup extends ex.Actor {
           }
         }
 
-        // Sort by layer (background first, then foreground)
         tilesToDraw.sort((a, b) => {
           const aDef = this.getSpriteDefinition(a.config);
           const bDef = this.getSpriteDefinition(b.config);
@@ -292,15 +357,12 @@ export class BuildingGroup extends ex.Actor {
           return aLayer - bLayer;
         });
 
-        // Draw each tile
         for (const { gridX, gridY, config } of tilesToDraw) {
           const localX = (gridX - minX) * TILE_SIZE;
           const localY = (gridY - minY) * TILE_SIZE;
 
-          // Get the appropriate sprite definition based on indoor/outdoor view
           const spriteDef = this.getSpriteDefinition(config);
 
-          // Draw multi-tile pieces
           for (let dy = 0; dy < config.height; dy++) {
             for (let dx = 0; dx < config.width; dx++) {
               const sprite = this.spriteSheets[
@@ -327,8 +389,26 @@ export class BuildingGroup extends ex.Actor {
 
     this.graphics.use(canvas);
 
-    // Update collision bounds
     this.updateCollisionBounds();
+  }
+
+  /**
+   * Update roof collider positions when group position changes
+   */
+  private updateRoofColliderPositions(minX: number, minY: number): void {
+    for (const [key, collider] of this.roofColliders) {
+      const [gridX, gridY] = key.split(",").map(Number);
+      const tileConfig = this.tiles.get(key);
+
+      if (tileConfig) {
+        // Calculate position relative to group origin
+        const localX =
+          (gridX - minX) * TILE_SIZE + (tileConfig.width * TILE_SIZE) / 2;
+        const localY = (gridY - minY) * TILE_SIZE;
+
+        collider.pos = ex.vec(localX, localY);
+      }
+    }
   }
 
   /**
@@ -337,11 +417,9 @@ export class BuildingGroup extends ex.Actor {
   private getSpriteDefinition(
     config: BuildingTileConfig
   ): BuildingTileDefinition {
-    // If we're in indoor view and the tile has an indoor sprite, use it
     if (this.isIndoorView && config.indoorSprite) {
       return config.indoorSprite;
     }
-    // Otherwise use the outdoor sprite
     return config.outdoorSprite;
   }
 
@@ -349,8 +427,6 @@ export class BuildingGroup extends ex.Actor {
    * Update collision bounds based on solid tiles
    */
   private updateCollisionBounds(): void {
-    // For now, use the full bounds
-    // TODO: Could create composite colliders for only solid tiles
     const hasSolidTiles = Array.from(this.tiles.values()).some((t) => t.solid);
 
     if (!hasSolidTiles) {
@@ -371,7 +447,6 @@ export class BuildingGroup extends ex.Actor {
    * Get the number of tiles in this group
    */
   public get tileCount(): number {
-    // Count unique tiles (not grid positions, which may be occupied by multi-tile pieces)
     const uniqueTiles = new Set<BuildingTileConfig>();
     for (const tileConfig of this.tiles.values()) {
       uniqueTiles.add(tileConfig);
