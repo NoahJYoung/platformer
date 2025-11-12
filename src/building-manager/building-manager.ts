@@ -221,8 +221,6 @@ export class BuildingManager {
     const gridPos = autoGrid || this.worldToGrid(worldPos);
     const tileConfig = BUILDING_TILES[this.selectedTileId];
 
-    console.log({ worldPos, gridPos });
-
     if (!tileConfig || !this.canPlaceTile(gridPos.x, gridPos.y, tileConfig)) {
       return false;
     }

@@ -13,6 +13,7 @@ import type { LootDrop } from "../character/loot-drop";
 import type { MaterialSource } from "../resources/material-source";
 import { AudioKeys } from "../../audio/sound-manager/audio-keys";
 import type { GameMapScene } from "../../scenes/game-scene";
+import type { WaterPool } from "../resources/water/water-pool";
 
 export class Player extends Character {
   private lastToggleFrame: number = -1;
@@ -20,7 +21,9 @@ export class Player extends Character {
   private temperature: number = 20;
   private hunger: number = 100;
   private thirst: number = 100;
+
   private nearbyMaterialSource: MaterialSource | null = null;
+  private nearbyWaterSource: WaterPool | null = null;
 
   private hasShownHungerWarning: boolean = false;
   private hasShownThirstWarning: boolean = false;
@@ -87,6 +90,14 @@ export class Player extends Character {
 
   public getNearbyMaterialSource(): MaterialSource | null {
     return this.nearbyMaterialSource;
+  }
+
+  public setNearbyWaterSource(source: WaterPool | null) {
+    this.nearbyWaterSource = source;
+  }
+
+  public getNearbyWaterSource(): WaterPool | null {
+    return this.nearbyWaterSource;
   }
 
   private handleInput(engine: GameEngine) {
@@ -229,6 +240,12 @@ export class Player extends Character {
       const scene = this.scene as GameMapScene;
 
       const buildingManager = scene.getBuildingManager?.();
+
+      if (this.nearbyWaterSource) {
+        this.engine?.showMessage("You take a drink");
+        this.refillWater("You refill your water");
+        this.updateThirst(100);
+      }
 
       if (buildingManager) {
         if (
@@ -380,14 +397,15 @@ export class Player extends Character {
     this.thirst = Math.max(0, Math.min(100, this.thirst + amount));
   }
 
-  refillWater() {
+  refillWater(message: string = "You refill your water") {
     if (this.inventory.hasUnfilledWaterContainers) {
       const weather = this.engine?.timeCycle.getWeather();
       const isRaining = weather === "raining";
-      const message = isRaining
+      const displayMessage = isRaining
         ? "You take advantage of the rain to refill your water"
-        : "You refill your water";
-      this.engine?.showMessage(message);
+        : message;
+
+      this.engine?.showMessage(displayMessage);
       this.inventory.refillWater();
     }
   }

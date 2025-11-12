@@ -46,7 +46,7 @@ export class TimeCycle {
   private minSnowOverlayOpacity = 0.25;
   private weatherOverlay: WeatherOverlay;
   private weatherCheckInterval: number = 8;
-  private lastWeatherCheck: number = 0;
+  private lastWeatherCheck: number = 8;
 
   private seasonOverride: Season | null = null;
 

@@ -4,11 +4,20 @@ import type { LoadedSounds } from "./types";
 export function loadSounds(): LoadedSounds {
   // Movement
   const footsteps: ex.Sound[] = [];
+  const waterFootsteps: ex.Sound[] = [];
+
   const footstepVariations = [
     "./assets/audio/sfx/movement/footsteps/footstep1.wav",
     "./assets/audio/sfx/movement/footsteps/footstep2.wav",
     "./assets/audio/sfx/movement/footsteps/footstep3.wav",
     "./assets/audio/sfx/movement/footsteps/footstep4.wav",
+  ];
+
+  const waterFootstepVariations = [
+    "./assets/audio/sfx/movement/water-footsteps/footstep1.wav",
+    "./assets/audio/sfx/movement/water-footsteps/footstep2.wav",
+    "./assets/audio/sfx/movement/water-footsteps/footstep3.wav",
+    "./assets/audio/sfx/movement/water-footsteps/footstep4.wav",
   ];
 
   footstepVariations.forEach((path) => {
@@ -17,9 +26,17 @@ export function loadSounds(): LoadedSounds {
     }
   });
 
+  waterFootstepVariations.forEach((path) => {
+    for (let i = 0; i < 2; i++) {
+      waterFootsteps.push(new ex.Sound(path));
+    }
+  });
+
   const jump = new ex.Sound("./assets/audio/sfx/movement/jump.wav");
   const dodge = new ex.Sound("./assets/audio/sfx/movement/dodge.wav");
   const land = new ex.Sound("./assets/audio/sfx/movement/land.wav");
+  const splash = new ex.Sound("./assets/audio/sfx/movement/splash.wav");
+  const exit_water = new ex.Sound("./assets/audio/sfx/movement/exit_water.wav");
 
   // Spells
   const charge = new ex.Sound("./assets/audio/sfx/combat/spells/charge.mp3");
@@ -59,6 +76,9 @@ export function loadSounds(): LoadedSounds {
       dodge,
       land,
       footsteps,
+      waterFootsteps,
+      splash,
+      exit_water,
     },
     actions: {
       chop,
@@ -98,12 +118,17 @@ export function loadSounds(): LoadedSounds {
 export function getAllSoundsForLoader(loadedSounds: LoadedSounds): ex.Sound[] {
   const allSounds: ex.Sound[] = [];
 
-  allSounds.push(...loadedSounds.movement.footsteps);
+  allSounds.push(
+    ...loadedSounds.movement.footsteps,
+    ...loadedSounds.movement.waterFootsteps
+  );
 
   allSounds.push(
     loadedSounds.movement.jump,
     loadedSounds.movement.land,
-    loadedSounds.movement.dodge
+    loadedSounds.movement.dodge,
+    loadedSounds.movement.splash,
+    loadedSounds.movement.exit_water
   );
 
   allSounds.push(

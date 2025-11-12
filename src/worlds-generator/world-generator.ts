@@ -249,7 +249,7 @@ export class ProceduralWorldGenerator {
       const actualWidth = Math.min(segmentWidth, sceneWidth - currentX);
 
       segments.push({
-        x: currentX + actualWidth / 2,
+        x: currentX,
         y: Math.min(groundY, sceneHeight - TILE_HEIGHT / 2),
         width: actualWidth,
         height: segmentDepth,
@@ -276,7 +276,7 @@ export class ProceduralWorldGenerator {
 
     return [
       {
-        x: sceneWidth / 2,
+        x: 0,
         y: groundY,
         width: sceneWidth + 400,
         height: segmentDepth,
@@ -447,7 +447,7 @@ export class ProceduralWorldGenerator {
 
     groundSegments.forEach((segment) => {
       surfaces.push({
-        x: segment.x - segment.width / 2,
+        x: segment.x,
         y: segment.y,
         width: segment.width,
         height: segment.height,
@@ -845,8 +845,8 @@ export class ProceduralWorldGenerator {
     if (!scene.groundSegments) return null;
 
     for (const segment of scene.groundSegments) {
-      const segmentLeft = segment.x - segment.width / 2;
-      const segmentRight = segment.x + segment.width / 2;
+      const segmentLeft = segment.x;
+      const segmentRight = segment.x + segment.width;
 
       if (x >= segmentLeft && x <= segmentRight) {
         return segment;

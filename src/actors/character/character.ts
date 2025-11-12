@@ -95,6 +95,8 @@ export abstract class Character extends ex.Actor {
   public isRunMode: boolean = false;
   public isOnRoof = false;
 
+  private isInWater = false;
+
   constructor(
     name: string,
     pos: ex.Vector,
@@ -370,6 +372,14 @@ export abstract class Character extends ex.Actor {
 
   public getIsInside() {
     return this.isInside;
+  }
+
+  public getIsInWater() {
+    return this.isInWater;
+  }
+
+  public setIsInWater(inWater: boolean) {
+    this.isInWater = inWater;
   }
 
   protected handleCollisionStart(evt: ex.CollisionStartEvent) {

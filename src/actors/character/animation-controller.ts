@@ -104,12 +104,13 @@ export class AnimationController {
     const volumeVariation = Math.random() * 0.1 - 0.05;
     const isPlayer = this.character.name === "player";
 
-    const finalVolume = Math.max(
-      0.1,
-      Math.min(1, baseVolume + volumeVariation)
-    );
+    const footstepKey = this.character.getIsInWater()
+      ? AudioKeys.SFX.PLAYER.MOVEMENT.WATER_FOOTSTEP
+      : AudioKeys.SFX.PLAYER.MOVEMENT.FOOTSTEP;
 
-    const footstepKey = AudioKeys.SFX.PLAYER.MOVEMENT.FOOTSTEP;
+    const finalVolume = this.character.getIsInWater()
+      ? Math.max(0.1, Math.min(1, baseVolume * 1.5 + volumeVariation))
+      : Math.max(0.1, Math.min(1, baseVolume + volumeVariation));
 
     this.character.engine.soundManager.play(
       footstepKey,

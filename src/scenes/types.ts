@@ -18,6 +18,7 @@ export interface SceneConfig {
   platforms?: PlatformConfig[];
   materialSources?: MaterialSourceConfig;
   groundSegments?: GroundSegmentConfig[];
+  waterSegments?: WaterSegmentConfig[];
   buildingData?: BuildingData;
 }
 
@@ -50,6 +51,13 @@ export interface GroundSegmentConfig {
   y: number;
   width: number;
   height: number;
+}
+
+export interface WaterSegmentConfig {
+  x: number;
+  y: number;
+  width: number;
+  height: 32 | 64;
 }
 
 export interface ExitConfig {

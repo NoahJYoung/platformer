@@ -7,6 +7,7 @@ import { treeResourcesArray } from "./tree-resources";
 import { oreResourceArray } from "./ore-resources";
 import { decorationResourcesArray } from "./decoration-resources";
 import { buildingResourcesArray } from "./building-resources";
+import { waterResourceArray } from "./water-resources";
 
 export const Resources = [
   ...backgroundResourcesArray,
@@ -18,4 +19,5 @@ export const Resources = [
   ...decorationResourcesArray,
   ...oreResourceArray,
   ...buildingResourcesArray,
+  ...waterResourceArray,
 ];

@@ -121,6 +121,8 @@ export class GameEngine extends ex.Engine {
 
     const scenes = generator.generateWorld();
 
+    console.log({ scenes });
+
     scenes.forEach((sceneConfig) => {
       const scene = new GameMapScene(sceneConfig);
       this.addScene(sceneConfig.name, scene);

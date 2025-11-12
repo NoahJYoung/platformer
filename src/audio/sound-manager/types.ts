@@ -26,9 +26,12 @@ export interface DayNightSounds {
 
 export interface MovementSounds {
   footsteps: ex.Sound[];
+  waterFootsteps: ex.Sound[];
   jump: ex.Sound;
   dodge: ex.Sound;
   land: ex.Sound;
+  splash: ex.Sound;
+  exit_water: ex.Sound;
 }
 
 export interface CombatSounds {

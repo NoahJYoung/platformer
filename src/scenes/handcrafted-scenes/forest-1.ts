@@ -14,6 +14,28 @@ export const forest_1: SceneConfig = {
   exits: [],
   platforms: [],
   enemies: [],
+  waterSegments: [
+    {
+      x: 400,
+      y: 800,
+      width: 800,
+      height: 32,
+    },
+  ],
+  groundSegments: [
+    {
+      x: -32,
+      y: 768,
+      width: 64,
+      height: 32,
+    },
+    {
+      x: 800,
+      y: 768,
+      width: 2400,
+      height: 32,
+    },
+  ],
   materialSources: {
     trees: [],
     ores: [],

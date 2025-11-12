@@ -14,20 +14,34 @@ export function registerSounds(
     0.4
   );
 
+  // MOVEMENT
+  soundManager.createSoundPool(
+    AudioKeys.SFX.PLAYER.MOVEMENT.WATER_FOOTSTEP,
+    sounds.movement.waterFootsteps,
+    ["sfx"],
+    0.4
+  );
+
   soundManager.track(AudioKeys.SFX.PLAYER.MOVEMENT.JUMP, {
     sound: sounds.movement.jump,
     volume: 0.5,
     channels: ["sfx"],
   });
 
-  soundManager.track(AudioKeys.SFX.PLAYER.MOVEMENT.DODGE, {
-    sound: sounds.movement.dodge,
+  soundManager.track(AudioKeys.SFX.PLAYER.MOVEMENT.SPLASH, {
+    sound: sounds.movement.splash,
     volume: 0.5,
     channels: ["sfx"],
   });
 
-  soundManager.track(AudioKeys.SFX.PLAYER.MOVEMENT.LAND, {
-    sound: sounds.movement.land,
+  soundManager.track(AudioKeys.SFX.PLAYER.MOVEMENT.EXIT_WATER, {
+    sound: sounds.movement.exit_water,
+    volume: 0.5,
+    channels: ["sfx"],
+  });
+
+  soundManager.track(AudioKeys.SFX.PLAYER.MOVEMENT.DODGE, {
+    sound: sounds.movement.dodge,
     volume: 0.5,
     channels: ["sfx"],
   });

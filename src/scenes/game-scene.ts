@@ -17,6 +17,7 @@ import { BuildingInput } from "../building-manager/building-input";
 import { BuildingResources } from "../resources/building-resources";
 import { SaveManager } from "../engine/save-manager";
 import { BUILDING_TILES } from "../building-manager/building-tile-catalog";
+import { WaterPool } from "../actors/resources/water/water-pool";
 
 export class GameMapScene extends ex.Scene {
   public name: string = "unknown";
@@ -661,6 +662,7 @@ export class GameMapScene extends ex.Scene {
       const ground = new ex.Actor({
         name: `ground_segment_${index}`,
         pos: ex.vec(segment.x, segment.y + segment.height / 2),
+        anchor: ex.vec(0, 0.5),
         width: segment.width,
         height: segment.height,
         collisionType: ex.CollisionType.Fixed,
@@ -686,6 +688,23 @@ export class GameMapScene extends ex.Scene {
     });
 
     return groundActors;
+  }
+
+  createWaterSegments() {
+    const waterActors: ex.Actor[] = [];
+
+    const segments = this.config.waterSegments || [];
+
+    segments.forEach((segment) => {
+      const water = new WaterPool(
+        ex.vec(segment.x, segment.y),
+        segment.width,
+        segment.height
+      );
+
+      waterActors.push(water);
+    });
+    return waterActors;
   }
 
   /**
@@ -717,6 +736,7 @@ export class GameMapScene extends ex.Scene {
 
   protected async createLevel(engine: GameEngine): Promise<void> {
     const groundActors = this.createGroundSegments(engine);
+    const waterActors = this.createWaterSegments();
 
     await this.createBackground(
       engine,
@@ -726,6 +746,10 @@ export class GameMapScene extends ex.Scene {
 
     groundActors.forEach((ground) => {
       this.add(ground);
+    });
+
+    waterActors.forEach((pool) => {
+      this.add(pool);
     });
 
     this.createTrees();

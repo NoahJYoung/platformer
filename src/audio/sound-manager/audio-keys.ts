@@ -3,9 +3,12 @@ export const AudioKeys = {
     PLAYER: {
       MOVEMENT: {
         FOOTSTEP: "player-footstep",
+        WATER_FOOTSTEP: "player-water-footstep",
         JUMP: "player-jump",
         DODGE: "player-dodge",
         LAND: "player-land",
+        SPLASH: "player-splash",
+        EXIT_WATER: "player-exit-water",
       },
       ACTIONS: {
         CHOP: "player-chop",
