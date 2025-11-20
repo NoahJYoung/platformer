@@ -419,6 +419,71 @@ export class AnimationController {
     }
   }
 
+  /**
+   * Transitions between attack animations while preserving the current frame.
+   * Call this to smoothly switch from run-attacking to attacking or vice versa.
+   */
+  public transitionAttackAnimation(toRunAttack: boolean): void {
+    const currentAnim = this.character.graphics.current as ex.Animation;
+    const targetAnim = toRunAttack ? this.runAttackAnim : this.attackAnim;
+    const targetState = toRunAttack ? "run-attacking" : "attacking";
+
+    if (!currentAnim || !targetAnim) return;
+
+    // Only transition if we're in an attack state
+    if (
+      this.currentState !== "attacking" &&
+      this.currentState !== "run-attacking"
+    ) {
+      return;
+    }
+
+    // Don't transition if already in target state
+    if (this.currentState === targetState) {
+      return;
+    }
+
+    // Get current frame index
+    const currentFrameIndex = currentAnim.currentFrameIndex;
+
+    // Switch state and animation
+    this.currentState = targetState;
+    this.character.graphics.use(targetAnim);
+
+    // Jump to the same frame
+    targetAnim.goToFrame(currentFrameIndex);
+
+    // Also sync weapon animation
+    this.syncWeaponToFrame(
+      currentFrameIndex,
+      toRunAttack ? "run-attack" : "attack"
+    );
+  }
+
+  /**
+   * Gets the current frame index of the active attack animation
+   */
+  public getCurrentAttackFrame(): number {
+    const currentAnim = this.character.graphics.current as ex.Animation;
+    if (currentAnim instanceof ex.Animation) {
+      return currentAnim.currentFrameIndex;
+    }
+    return 0;
+  }
+
+  /**
+   * Syncs the weapon animation to a specific frame
+   */
+  private syncWeaponToFrame(frameIndex: number, animType: string): void {
+    if (!this.weaponActor || !this.weaponSprites) return;
+
+    const weaponAnim = this.weaponSprites.get(animType);
+    if (weaponAnim) {
+      this.weaponActor.graphics.use(weaponAnim);
+      weaponAnim.goToFrame(frameIndex);
+    }
+  }
+
   public updateAnimation(velocity: ex.Vector) {
     if (
       !this.idleAnim ||
@@ -441,6 +506,7 @@ export class AnimationController {
 
     this.character.graphics.flipHorizontal = this.facingRight;
 
+    // Prevent animation updates during attacking states
     if (
       this.currentState === "attacking" ||
       this.currentState === "run-attacking"

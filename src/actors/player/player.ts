@@ -141,8 +141,15 @@ export class Player extends Character {
         this.deactivateShield();
       }
     }
+
+    // Track if we're in an attack state for transition handling
+    const isInAttackState =
+      this.currentState === "attacking" ||
+      this.currentState === "run-attacking";
+
     if (
       this.currentState !== "attacking" &&
+      this.currentState !== "run-attacking" &&
       this.currentState !== "hurt" &&
       this.currentState !== "dodging" &&
       this.currentState !== "shielding"
@@ -159,6 +166,30 @@ export class Player extends Character {
       }
     }
 
+    // Handle attack transitions when movement changes mid-attack
+    if (isInAttackState) {
+      const isMoving =
+        kb.isHeld(ex.Keys.Left) ||
+        kb.isHeld(ex.Keys.A) ||
+        kb.isHeld(ex.Keys.Right) ||
+        kb.isHeld(ex.Keys.D);
+
+      // Check if we need to transition attack animations
+      this.transitionAttackIfNeeded(isMoving);
+
+      // Update velocity during attack based on movement input
+      if (isMoving) {
+        if (kb.isHeld(ex.Keys.Left) || kb.isHeld(ex.Keys.A)) {
+          xVel = -adjustedMoveSpeed;
+        }
+        if (kb.isHeld(ex.Keys.Right) || kb.isHeld(ex.Keys.D)) {
+          xVel = adjustedMoveSpeed;
+        }
+      } else {
+        xVel = 0;
+      }
+    }
+
     if (this.currentState === "hurt") {
       xVel = 0;
     }
@@ -170,7 +201,7 @@ export class Player extends Character {
 
     if (
       this.currentState !== "attacking" &&
-      this.currentState !== "run-attacking" && // ADD THIS LINE
+      this.currentState !== "run-attacking" &&
       this.currentState !== "hurt" &&
       this.currentState !== "dodging" &&
       this.currentState !== "shielding"

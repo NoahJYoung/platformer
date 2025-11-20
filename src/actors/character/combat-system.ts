@@ -14,6 +14,12 @@ export class CombatSystem {
 
   private onDamageDealtCallback?: (damage: number) => void;
 
+  private currentAttackTimeout?: ReturnType<typeof setTimeout>;
+  private currentHitboxInterval?: ReturnType<typeof setInterval>;
+  private currentAttackHitbox?: ex.Actor;
+  private currentAttackStartTime: number = 0;
+  private currentAttackDuration: number = 0;
+
   public isInvincible: boolean = false;
 
   constructor(
@@ -32,12 +38,36 @@ export class CombatSystem {
     this.onDamageDealtCallback = callback;
   }
 
-  public attack(equippedWeapon: WeaponItem | null, energy: number): number {
-    if (
+  private isAttackingState(): boolean {
+    return (
       this.animController.currentState === "attacking" ||
-      this.animController.currentState === "run-attacking" ||
-      this.animController.currentState === "hurt"
-    )
+      this.animController.currentState === "run-attacking"
+    );
+  }
+
+  /**
+   * Transitions between attack types mid-attack, preserving the current frame.
+   * Returns true if a transition occurred, false otherwise.
+   */
+  public transitionAttack(toRunAttack: boolean): boolean {
+    if (!this.isAttackingState()) {
+      return false;
+    }
+
+    const currentState = this.animController.currentState;
+    const targetState = toRunAttack ? "run-attacking" : "attacking";
+
+    if (currentState === targetState) {
+      return false;
+    }
+
+    this.animController.transitionAttackAnimation(toRunAttack);
+
+    return true;
+  }
+
+  public attack(equippedWeapon: WeaponItem | null, energy: number): number {
+    if (this.isAttackingState() || this.animController.currentState === "hurt")
       return energy;
     if (this.animController.attackAnim) {
       this.animController.attackAnim.reset();
@@ -73,11 +103,7 @@ export class CombatSystem {
   }
 
   public runAttack(equippedWeapon: WeaponItem | null, energy: number): number {
-    if (
-      this.animController.currentState === "attacking" ||
-      this.animController.currentState === "run-attacking" ||
-      this.animController.currentState === "hurt"
-    )
+    if (this.isAttackingState() || this.animController.currentState === "hurt")
       return energy;
 
     if (this.animController.runAttackAnim) {
@@ -160,6 +186,7 @@ export class CombatSystem {
     });
 
     (attackHitbox as any).weaponData = weapon;
+    this.currentAttackHitbox = attackHitbox;
 
     const collisionHandler = (evt: ex.CollisionStartEvent) => {
       const target = evt.other.owner as ex.Actor;
@@ -170,6 +197,7 @@ export class CombatSystem {
         this.canDealDamage &&
         validTargets.some((targetName) => target?.name?.startsWith(targetName))
       ) {
+        console.log("TRUE");
         const hitKey = AudioKeys.SFX.PLAYER.COMBAT.WEAPON.HIT;
         const baseVolume = this.character.name === "player" ? 0.3 : 0.2;
         this.character.engine?.soundManager.play(hitKey, baseVolume);
@@ -189,14 +217,12 @@ export class CombatSystem {
     attackHitbox.on("collisionstart", collisionHandler);
 
     const updateAttackHitbox = () => {
-      if (
-        this.animController.currentState !== "attacking" &&
-        this.animController.currentState !== "run-attacking"
-      ) {
+      if (!this.isAttackingState()) {
         return;
       }
 
-      const currentFrame = attackAnim.currentFrameIndex;
+      const currentAnim = this.character.graphics.current as ex.Animation;
+      const currentFrame = currentAnim?.currentFrameIndex ?? 0;
 
       if (currentFrame >= 4) {
         if (!attackHitbox.scene) {
@@ -229,7 +255,15 @@ export class CombatSystem {
       }
     };
 
+    if (this.currentHitboxInterval) {
+      clearInterval(this.currentHitboxInterval);
+    }
+    if (this.currentAttackTimeout) {
+      clearTimeout(this.currentAttackTimeout);
+    }
+
     const hitboxInterval = setInterval(updateAttackHitbox, 16);
+    this.currentHitboxInterval = hitboxInterval;
 
     attackAnim.reset();
     this.character.graphics.use(attackAnim);
@@ -237,16 +271,17 @@ export class CombatSystem {
     updateAttackHitbox();
 
     const duration = attackAnim.frames.length * attackAnim.frameDuration;
+    this.currentAttackDuration = duration;
+    this.currentAttackStartTime = Date.now();
 
-    setTimeout(() => {
+    this.currentAttackTimeout = setTimeout(() => {
       clearInterval(hitboxInterval);
+      this.currentHitboxInterval = undefined;
       attackHitbox.kill();
+      this.currentAttackHitbox = undefined;
       this.canDealDamage = false;
 
-      if (
-        this.animController.currentState === "attacking" ||
-        this.animController.currentState === "run-attacking"
-      ) {
+      if (this.isAttackingState()) {
         this.animController.currentState = "idle";
       }
     }, duration);
@@ -273,18 +308,17 @@ export class CombatSystem {
       collisionGroup: CollisionGroups.Weapon,
     });
     this.character.addChild(punchHitbox);
+    this.currentAttackHitbox = punchHitbox;
 
     const originalPunchPos = punchHitbox.pos.clone();
 
     const updatePunchHitbox = () => {
-      if (
-        this.animController.currentState !== "attacking" &&
-        this.animController.currentState !== "run-attacking"
-      ) {
+      if (!this.isAttackingState()) {
         return;
       }
 
-      const currentFrame = attackAnim.currentFrameIndex;
+      const currentAnim = this.character.graphics.current as ex.Animation;
+      const currentFrame = currentAnim?.currentFrameIndex ?? 0;
 
       if (currentFrame >= 3) {
         if (!damageDealt) {
@@ -344,18 +378,27 @@ export class CombatSystem {
 
     punchHitbox.on("collisionstart", punchHandler);
 
+    if (this.currentHitboxInterval) {
+      clearInterval(this.currentHitboxInterval);
+    }
+    if (this.currentAttackTimeout) {
+      clearTimeout(this.currentAttackTimeout);
+    }
+
     updatePunchHitbox();
     const punchInterval = setInterval(updatePunchHitbox, 16);
+    this.currentHitboxInterval = punchInterval;
+    this.currentAttackDuration = duration;
+    this.currentAttackStartTime = Date.now();
 
-    setTimeout(() => {
+    this.currentAttackTimeout = setTimeout(() => {
       clearInterval(punchInterval);
+      this.currentHitboxInterval = undefined;
       punchHitbox.kill();
+      this.currentAttackHitbox = undefined;
       this.canDealDamage = false;
 
-      if (
-        this.animController.currentState === "attacking" ||
-        this.animController.currentState === "run-attacking"
-      ) {
+      if (this.isAttackingState()) {
         this.animController.currentState = "idle";
       }
     }, duration);
@@ -364,9 +407,7 @@ export class CombatSystem {
   public takeDamage(currentHealth: number, amount: number): number {
     if (
       this.animController.currentState === "dead" ||
-      this.animController.currentState === "hurt" ||
-      this.animController.currentState === "attacking" ||
-      this.animController.currentState === "run-attacking"
+      this.animController.currentState === "hurt"
     ) {
       return currentHealth;
     }

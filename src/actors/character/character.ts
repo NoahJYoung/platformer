@@ -542,6 +542,7 @@ export abstract class Character extends ex.Actor {
     const equippedWeapon = this.equipmentManager.getEquippedWeapon();
     const oldEnergy = this.energy;
 
+    // Check if currently running and use appropriate attack
     if (this.animController.currentState === "running") {
       this.energy = this.combatSystem.runAttack(equippedWeapon, this.energy);
     } else {
@@ -556,6 +557,22 @@ export abstract class Character extends ex.Actor {
       }
     }
     this.lastAttackTime = Date.now();
+  }
+
+  /**
+   * Transitions attack animation mid-attack based on movement state.
+   * Call this when movement state changes during an attack.
+   */
+  public transitionAttackIfNeeded(isMoving: boolean): void {
+    const currentState = this.animController.currentState;
+
+    if (currentState === "attacking" && isMoving) {
+      // Transition from stationary attack to run attack
+      this.combatSystem.transitionAttack(true);
+    } else if (currentState === "run-attacking" && !isMoving) {
+      // Transition from run attack to stationary attack
+      this.combatSystem.transitionAttack(false);
+    }
   }
 
   public getStrengthDamageMultiplier(baseDamage: number): number {
