@@ -68,6 +68,9 @@ export class TimeCycle {
   private maxLightningInterval: number = 60;
   private firstFlash = false;
 
+  private lastOpacity: number = -1;
+  private opacityUpdateThreshold: number = 0.005;
+
   constructor(game: GameEngine, soundManager: GameSoundManager) {
     this.game = game;
     this.soundManager = soundManager;
@@ -83,7 +86,7 @@ export class TimeCycle {
 
     this.createGradientCanvas();
 
-    this.timeOfDay = 6;
+    this.timeOfDay = 18;
     this.cycleSpeed = 0.034;
 
     this.season = "spring";
@@ -143,9 +146,14 @@ export class TimeCycle {
     this.checkLightning(delta);
 
     const nightData = this.calculateDarkEffect(this.timeOfDay);
-    this.weatherOverlay.update(delta);
 
-    this.overlay.graphics.opacity = nightData.opacity;
+    if (
+      Math.abs(nightData.opacity - this.lastOpacity) >
+      this.opacityUpdateThreshold
+    ) {
+      this.overlay.graphics.opacity = nightData.opacity;
+      this.lastOpacity = nightData.opacity;
+    }
 
     this.ambientTemperature = this.calculateAmbientTemperature();
 
