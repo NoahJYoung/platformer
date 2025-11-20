@@ -3,20 +3,23 @@ import * as ex from "excalibur";
 export const WeaponResources = {
   male: {
     iron_sword: new ex.ImageSource(
-      "/assets/sprites/weapons/male/iron_sword.png",
+      "/assets/sprites/character/male/equipment/weapons/swords/iron_sword.png",
       { filtering: ex.ImageFiltering.Pixel }
     ),
-    iron_axe: new ex.ImageSource("/assets/sprites/weapons/male/iron_axe.png", {
-      filtering: ex.ImageFiltering.Pixel,
-    }),
+    iron_axe: new ex.ImageSource(
+      "/assets/sprites/character/male/equipment/weapons/axes/iron_axe.png",
+      {
+        filtering: ex.ImageFiltering.Pixel,
+      }
+    ),
     iron_pickaxe: new ex.ImageSource(
-      "/assets/sprites/weapons/male/iron_pickaxe.png",
+      "/assets/sprites/character/male/equipment/weapons/pickaxes/iron_pickaxe.png",
       {
         filtering: ex.ImageFiltering.Pixel,
       }
     ),
     iron_knife: new ex.ImageSource(
-      "/assets/sprites/weapons/male/iron_knife.png",
+      "/assets/sprites/character/male/equipment/weapons/knives/iron_knife.png",
       {
         filtering: ex.ImageFiltering.Pixel,
       }
@@ -24,15 +27,15 @@ export const WeaponResources = {
   },
   female: {
     iron_sword: new ex.ImageSource(
-      "/assets/sprites/weapons/female/iron_sword.png",
+      "/assets/sprites/character/female/equipment/weapons/swords/iron_sword.png",
       { filtering: ex.ImageFiltering.Pixel }
     ),
     iron_axe: new ex.ImageSource(
-      "/assets/sprites/weapons/female/iron_axe.png",
+      "/assets/sprites/character/female/equipment/weapons/axes/iron_axe.png",
       { filtering: ex.ImageFiltering.Pixel }
     ),
     iron_pickaxe: new ex.ImageSource(
-      "/assets/sprites/weapons/female/iron_pickaxe.png",
+      "/assets/sprites/character/female/equipment/weapons/pickaxes/iron_pickaxe.png",
       {
         filtering: ex.ImageFiltering.Pixel,
       }
@@ -60,5 +63,5 @@ const femaleWeaponResourcesArray = [
 ];
 export const weaponResourcesArray = [
   ...maleWeaponResourcesArray,
-  ...femaleWeaponResourcesArray,
+  // ...femaleWeaponResourcesArray,
 ];

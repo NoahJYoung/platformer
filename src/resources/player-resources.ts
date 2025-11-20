@@ -2,202 +2,244 @@ import * as ex from "excalibur";
 export const PlayerResources = {
   male: {
     skin: {
-      skin_1: new ex.ImageSource("/assets/sprites/player/male/skin/Skin1.png", {
-        filtering: ex.ImageFiltering.Pixel,
-      }),
-      skin_2: new ex.ImageSource("/assets/sprites/player/male/skin/Skin2.png", {
-        filtering: ex.ImageFiltering.Pixel,
-      }),
-      skin_3: new ex.ImageSource("/assets/sprites/player/male/skin/Skin3.png", {
-        filtering: ex.ImageFiltering.Pixel,
-      }),
-      skin_4: new ex.ImageSource("/assets/sprites/player/male/skin/Skin4.png", {
-        filtering: ex.ImageFiltering.Pixel,
-      }),
-      skin_5: new ex.ImageSource("/assets/sprites/player/male/skin/Skin5.png", {
-        filtering: ex.ImageFiltering.Pixel,
-      }),
+      skin_1: new ex.ImageSource(
+        "/assets/sprites/character/male/skin/skin_1.png",
+        {
+          filtering: ex.ImageFiltering.Pixel,
+        }
+      ),
+      skin_2: new ex.ImageSource(
+        "/assets/sprites/character/male/skin/skin_2.png",
+        {
+          filtering: ex.ImageFiltering.Pixel,
+        }
+      ),
+      skin_3: new ex.ImageSource(
+        "/assets/sprites/character/male/skin/skin_3.png",
+        {
+          filtering: ex.ImageFiltering.Pixel,
+        }
+      ),
+      skin_4: new ex.ImageSource(
+        "/assets/sprites/character/male/skin/skin_4.png",
+        {
+          filtering: ex.ImageFiltering.Pixel,
+        }
+      ),
+      skin_5: new ex.ImageSource(
+        "/assets/sprites/character/male/skin/skin_5.png",
+        {
+          filtering: ex.ImageFiltering.Pixel,
+        }
+      ),
     },
     hair: {
-      hair_1: new ex.ImageSource("/assets/sprites/player/male/hair/Hair1.png", {
-        filtering: ex.ImageFiltering.Pixel,
-      }),
-      hair_2: new ex.ImageSource("/assets/sprites/player/male/hair/Hair2.png", {
-        filtering: ex.ImageFiltering.Pixel,
-      }),
-      hair_3: new ex.ImageSource("/assets/sprites/player/male/hair/Hair3.png", {
-        filtering: ex.ImageFiltering.Pixel,
-      }),
-      hair_4: new ex.ImageSource("/assets/sprites/player/male/hair/Hair4.png", {
-        filtering: ex.ImageFiltering.Pixel,
-      }),
-      hair_5: new ex.ImageSource("/assets/sprites/player/male/hair/Hair5.png", {
-        filtering: ex.ImageFiltering.Pixel,
-      }),
-      hair_6: new ex.ImageSource("/assets/sprites/player/male/hair/Hair6.png", {
-        filtering: ex.ImageFiltering.Pixel,
-      }),
-      hair_7: new ex.ImageSource("/assets/sprites/player/male/hair/Hair7.png", {
-        filtering: ex.ImageFiltering.Pixel,
-      }),
-      hair_8: new ex.ImageSource("/assets/sprites/player/male/hair/Hair8.png", {
-        filtering: ex.ImageFiltering.Pixel,
-      }),
-      hair_9: new ex.ImageSource("/assets/sprites/player/male/hair/Hair9.png", {
-        filtering: ex.ImageFiltering.Pixel,
-      }),
+      hair_1: new ex.ImageSource(
+        "/assets/sprites/character/male/hair/hair_1.png",
+        {
+          filtering: ex.ImageFiltering.Pixel,
+        }
+      ),
+      hair_2: new ex.ImageSource(
+        "/assets/sprites/character/male/hair/hair_2.png",
+        {
+          filtering: ex.ImageFiltering.Pixel,
+        }
+      ),
+      hair_3: new ex.ImageSource(
+        "/assets/sprites/character/male/hair/hair_3.png",
+        {
+          filtering: ex.ImageFiltering.Pixel,
+        }
+      ),
+      hair_4: new ex.ImageSource(
+        "/assets/sprites/character/male/hair/hair_4.png",
+        {
+          filtering: ex.ImageFiltering.Pixel,
+        }
+      ),
+      hair_5: new ex.ImageSource(
+        "/assets/sprites/character/male/hair/hair_5.png",
+        {
+          filtering: ex.ImageFiltering.Pixel,
+        }
+      ),
+      hair_6: new ex.ImageSource(
+        "/assets/sprites/character/male/hair/hair_6.png",
+        {
+          filtering: ex.ImageFiltering.Pixel,
+        }
+      ),
+      hair_7: new ex.ImageSource(
+        "/assets/sprites/character/male/hair/hair_7.png",
+        {
+          filtering: ex.ImageFiltering.Pixel,
+        }
+      ),
+      hair_8: new ex.ImageSource(
+        "/assets/sprites/character/male/hair/hair_8.png",
+        {
+          filtering: ex.ImageFiltering.Pixel,
+        }
+      ),
+      hair_9: new ex.ImageSource(
+        "/assets/sprites/character/male/hair/hair_9.png",
+        {
+          filtering: ex.ImageFiltering.Pixel,
+        }
+      ),
       hair_10: new ex.ImageSource(
-        "/assets/sprites/player/male/hair/Hair10.png",
+        "/assets/sprites/character/male/hair/hair_10.png",
         {
           filtering: ex.ImageFiltering.Pixel,
         }
       ),
       hair_11: new ex.ImageSource(
-        "/assets/sprites/player/male/hair/Hair11.png",
+        "/assets/sprites/character/male/hair/hair_11.png",
         {
           filtering: ex.ImageFiltering.Pixel,
         }
       ),
       hair_12: new ex.ImageSource(
-        "/assets/sprites/player/male/hair/Hair12.png",
+        "/assets/sprites/character/male/hair/hair_12.png",
         {
           filtering: ex.ImageFiltering.Pixel,
         }
       ),
       hair_13: new ex.ImageSource(
-        "/assets/sprites/player/male/hair/Hair13.png",
+        "/assets/sprites/character/male/hair/hair_13.png",
         {
           filtering: ex.ImageFiltering.Pixel,
         }
       ),
       hair_14: new ex.ImageSource(
-        "/assets/sprites/player/male/hair/Hair14.png",
+        "/assets/sprites/character/male/hair/hair_14.png",
         {
           filtering: ex.ImageFiltering.Pixel,
         }
       ),
       hair_15: new ex.ImageSource(
-        "/assets/sprites/player/male/hair/Hair15.png",
+        "/assets/sprites/character/male/hair/hair_15.png",
         {
           filtering: ex.ImageFiltering.Pixel,
         }
       ),
       hair_16: new ex.ImageSource(
-        "/assets/sprites/player/male/hair/Hair16.png",
+        "/assets/sprites/character/male/hair/hair_16.png",
         {
           filtering: ex.ImageFiltering.Pixel,
         }
       ),
       hair_17: new ex.ImageSource(
-        "/assets/sprites/player/male/hair/Hair17.png",
+        "/assets/sprites/character/male/hair/hair_17.png",
         {
           filtering: ex.ImageFiltering.Pixel,
         }
       ),
       hair_18: new ex.ImageSource(
-        "/assets/sprites/player/male/hair/Hair18.png",
+        "/assets/sprites/character/male/hair/hair_18.png",
         {
           filtering: ex.ImageFiltering.Pixel,
         }
       ),
       hair_19: new ex.ImageSource(
-        "/assets/sprites/player/male/hair/Hair19.png",
+        "/assets/sprites/character/male/hair/hair_19.png",
         {
           filtering: ex.ImageFiltering.Pixel,
         }
       ),
       hair_20: new ex.ImageSource(
-        "/assets/sprites/player/male/hair/Hair20.png",
+        "/assets/sprites/character/male/hair/hair_20.png",
         {
           filtering: ex.ImageFiltering.Pixel,
         }
       ),
       hair_21: new ex.ImageSource(
-        "/assets/sprites/player/male/hair/Hair21.png",
+        "/assets/sprites/character/male/hair/hair_21.png",
         {
           filtering: ex.ImageFiltering.Pixel,
         }
       ),
       hair_22: new ex.ImageSource(
-        "/assets/sprites/player/male/hair/Hair22.png",
+        "/assets/sprites/character/male/hair/hair_22.png",
         {
           filtering: ex.ImageFiltering.Pixel,
         }
       ),
       hair_23: new ex.ImageSource(
-        "/assets/sprites/player/male/hair/Hair23.png",
+        "/assets/sprites/character/male/hair/hair_23.png",
         {
           filtering: ex.ImageFiltering.Pixel,
         }
       ),
       hair_24: new ex.ImageSource(
-        "/assets/sprites/player/male/hair/Hair24.png",
+        "/assets/sprites/character/male/hair/hair_24.png",
         {
           filtering: ex.ImageFiltering.Pixel,
         }
       ),
       hair_25: new ex.ImageSource(
-        "/assets/sprites/player/male/hair/Hair25.png",
+        "/assets/sprites/character/male/hair/hair_25.png",
         {
           filtering: ex.ImageFiltering.Pixel,
         }
       ),
       hair_26: new ex.ImageSource(
-        "/assets/sprites/player/male/hair/Hair26.png",
+        "/assets/sprites/character/male/hair/hair_26.png",
         {
           filtering: ex.ImageFiltering.Pixel,
         }
       ),
       hair_27: new ex.ImageSource(
-        "/assets/sprites/player/male/hair/Hair27.png",
+        "/assets/sprites/character/male/hair/hair_27.png",
         {
           filtering: ex.ImageFiltering.Pixel,
         }
       ),
       hair_28: new ex.ImageSource(
-        "/assets/sprites/player/male/hair/Hair28.png",
+        "/assets/sprites/character/male/hair/hair_28.png",
         {
           filtering: ex.ImageFiltering.Pixel,
         }
       ),
       hair_29: new ex.ImageSource(
-        "/assets/sprites/player/male/hair/Hair29.png",
+        "/assets/sprites/character/male/hair/hair_29.png",
         {
           filtering: ex.ImageFiltering.Pixel,
         }
       ),
       hair_30: new ex.ImageSource(
-        "/assets/sprites/player/male/hair/Hair30.png",
+        "/assets/sprites/character/male/hair/hair_30.png",
         {
           filtering: ex.ImageFiltering.Pixel,
         }
       ),
       hair_31: new ex.ImageSource(
-        "/assets/sprites/player/male/hair/Hair31.png",
+        "/assets/sprites/character/male/hair/hair_31.png",
         {
           filtering: ex.ImageFiltering.Pixel,
         }
       ),
       hair_32: new ex.ImageSource(
-        "/assets/sprites/player/male/hair/Hair32.png",
+        "/assets/sprites/character/male/hair/hair_32.png",
         {
           filtering: ex.ImageFiltering.Pixel,
         }
       ),
       hair_33: new ex.ImageSource(
-        "/assets/sprites/player/male/hair/Hair33.png",
+        "/assets/sprites/character/male/hair/hair_33.png",
         {
           filtering: ex.ImageFiltering.Pixel,
         }
       ),
       hair_34: new ex.ImageSource(
-        "/assets/sprites/player/male/hair/Hair34.png",
+        "/assets/sprites/character/male/hair/hair_34.png",
         {
           filtering: ex.ImageFiltering.Pixel,
         }
       ),
       hair_35: new ex.ImageSource(
-        "/assets/sprites/player/male/hair/Hair35.png",
+        "/assets/sprites/character/male/hair/hair_35.png",
         {
           filtering: ex.ImageFiltering.Pixel,
         }
@@ -207,165 +249,165 @@ export const PlayerResources = {
   female: {
     skin: {
       skin_1: new ex.ImageSource(
-        "/assets/sprites/player/female/skin/Skin1.png",
+        "/assets/sprites/character/female/skin/skin_1.png",
         { filtering: ex.ImageFiltering.Pixel }
       ),
       skin_2: new ex.ImageSource(
-        "/assets/sprites/player/female/skin/Skin2.png",
+        "/assets/sprites/character/female/skin/skin_2.png",
         { filtering: ex.ImageFiltering.Pixel }
       ),
       skin_3: new ex.ImageSource(
-        "/assets/sprites/player/female/skin/Skin3.png",
+        "/assets/sprites/character/female/skin/skin_3.png",
         { filtering: ex.ImageFiltering.Pixel }
       ),
       skin_4: new ex.ImageSource(
-        "/assets/sprites/player/female/skin/Skin4.png",
+        "/assets/sprites/character/female/skin/skin_4.png",
         { filtering: ex.ImageFiltering.Pixel }
       ),
       skin_5: new ex.ImageSource(
-        "/assets/sprites/player/female/skin/Skin5.png",
+        "/assets/sprites/character/female/skin/skin_5.png",
         { filtering: ex.ImageFiltering.Pixel }
       ),
     },
     hair: {
       hair_1: new ex.ImageSource(
-        "/assets/sprites/player/female/hair/Hair1.png",
+        "/assets/sprites/character/female/hair/hair_1.png",
         { filtering: ex.ImageFiltering.Pixel }
       ),
       hair_2: new ex.ImageSource(
-        "/assets/sprites/player/female/hair/Hair2.png",
+        "/assets/sprites/character/female/hair/hair_2.png",
         { filtering: ex.ImageFiltering.Pixel }
       ),
       hair_3: new ex.ImageSource(
-        "/assets/sprites/player/female/hair/Hair3.png",
+        "/assets/sprites/character/female/hair/hair_3.png",
         { filtering: ex.ImageFiltering.Pixel }
       ),
       hair_4: new ex.ImageSource(
-        "/assets/sprites/player/female/hair/Hair4.png",
+        "/assets/sprites/character/female/hair/hair_4.png",
         { filtering: ex.ImageFiltering.Pixel }
       ),
       hair_5: new ex.ImageSource(
-        "/assets/sprites/player/female/hair/Hair5.png",
+        "/assets/sprites/character/female/hair/hair_5.png",
         { filtering: ex.ImageFiltering.Pixel }
       ),
       hair_6: new ex.ImageSource(
-        "/assets/sprites/player/female/hair/Hair6.png",
+        "/assets/sprites/character/female/hair/hair_6.png",
         { filtering: ex.ImageFiltering.Pixel }
       ),
       hair_7: new ex.ImageSource(
-        "/assets/sprites/player/female/hair/Hair7.png",
+        "/assets/sprites/character/female/hair/hair_7.png",
         { filtering: ex.ImageFiltering.Pixel }
       ),
       hair_8: new ex.ImageSource(
-        "/assets/sprites/player/female/hair/Hair8.png",
+        "/assets/sprites/character/female/hair/hair_8.png",
         { filtering: ex.ImageFiltering.Pixel }
       ),
       hair_9: new ex.ImageSource(
-        "/assets/sprites/player/female/hair/Hair9.png",
+        "/assets/sprites/character/female/hair/hair_9.png",
         { filtering: ex.ImageFiltering.Pixel }
       ),
       hair_10: new ex.ImageSource(
-        "/assets/sprites/player/female/hair/Hair10.png",
+        "/assets/sprites/character/female/hair/hair_10.png",
         { filtering: ex.ImageFiltering.Pixel }
       ),
       hair_11: new ex.ImageSource(
-        "/assets/sprites/player/female/hair/Hair11.png",
+        "/assets/sprites/character/female/hair/hair_11.png",
         { filtering: ex.ImageFiltering.Pixel }
       ),
       hair_12: new ex.ImageSource(
-        "/assets/sprites/player/female/hair/Hair12.png",
+        "/assets/sprites/character/female/hair/hair_12.png",
         { filtering: ex.ImageFiltering.Pixel }
       ),
       hair_13: new ex.ImageSource(
-        "/assets/sprites/player/female/hair/Hair13.png",
+        "/assets/sprites/character/female/hair/hair_13.png",
         { filtering: ex.ImageFiltering.Pixel }
       ),
       hair_14: new ex.ImageSource(
-        "/assets/sprites/player/female/hair/Hair14.png",
+        "/assets/sprites/character/female/hair/hair_14.png",
         { filtering: ex.ImageFiltering.Pixel }
       ),
       hair_15: new ex.ImageSource(
-        "/assets/sprites/player/female/hair/Hair15.png",
+        "/assets/sprites/character/female/hair/hair_15.png",
         { filtering: ex.ImageFiltering.Pixel }
       ),
       hair_16: new ex.ImageSource(
-        "/assets/sprites/player/female/hair/Hair16.png",
+        "/assets/sprites/character/female/hair/hair_16.png",
         { filtering: ex.ImageFiltering.Pixel }
       ),
       hair_17: new ex.ImageSource(
-        "/assets/sprites/player/female/hair/Hair17.png",
+        "/assets/sprites/character/female/hair/hair_17.png",
         { filtering: ex.ImageFiltering.Pixel }
       ),
       hair_18: new ex.ImageSource(
-        "/assets/sprites/player/female/hair/Hair18.png",
+        "/assets/sprites/character/female/hair/hair_18.png",
         { filtering: ex.ImageFiltering.Pixel }
       ),
       hair_19: new ex.ImageSource(
-        "/assets/sprites/player/female/hair/Hair19.png",
+        "/assets/sprites/character/female/hair/hair_19.png",
         { filtering: ex.ImageFiltering.Pixel }
       ),
       hair_20: new ex.ImageSource(
-        "/assets/sprites/player/female/hair/Hair20.png",
+        "/assets/sprites/character/female/hair/hair_20.png",
         { filtering: ex.ImageFiltering.Pixel }
       ),
       hair_21: new ex.ImageSource(
-        "/assets/sprites/player/female/hair/Hair21.png",
+        "/assets/sprites/character/female/hair/hair_21.png",
         { filtering: ex.ImageFiltering.Pixel }
       ),
       hair_22: new ex.ImageSource(
-        "/assets/sprites/player/female/hair/Hair22.png",
+        "/assets/sprites/character/female/hair/hair_22.png",
         { filtering: ex.ImageFiltering.Pixel }
       ),
       hair_23: new ex.ImageSource(
-        "/assets/sprites/player/female/hair/Hair23.png",
+        "/assets/sprites/character/female/hair/hair_23.png",
         { filtering: ex.ImageFiltering.Pixel }
       ),
       hair_24: new ex.ImageSource(
-        "/assets/sprites/player/female/hair/Hair24.png",
+        "/assets/sprites/character/female/hair/hair_24.png",
         { filtering: ex.ImageFiltering.Pixel }
       ),
       hair_25: new ex.ImageSource(
-        "/assets/sprites/player/female/hair/Hair25.png",
+        "/assets/sprites/character/female/hair/hair_25.png",
         { filtering: ex.ImageFiltering.Pixel }
       ),
       hair_26: new ex.ImageSource(
-        "/assets/sprites/player/female/hair/Hair26.png",
+        "/assets/sprites/character/female/hair/hair_26.png",
         { filtering: ex.ImageFiltering.Pixel }
       ),
       hair_27: new ex.ImageSource(
-        "/assets/sprites/player/female/hair/Hair27.png",
+        "/assets/sprites/character/female/hair/hair_27.png",
         { filtering: ex.ImageFiltering.Pixel }
       ),
       hair_28: new ex.ImageSource(
-        "/assets/sprites/player/female/hair/Hair28.png",
+        "/assets/sprites/character/female/hair/hair_28.png",
         { filtering: ex.ImageFiltering.Pixel }
       ),
       hair_29: new ex.ImageSource(
-        "/assets/sprites/player/female/hair/Hair29.png",
+        "/assets/sprites/character/female/hair/hair_29.png",
         { filtering: ex.ImageFiltering.Pixel }
       ),
       hair_30: new ex.ImageSource(
-        "/assets/sprites/player/female/hair/Hair30.png",
+        "/assets/sprites/character/female/hair/hair_30.png",
         { filtering: ex.ImageFiltering.Pixel }
       ),
       hair_31: new ex.ImageSource(
-        "/assets/sprites/player/female/hair/Hair31.png",
+        "/assets/sprites/character/female/hair/hair_31.png",
         { filtering: ex.ImageFiltering.Pixel }
       ),
       hair_32: new ex.ImageSource(
-        "/assets/sprites/player/female/hair/Hair32.png",
+        "/assets/sprites/character/female/hair/hair_32.png",
         { filtering: ex.ImageFiltering.Pixel }
       ),
       hair_33: new ex.ImageSource(
-        "/assets/sprites/player/female/hair/Hair33.png",
+        "/assets/sprites/character/female/hair/hair_33.png",
         { filtering: ex.ImageFiltering.Pixel }
       ),
       hair_34: new ex.ImageSource(
-        "/assets/sprites/player/female/hair/Hair34.png",
+        "/assets/sprites/character/female/hair/hair_34.png",
         { filtering: ex.ImageFiltering.Pixel }
       ),
       hair_35: new ex.ImageSource(
-        "/assets/sprites/player/female/hair/Hair35.png",
+        "/assets/sprites/character/female/hair/hair_35.png",
         { filtering: ex.ImageFiltering.Pixel }
       ),
     },
@@ -400,5 +442,5 @@ const femalePlayerResourcesArray = [
 
 export const playerResourcesArray = [
   ...malePlayerResourcesArray,
-  ...femalePlayerResourcesArray,
+  // ...femalePlayerResourcesArray,
 ];

@@ -4,17 +4,17 @@ export const ClothingResources = {
   offhand: {
     male: {
       small_lantern: new ex.ImageSource(
-        "/assets/sprites/armor/offhand/male/small_lantern.png",
+        "/assets/sprites/character/male/equipment/offhand/small_lantern.png",
         { filtering: ex.ImageFiltering.Pixel }
       ),
       torch: new ex.ImageSource(
-        "/assets/sprites/armor/offhand/male/torch.png",
+        "/assets/sprites/character/male/equipment/offhand/torch.png",
         { filtering: ex.ImageFiltering.Pixel }
       ),
     },
     female: {
       small_lantern: new ex.ImageSource(
-        "/assets/sprites/armor/offhand/female/small_lantern.png",
+        "/assets/sprites/character/female/equipment/offhand/small_lantern.png",
         { filtering: ex.ImageFiltering.Pixel }
       ),
     },
@@ -22,39 +22,32 @@ export const ClothingResources = {
   back: {
     male: {
       small_backpack: new ex.ImageSource(
-        "/assets/sprites/armor/back/male/small_backpack.png",
+        "/assets/sprites/character/male/equipment/back/small_backpack.png",
         { filtering: ex.ImageFiltering.Pixel }
       ),
     },
   },
-  head: {
-    male: {
-      blue_feather_hat: new ex.ImageSource(
-        "/assets/sprites/armor/head/male/blue_feather_hat.png",
-        { filtering: ex.ImageFiltering.Pixel }
-      ),
-      black_hood: new ex.ImageSource(
-        "/assets/sprites/armor/head/male/black_hood.png",
-        { filtering: ex.ImageFiltering.Pixel }
-      ),
-    },
-  },
+
   face: {
     male: {
       brown_face_scarf: new ex.ImageSource(
-        "/assets/sprites/armor/face/male/brown_face_scarf.png",
+        "/assets/sprites/character/male/equipment/face/brown_face_scarf.png",
         { filtering: ex.ImageFiltering.Pixel }
       ),
     },
   },
   body: {
     male: {
-      blue_shirt: new ex.ImageSource(
-        "/assets/sprites/armor/body/male/blue_shirt.png",
+      blue_trimmed_white_shirt: new ex.ImageSource(
+        "/assets/sprites/character/male/equipment/torso/blue_trimmed_white_shirt.png",
         { filtering: ex.ImageFiltering.Pixel }
       ),
-      black_shirt: new ex.ImageSource(
-        "/assets/sprites/armor/body/male/black_shirt.png",
+      brown_leather_mail: new ex.ImageSource(
+        "/assets/sprites/character/male/equipment/torso/brown_leather_mail.png",
+        { filtering: ex.ImageFiltering.Pixel }
+      ),
+      black_leather_mail: new ex.ImageSource(
+        "/assets/sprites/character/male/equipment/torso/black_leather_mail.png",
         { filtering: ex.ImageFiltering.Pixel }
       ),
     },
@@ -62,11 +55,7 @@ export const ClothingResources = {
   legs: {
     male: {
       blue_pants: new ex.ImageSource(
-        "/assets/sprites/armor/legs/male/blue_pants.png",
-        { filtering: ex.ImageFiltering.Pixel }
-      ),
-      black_pants: new ex.ImageSource(
-        "/assets/sprites/armor/legs/male/black_pants.png",
+        "/assets/sprites/character/male/equipment/legs/blue_pants.png",
         { filtering: ex.ImageFiltering.Pixel }
       ),
     },
@@ -74,11 +63,7 @@ export const ClothingResources = {
   feet: {
     male: {
       brown_boots: new ex.ImageSource(
-        "/assets/sprites/armor/feet/male/brown_boots.png",
-        { filtering: ex.ImageFiltering.Pixel }
-      ),
-      black_boots: new ex.ImageSource(
-        "/assets/sprites/armor/feet/male/black_boots.png",
+        "/assets/sprites/character/male/equipment/feet/brown_boots.png",
         { filtering: ex.ImageFiltering.Pixel }
       ),
     },
@@ -86,11 +71,7 @@ export const ClothingResources = {
   hands: {
     male: {
       brown_gloves: new ex.ImageSource(
-        "/assets/sprites/armor/hands/male/brown_gloves.png",
-        { filtering: ex.ImageFiltering.Pixel }
-      ),
-      black_gloves: new ex.ImageSource(
-        "/assets/sprites/armor/hands/male/black_gloves.png",
+        "/assets/sprites/character/male/equipment/hands/brown_gloves.png",
         { filtering: ex.ImageFiltering.Pixel }
       ),
     },
@@ -104,22 +85,20 @@ const maleClothingResourcesArray = [
   // Back
   ClothingResources.back.male.small_backpack,
   // Head
-  ClothingResources.head.male.black_hood,
-  ClothingResources.head.male.blue_feather_hat,
+
   // Face
   ClothingResources.face.male.brown_face_scarf,
   // Body
-  ClothingResources.body.male.black_shirt,
-  ClothingResources.body.male.blue_shirt,
+  ClothingResources.body.male.blue_trimmed_white_shirt,
+  ClothingResources.body.male.black_leather_mail,
+  ClothingResources.body.male.brown_leather_mail,
+
   // Legs
-  ClothingResources.legs.male.black_pants,
   ClothingResources.legs.male.blue_pants,
   // Feet
   ClothingResources.feet.male.brown_boots,
-  ClothingResources.feet.male.black_boots,
   // Hands
   ClothingResources.hands.male.brown_gloves,
-  ClothingResources.hands.male.black_gloves,
 ];
 
 const femaleClothingResourcesArray = [
@@ -149,5 +128,5 @@ const femaleClothingResourcesArray = [
 
 export const clothingResourcesArray = [
   ...maleClothingResourcesArray,
-  ...femaleClothingResourcesArray,
+  // ...femaleClothingResourcesArray,
 ];

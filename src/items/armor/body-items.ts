@@ -4,7 +4,7 @@ import type { ItemFactoryData } from "../types";
 
 export const bodyItems = new Map<string, ItemFactoryData>([
   [
-    "blue_shirt",
+    "blue_trimmed_white_shirt",
     {
       iconUrl: "",
       name: "Blue Shirt",
@@ -13,23 +13,23 @@ export const bodyItems = new Map<string, ItemFactoryData>([
       description: "A White shirt with blue trim",
 
       spriteSheets: {
-        male: ClothingResources.body.male.blue_shirt,
+        male: ClothingResources.body.male.blue_trimmed_white_shirt,
         female: new ex.ImageSource(""),
       },
       defense: 5,
     } satisfies ItemFactoryData,
   ],
   [
-    "dark_shirt",
+    "black_leather_banded_mail",
     {
       iconUrl: "",
-      name: "Dark Shirt",
+      name: "Black Leather Banded Mail",
       type: "armor",
       slot: "body",
-      description: "A dark colored shirt",
+      description: "Chain mail with black leather bands",
 
       spriteSheets: {
-        male: ClothingResources.body.male.black_shirt,
+        male: ClothingResources.body.male.black_leather_mail,
         female: new ex.ImageSource(""),
       },
       defense: 5,

@@ -19,20 +19,4 @@ export const feetItems = new Map<string, ItemFactoryData>([
       defense: 3,
     } satisfies ItemFactoryData,
   ],
-  [
-    "dark_boots",
-    {
-      iconUrl: "",
-      name: "Dark Boots",
-      type: "armor",
-      slot: "boots",
-      description: "A pair of dark boots",
-
-      spriteSheets: {
-        male: ClothingResources.feet.male.black_boots,
-        female: new ex.ImageSource(""),
-      },
-      defense: 3,
-    } satisfies ItemFactoryData,
-  ],
 ]);

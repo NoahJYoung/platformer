@@ -154,14 +154,18 @@ export class GameEngine extends ex.Engine {
 
     const ironSword = createItem("iron_sword", this.player.sex);
     const ironAxe = createItem("iron_axe", this.player.sex);
-    const darkPants = createItem("dark_pants", this.player.sex);
+    const bluePants = createItem("blue_pants", this.player.sex);
 
-    const blueShirt = createItem("dark_shirt", this.player.sex);
+    const blueShirt = createItem("blue_trimmed_white_shirt", this.player.sex);
+    const blackLeatherMail = createItem(
+      "black_leather_banded_mail",
+      this.player.sex
+    );
+
     const smallBackpack = createItem("small_backpack", this.player.sex);
-    const blueHat = createItem("dark_hood", this.player.sex);
-    const leatherBoots = createItem("dark_boots", this.player.sex);
+    const leatherBoots = createItem("leather_boots", this.player.sex);
     const faceScarf = createItem("brown_scarf", this.player.sex);
-    const leatherGloves = createItem("dark_gloves", this.player.sex);
+    const leatherGloves = createItem("leather_gloves", this.player.sex);
     const smallLantern = createItem("small_lantern", this.player.sex);
     const ironPick = createItem("iron_pickaxe", this.player.sex);
 
@@ -174,6 +178,15 @@ export class GameEngine extends ex.Engine {
     this.player.inventory.addItem(2, knife);
     this.player.inventory.addItem(3, waterSkin);
     this.player.inventory.addItem(4, ironPick);
+    this.player.inventory.addItem(5, ironSword);
+    this.player.inventory.addItem(6, bluePants);
+    // this.player.inventory.addItem(7, blueShirt);
+    this.player.inventory.addItem(8, smallBackpack);
+    this.player.inventory.addItem(9, leatherBoots);
+    this.player.inventory.addItem(10, faceScarf);
+    this.player.inventory.addItem(11, leatherGloves);
+    this.player.inventory.addItem(12, smallLantern);
+    this.player.inventory.addItem(13, blackLeatherMail);
   }
 
   public pause() {
