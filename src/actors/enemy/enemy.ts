@@ -41,9 +41,14 @@ export class Enemy extends Character {
     if (
       !this.player ||
       this.currentState === "attacking" ||
+      this.currentState === "run-attacking" ||
       this.currentState === "hurt" ||
       this.currentState === "dodging"
     ) {
+      if (this.currentState === "run-attacking" && this.player) {
+        const direction = this.player.pos.x > this.pos.x ? 1 : -1;
+        this.vel.x = direction * this.runSpeed;
+      }
       return;
     }
 
@@ -53,10 +58,8 @@ export class Enemy extends Character {
 
     const distanceToPlayer = this.pos.distance(this.player.pos);
 
-    // Adjust attack range if player has shield active
     let effectiveAttackRange = this.attackRange;
     if (this.player.isShieldActive && this.player.protectionShield) {
-      // Add shield radius to attack range so enemy attacks the shield
       const shieldRadius = this.player.protectionShield.width / 3;
       effectiveAttackRange = this.attackRange + shieldRadius;
     }
@@ -136,8 +139,6 @@ export class Enemy extends Character {
       this.dodge(direction);
       return;
     }
-
-    this.vel.x = 0;
 
     if (this.energy >= this.attackEnergyCost) {
       this.attack(currentTime);

@@ -170,6 +170,7 @@ export class Player extends Character {
 
     if (
       this.currentState !== "attacking" &&
+      this.currentState !== "run-attacking" && // ADD THIS LINE
       this.currentState !== "hurt" &&
       this.currentState !== "dodging" &&
       this.currentState !== "shielding"

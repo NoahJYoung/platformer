@@ -542,7 +542,11 @@ export abstract class Character extends ex.Actor {
     const equippedWeapon = this.equipmentManager.getEquippedWeapon();
     const oldEnergy = this.energy;
 
-    this.energy = this.combatSystem.attack(equippedWeapon, this.energy);
+    if (this.animController.currentState === "running") {
+      this.energy = this.combatSystem.runAttack(equippedWeapon, this.energy);
+    } else {
+      this.energy = this.combatSystem.attack(equippedWeapon, this.energy);
+    }
 
     const energyUsed = oldEnergy - this.energy;
     if (energyUsed > 0) {

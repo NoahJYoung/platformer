@@ -35,6 +35,7 @@ export class CombatSystem {
   public attack(equippedWeapon: WeaponItem | null, energy: number): number {
     if (
       this.animController.currentState === "attacking" ||
+      this.animController.currentState === "run-attacking" ||
       this.animController.currentState === "hurt"
     )
       return energy;
@@ -61,10 +62,54 @@ export class CombatSystem {
     };
 
     if (equippedWeapon) {
-      this.performWeaponAttack(equippedWeapon);
+      this.performWeaponAttack(equippedWeapon, this.animController.attackAnim);
       playWeaponSFX();
     } else {
-      this.performPunchAttack();
+      this.performPunchAttack(this.animController.attackAnim);
+      playWeaponSFX();
+    }
+
+    return newEnergy;
+  }
+
+  public runAttack(equippedWeapon: WeaponItem | null, energy: number): number {
+    if (
+      this.animController.currentState === "attacking" ||
+      this.animController.currentState === "run-attacking" ||
+      this.animController.currentState === "hurt"
+    )
+      return energy;
+
+    if (this.animController.runAttackAnim) {
+      this.animController.runAttackAnim.reset();
+    }
+
+    this.animController.currentState = "run-attacking";
+    this.canDealDamage = false;
+
+    const newEnergy = Math.max(0, energy - this.attackEnergyCost);
+
+    const playWeaponSFX = () => {
+      if (this.animController.runAttackAnim) {
+        this.animController.runAttackAnim.events.on("frame", (evt) => {
+          if (evt.frameIndex === 3) {
+            const swingKey = AudioKeys.SFX.PLAYER.COMBAT.WEAPON.SWING;
+            const baseVolume = 0.2;
+            this.character.engine?.soundManager.play(swingKey, baseVolume);
+            this.animController.runAttackAnim?.events.clear();
+          }
+        });
+      }
+    };
+
+    if (equippedWeapon) {
+      this.performWeaponAttack(
+        equippedWeapon,
+        this.animController.runAttackAnim
+      );
+      playWeaponSFX();
+    } else {
+      this.performPunchAttack(this.animController.runAttackAnim);
       playWeaponSFX();
     }
 
@@ -96,8 +141,10 @@ export class CombatSystem {
     return newMana;
   }
 
-  private performWeaponAttack(weapon: WeaponItem) {
-    const attackAnim = this.animController.attackAnim;
+  private performWeaponAttack(weapon: WeaponItem, attackAnim?: ex.Animation) {
+    if (!attackAnim) {
+      attackAnim = this.animController.attackAnim;
+    }
     if (!attackAnim) return;
 
     let damageDealt = false;
@@ -142,7 +189,12 @@ export class CombatSystem {
     attackHitbox.on("collisionstart", collisionHandler);
 
     const updateAttackHitbox = () => {
-      if (this.animController.currentState !== "attacking") return;
+      if (
+        this.animController.currentState !== "attacking" &&
+        this.animController.currentState !== "run-attacking"
+      ) {
+        return;
+      }
 
       const currentFrame = attackAnim.currentFrameIndex;
 
@@ -191,14 +243,19 @@ export class CombatSystem {
       attackHitbox.kill();
       this.canDealDamage = false;
 
-      if (this.animController.currentState === "attacking") {
+      if (
+        this.animController.currentState === "attacking" ||
+        this.animController.currentState === "run-attacking"
+      ) {
         this.animController.currentState = "idle";
       }
     }, duration);
   }
 
-  private performPunchAttack() {
-    const attackAnim = this.animController.attackAnim;
+  private performPunchAttack(attackAnim?: ex.Animation) {
+    if (!attackAnim) {
+      attackAnim = this.animController.attackAnim;
+    }
     if (!attackAnim) return;
 
     attackAnim.reset();
@@ -220,7 +277,12 @@ export class CombatSystem {
     const originalPunchPos = punchHitbox.pos.clone();
 
     const updatePunchHitbox = () => {
-      if (this.animController.currentState !== "attacking") return;
+      if (
+        this.animController.currentState !== "attacking" &&
+        this.animController.currentState !== "run-attacking"
+      ) {
+        return;
+      }
 
       const currentFrame = attackAnim.currentFrameIndex;
 
@@ -290,7 +352,10 @@ export class CombatSystem {
       punchHitbox.kill();
       this.canDealDamage = false;
 
-      if (this.animController.currentState === "attacking") {
+      if (
+        this.animController.currentState === "attacking" ||
+        this.animController.currentState === "run-attacking"
+      ) {
         this.animController.currentState = "idle";
       }
     }, duration);
@@ -299,7 +364,9 @@ export class CombatSystem {
   public takeDamage(currentHealth: number, amount: number): number {
     if (
       this.animController.currentState === "dead" ||
-      this.animController.currentState === "hurt"
+      this.animController.currentState === "hurt" ||
+      this.animController.currentState === "attacking" ||
+      this.animController.currentState === "run-attacking"
     ) {
       return currentHealth;
     }

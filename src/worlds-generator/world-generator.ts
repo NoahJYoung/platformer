@@ -714,7 +714,7 @@ export class ProceduralWorldGenerator {
           );
 
           if (!collidesWithTree && !collidesWithOre && !tooCloseToEnemy) {
-            const sex = this.rng.next() > 0.5 ? "male" : "female";
+            const sex = "male"; // this.rng.next() > 0.5 ? "male" : "female";
             const baseLevel = Math.floor(3 + sceneIndex * 1.5);
 
             enemies.push({

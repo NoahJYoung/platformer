@@ -19,6 +19,7 @@ export type AnimationState =
   | "jumping"
   | "falling"
   | "attacking"
+  | "run-attacking"
   | "dodging"
   | "shielding"
   | "hurt"
@@ -42,6 +43,7 @@ export class AnimationController {
   public jumpAnim?: ex.Animation;
   public fallAnim?: ex.Animation;
   public attackAnim?: ex.Animation;
+  public runAttackAnim?: ex.Animation;
   public hurtAnim?: ex.Animation;
   public deadAnim?: ex.Animation;
   public dodgeAnim?: ex.Animation;
@@ -131,7 +133,7 @@ export class AnimationController {
       const skinSheet = ex.SpriteSheet.fromImageSource({
         image: PlayerResources[this.sex].skin[`skin_${this.skinTone}`],
         grid: {
-          rows: 7,
+          rows: 8,
           columns: frameCount,
           spriteWidth: STANDARD_SPRITE_WIDTH,
           spriteHeight: SPRITE_HEIGHT - SPRITE_BUFFER,
@@ -151,7 +153,7 @@ export class AnimationController {
             `hair_${this.hairStyle}` as keyof (typeof PlayerResources)[typeof this.sex]["hair"]
           ],
         grid: {
-          rows: 7,
+          rows: 8,
           columns: frameCount,
           spriteWidth: STANDARD_SPRITE_WIDTH,
           spriteHeight: SPRITE_HEIGHT - SPRITE_BUFFER,
@@ -168,7 +170,7 @@ export class AnimationController {
         return ex.SpriteSheet.fromImageSource({
           image: armorItem.spriteSheet,
           grid: {
-            rows: 7,
+            rows: 8,
             columns: frameCount,
             spriteWidth: STANDARD_SPRITE_WIDTH,
             spriteHeight: SPRITE_HEIGHT - SPRITE_BUFFER,
@@ -302,15 +304,13 @@ export class AnimationController {
 
     this.idleAnim = createLayeredAnimation(0, 5, 100);
     this.hurtAnim = createLayeredAnimation(3, 1, 150);
-
     this.walkAnim = createLayeredAnimation(1, 8, 100);
-
     this.runAnim = createLayeredAnimation(2, 8, 80);
-
     this.jumpAnim = createLayeredAnimation(3, 4, 100);
     this.dodgeAnim = createLayeredAnimation(3, 4, 20, ex.AnimationStrategy.End);
     this.fallAnim = createLayeredAnimation(4, 4, 100);
     this.attackAnim = createLayeredAnimation(5, 6, 100);
+    this.runAttackAnim = createLayeredAnimation(7, 6, 100);
 
     this.deadAnim = createLayeredAnimation(
       6,
@@ -441,7 +441,10 @@ export class AnimationController {
 
     this.character.graphics.flipHorizontal = this.facingRight;
 
-    if (this.currentState === "attacking") {
+    if (
+      this.currentState === "attacking" ||
+      this.currentState === "run-attacking"
+    ) {
       return;
     }
 
@@ -474,6 +477,7 @@ export class AnimationController {
           this.character.graphics.use(this.fallAnim);
         }
         break;
+
       case "shielding":
         if (
           this.shieldAnim &&
@@ -560,7 +564,7 @@ export class AnimationController {
       const weaponSheet = ex.SpriteSheet.fromImageSource({
         image: weapon.spriteSheet,
         grid: {
-          rows: 7,
+          rows: 8,
           columns: frameCount,
           spriteWidth: STANDARD_SPRITE_WIDTH,
           spriteHeight: SPRITE_HEIGHT,
@@ -599,6 +603,7 @@ export class AnimationController {
     this.weaponSprites.set("fall", createWeaponAnimation(4, 4));
     this.weaponSprites.set("hurt", createWeaponAnimation(1, 3, 150));
     this.weaponSprites.set("attack", createWeaponAnimation(6, 5));
+    this.weaponSprites.set("run-attack", createWeaponAnimation(6, 7));
 
     this.weaponSprites.set(
       "dead",
@@ -661,6 +666,8 @@ export class AnimationController {
         ? "hurt"
         : this.currentState === "attacking"
         ? "attack"
+        : this.currentState === "run-attacking"
+        ? "run-attack"
         : this.currentState === "shielding"
         ? "shield"
         : this.currentState === "dead"

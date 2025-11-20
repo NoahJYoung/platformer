@@ -327,7 +327,7 @@ export class GameMapScene extends ex.Scene {
 
   private spawnEnemy(enemyConfig: EnemyConfig): void {
     const enemy = new Enemy(enemyConfig);
-
+    console.log({ enemyConfig });
     this.add(enemy);
 
     const ironSword = createItem(
