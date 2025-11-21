@@ -98,6 +98,14 @@ export class AnimationController {
         }
       });
     }
+
+    if (this.runAttackAnim) {
+      this.runAttackAnim.events.on("frame", (evt) => {
+        if (evt.frameIndex === 1 || evt.frameIndex === 5) {
+          this.playFootstep(0.4);
+        }
+      });
+    }
   }
 
   private playFootstep(baseVolume: number) {
@@ -430,7 +438,6 @@ export class AnimationController {
 
     if (!currentAnim || !targetAnim) return;
 
-    // Only transition if we're in an attack state
     if (
       this.currentState !== "attacking" &&
       this.currentState !== "run-attacking"
@@ -438,22 +445,17 @@ export class AnimationController {
       return;
     }
 
-    // Don't transition if already in target state
     if (this.currentState === targetState) {
       return;
     }
 
-    // Get current frame index
     const currentFrameIndex = currentAnim.currentFrameIndex;
 
-    // Switch state and animation
     this.currentState = targetState;
     this.character.graphics.use(targetAnim);
 
-    // Jump to the same frame
     targetAnim.goToFrame(currentFrameIndex);
 
-    // Also sync weapon animation
     this.syncWeaponToFrame(
       currentFrameIndex,
       toRunAttack ? "run-attack" : "attack"
@@ -506,7 +508,6 @@ export class AnimationController {
 
     this.character.graphics.flipHorizontal = this.facingRight;
 
-    // Prevent animation updates during attacking states
     if (
       this.currentState === "attacking" ||
       this.currentState === "run-attacking"
@@ -549,7 +550,6 @@ export class AnimationController {
           this.shieldAnim &&
           this.character.graphics.current !== this.shieldAnim
         ) {
-          console.log("using shield animation");
           this.character.graphics.use(this.shieldAnim);
         }
         break;
@@ -559,7 +559,7 @@ export class AnimationController {
           this.character.graphics.current !== this.hurtAnim
         ) {
           this.character.graphics.use(this.hurtAnim);
-          this.hurtAnim.reset();
+          this.hurtAnim.goToFrame(0);
           this.hurtAnim.tint = ex.Color.Red;
         }
         break;

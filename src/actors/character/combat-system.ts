@@ -70,7 +70,7 @@ export class CombatSystem {
     if (this.isAttackingState() || this.animController.currentState === "hurt")
       return energy;
     if (this.animController.attackAnim) {
-      this.animController.attackAnim.reset();
+      this.animController.attackAnim.goToFrame(0);
     }
 
     this.animController.currentState = "attacking";
@@ -79,24 +79,29 @@ export class CombatSystem {
     const newEnergy = Math.max(0, energy - this.attackEnergyCost);
 
     const playWeaponSFX = () => {
-      if (this.animController.attackAnim) {
-        this.animController.attackAnim.events.on("frame", (evt) => {
+      if (this.animController.runAttackAnim) {
+        const swingHandler = (evt: ex.FrameEvent) => {
           if (evt.frameIndex === 3) {
             const swingKey = AudioKeys.SFX.PLAYER.COMBAT.WEAPON.SWING;
-            const baseVolume = 0.2;
-            this.character.engine?.soundManager.play(swingKey, baseVolume);
-            this.animController.attackAnim?.events.clear();
+            this.character.engine?.soundManager.play(swingKey, 0.2);
+            this.animController.runAttackAnim?.events.off(
+              "frame",
+              swingHandler
+            );
           }
-        });
+        };
+        this.animController.runAttackAnim.events.on("frame", swingHandler);
       }
     };
 
     if (equippedWeapon) {
-      this.performWeaponAttack(equippedWeapon, this.animController.attackAnim);
-      playWeaponSFX();
+      this.performWeaponAttack(
+        equippedWeapon,
+        playWeaponSFX,
+        this.animController.attackAnim
+      );
     } else {
-      this.performPunchAttack(this.animController.attackAnim);
-      playWeaponSFX();
+      this.performPunchAttack(playWeaponSFX, this.animController.attackAnim);
     }
 
     return newEnergy;
@@ -107,7 +112,7 @@ export class CombatSystem {
       return energy;
 
     if (this.animController.runAttackAnim) {
-      this.animController.runAttackAnim.reset();
+      this.animController.runAttackAnim.goToFrame(0);
     }
 
     this.animController.currentState = "run-attacking";
@@ -117,26 +122,28 @@ export class CombatSystem {
 
     const playWeaponSFX = () => {
       if (this.animController.runAttackAnim) {
-        this.animController.runAttackAnim.events.on("frame", (evt) => {
+        const swingHandler = (evt: ex.FrameEvent) => {
           if (evt.frameIndex === 3) {
             const swingKey = AudioKeys.SFX.PLAYER.COMBAT.WEAPON.SWING;
-            const baseVolume = 0.2;
-            this.character.engine?.soundManager.play(swingKey, baseVolume);
-            this.animController.runAttackAnim?.events.clear();
+            this.character.engine?.soundManager.play(swingKey, 0.2);
+            this.animController.runAttackAnim?.events.off(
+              "frame",
+              swingHandler
+            );
           }
-        });
+        };
+        this.animController.runAttackAnim.events.on("frame", swingHandler);
       }
     };
 
     if (equippedWeapon) {
       this.performWeaponAttack(
         equippedWeapon,
+        playWeaponSFX,
         this.animController.runAttackAnim
       );
-      playWeaponSFX();
     } else {
-      this.performPunchAttack(this.animController.runAttackAnim);
-      playWeaponSFX();
+      this.performPunchAttack(playWeaponSFX, this.animController.runAttackAnim);
     }
 
     return newEnergy;
@@ -146,12 +153,12 @@ export class CombatSystem {
     const attackAnim = this.animController.attackAnim;
     if (!attackAnim) return mana;
     if (this.animController.attackAnim) {
-      this.animController.attackAnim.reset();
+      this.animController.attackAnim.goToFrame(0);
     }
 
     this.animController.currentState = "attacking";
 
-    attackAnim.reset();
+    attackAnim.goToFrame(0);
     this.character.graphics.use(attackAnim);
 
     const newMana = Math.max(0, mana - this.attackEnergyCost);
@@ -167,7 +174,12 @@ export class CombatSystem {
     return newMana;
   }
 
-  private performWeaponAttack(weapon: WeaponItem, attackAnim?: ex.Animation) {
+  private performWeaponAttack(
+    weapon: WeaponItem,
+    playSound: () => void,
+    attackAnim?: ex.Animation
+  ) {
+    playSound();
     if (!attackAnim) {
       attackAnim = this.animController.attackAnim;
     }
@@ -265,7 +277,7 @@ export class CombatSystem {
     const hitboxInterval = setInterval(updateAttackHitbox, 16);
     this.currentHitboxInterval = hitboxInterval;
 
-    attackAnim.reset();
+    attackAnim.goToFrame(0);
     this.character.graphics.use(attackAnim);
 
     updateAttackHitbox();
@@ -287,13 +299,14 @@ export class CombatSystem {
     }, duration);
   }
 
-  private performPunchAttack(attackAnim?: ex.Animation) {
+  private performPunchAttack(playSound: () => void, attackAnim?: ex.Animation) {
+    playSound();
     if (!attackAnim) {
       attackAnim = this.animController.attackAnim;
     }
     if (!attackAnim) return;
 
-    attackAnim.reset();
+    attackAnim.goToFrame(0);
     this.character.graphics.use(attackAnim);
 
     const duration = attackAnim.frames.length * attackAnim.frameDuration;
